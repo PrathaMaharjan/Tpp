@@ -70,20 +70,34 @@ export default function LocationsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 font-sans text-slate-700 pt-20">
+    <main className="min-h-screen bg-slate-50 font-sans text-slate-700">
       {/* Fixed Navbar Component */}
       <Header />
 
-      {/* Styled Header Title Matching About Page */}
-      <div className="pt-20 pb-4 text-center space-y-3">
-        <div className="flex justify-center">
-
+      {/* Styled Header Title Matching Services Page */}
+      <div className="relative bg-[#eaf4f6]">
+        <div className="pt-50 pb-20">
+          <div className="max-w-3xl mx-auto px-6 space-y-4 text-center">
+            <h1 className="text-3xl pb-10 sm:text-4xl font-bold tracking-tight text-slate-900">
+              Our Locations
+            </h1>
+          </div>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#4fa1b0]">
-          Locations
 
-        </h1>
-
+        {/* Enhanced Curvier Top Section Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden pointer-events-none z-0">
+          <svg
+            viewBox="0 0 1440 120"
+            className="w-full h-[60px] md:h-[90px]"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
+              fill="#f8fafc"
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Content Container */}

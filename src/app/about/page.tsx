@@ -8,25 +8,43 @@ export default function AboutPage() {
     <main className="min-h-screen bg-white font-sans">
       <Header />
 
-      <section className="pt-36 pb-20 max-w-[1400px] mx-auto px-6 md:px-10">
-        <div className="max-w-3xl mx-auto space-y-8">
-          
-          {/* Header Accent & Bold Title */}
-          <div className="text-center space-y-3">
-           \
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#4fa1b0]">
-              About Texas Primary & Pediatric Care
+      {/* Styled Header Title Matching Locations Page */}
+      <div className="relative bg-[#eaf4f6]">
+        <div className="pt-50 pb-20">
+          <div className="max-w-3xl mx-auto px-6 space-y-4 text-center">
+            <h1 className="text-3xl pb-10 sm:text-4xl font-bold tracking-tight text-slate-900">
+              About Texas Primary &amp; Pediatric Care
             </h1>
           </div>
+        </div>
+
+        {/* Enhanced Curvier Top Section Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden pointer-events-none z-0">
+          <svg
+            viewBox="0 0 1440 120"
+            className="w-full h-[60px] md:h-[90px]"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
+              fill="white"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <section className="pb-20 pt-10 max-w-[1400px] mx-auto px-6 md:px-10">
+        <div className="max-w-3xl mx-auto space-y-8">
 
           {/* Clean Narrative Flow - Uniform Font Size & Weight */}
           <div className="space-y-6 text-slate-600 text-base leading-relaxed font-normal">
             
             {/* Lead Paragraph */}
             <p>
-              At <strong className="font-semibold text-slate-900">Texas Primary & Pediatric Care</strong>, 
+              At <strong className="font-semibold text-slate-900">Texas Primary &amp; Pediatric Care</strong>, 
               Amit Bajaj, MD, Bishwas Upadhyay, MD, and the team provide adult primary care and pediatric services 
-              at their clinic in Irving & Celina, Texas, and serve the surrounding cities and counties. Dr. Bajaj and 
+              at their clinic in Irving &amp; Celina, Texas, and serve the surrounding cities and counties. Dr. Bajaj and 
               Dr. Upadhyay speak English, Nepali, Hindi, and Urdu fluently, and their team speaks Spanish fluently as well, 
               allowing them to effectively serve the area's diverse population.
             </p>
@@ -64,7 +82,7 @@ export default function AboutPage() {
 
             <p>
               To receive all-inclusive health care for you and each member of your family, partner with the team at 
-              Texas Primary & Pediatric Care. To schedule an appointment, book online, or call the office today.
+              Texas Primary &amp; Pediatric Care. To schedule an appointment, book online, or call the office today.
             </p>
 
           </div>

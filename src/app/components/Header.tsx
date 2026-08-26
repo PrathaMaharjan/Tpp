@@ -51,7 +51,8 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
     >
-      {showBanner && !isScrolled && (
+      {/* Changed: Removed !isScrolled so banner stays visible during scroll */}
+      {showBanner && (
         <div className="bg-[#4fa1b0] text-white text-xs md:text-sm px-6 py-2 relative flex items-center justify-center font-medium">
           <div className="text-center space-y-0.5 md:space-y-0 md:space-x-4">
             <span>Our 2nd location in Celina is now open!</span>

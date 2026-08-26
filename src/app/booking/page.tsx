@@ -8,26 +8,38 @@ import {
   Phone,
   User,
   Stethoscope,
+  MapPin,
   CheckCircle2,
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { submitAppointmentBooking } from "../lib/api";
+import {
+  getPublicLocations,
+  getPublicServices,
+  getPublicDoctors,
+  submitAppointmentBooking,
+} from "../lib/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const NO_PREFERENCE = "No Preference";
 
+interface OutletOption {
+  id: string;
+  name: string;
+  address?: string | null;
+}
+
 const inputClass =
   "w-full rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#2596be] focus:bg-white focus:ring-4 focus:ring-[#2596be]/10";
-
-const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG;
 
 export default function BookingPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingOutletData, setLoadingOutletData] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [outlets, setOutlets] = useState<OutletOption[]>([]);
   const [services, setServices] = useState<string[]>([]);
   const [dentists, setDentists] = useState<string[]>([]);
 
@@ -35,46 +47,76 @@ export default function BookingPage() {
     name: "",
     email: "",
     phone: "",
+    locationId: "",
     service: "",
-    dentist: "",
+    dentist: NO_PREFERENCE,
     date: "",
     time: "",
     notes: "",
   });
 
+  const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG?.trim() || "tpp";
+
+  // 1. Fetch Outlets for the Clinic on Mount
   useEffect(() => {
     let isMounted = true;
 
-    async function loadData() {
+    async function loadOutlets() {
       try {
-        const posUrl = (process.env.NEXT_PUBLIC_POS_API_URL || "http://localhost:3000").replace(/\/$/, "");
-        const tenantSlug = TENANT_SLUG?.trim();
-        const query = tenantSlug ? `?tenantSlug=${encodeURIComponent(tenantSlug)}` : "";
+        const res = await getPublicLocations(tenantSlug);
+        const locList: OutletOption[] = res?.data?.data?.locations || [];
+
+        if (isMounted && locList.length > 0) {
+          setOutlets(locList);
+          setForm((prev) => ({
+            ...prev,
+            locationId: prev.locationId || locList[0].id,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load clinic outlets:", err);
+      }
+    }
+
+    loadOutlets();
+    return () => {
+      isMounted = false;
+    };
+  }, [tenantSlug]);
+
+  // 2. Fetch Services & Doctors specific to the selected Outlet
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOutletServicesAndDoctors() {
+      if (!form.locationId) return;
+
+      try {
+        setLoadingOutletData(true);
 
         const [servicesRes, doctorsRes] = await Promise.allSettled([
-          fetch(`${posUrl}/api/public/treatments${query}`, { cache: "no-store" }).then((r) => r.json()),
-          fetch(`${posUrl}/api/public/doctors${query}`, { cache: "no-store" }).then((r) => r.json()),
+          getPublicServices({ locationId: form.locationId, tenantSlug }),
+          getPublicDoctors({ locationId: form.locationId, tenantSlug }),
         ]);
 
         let loadedServices: string[] = [];
-        if (servicesRes.status === "fulfilled" && servicesRes.value?.success) {
-          const rawTreatments = servicesRes.value.data?.treatments || [];
-          if (Array.isArray(rawTreatments) && rawTreatments.length > 0) {
-            const names = rawTreatments.map((t: any) => t.name || t.title || t).filter(Boolean);
-            if (names.length > 0) {
-              loadedServices = names;
-            }
+        if (servicesRes.status === "fulfilled" && servicesRes.value?.data?.success) {
+          const rawTreatments = servicesRes.value.data.data?.treatments || [];
+          if (Array.isArray(rawTreatments)) {
+            loadedServices = rawTreatments
+              .map((t: any) => t.name || t.title || t)
+              .filter(Boolean);
           }
         }
 
         let loadedDentists: string[] = [NO_PREFERENCE];
-        if (doctorsRes.status === "fulfilled" && doctorsRes.value?.success) {
-          const rawDoctors = doctorsRes.value.data?.doctors || [];
-          if (Array.isArray(rawDoctors) && rawDoctors.length > 0) {
-            const names = rawDoctors.map((d: any) => d.name || d.fullName || d).filter(Boolean);
-            if (names.length > 0) {
-              loadedDentists = [NO_PREFERENCE, ...names];
-            }
+        if (doctorsRes.status === "fulfilled" && doctorsRes.value?.data?.success) {
+          const rawDoctors = doctorsRes.value.data.data?.doctors || [];
+          if (Array.isArray(rawDoctors)) {
+            const docNames = rawDoctors
+              .map((d: any) => d.name || d.fullName || d)
+              .filter(Boolean);
+            loadedDentists = [NO_PREFERENCE, ...docNames];
           }
         }
 
@@ -83,23 +125,30 @@ export default function BookingPage() {
           setDentists(loadedDentists);
           setForm((prev) => ({
             ...prev,
-            service: prev.service || loadedServices[0] || "",
-            dentist: prev.dentist || loadedDentists[0] || "",
+            service: loadedServices.includes(prev.service)
+              ? prev.service
+              : loadedServices[0] || "",
+            dentist: loadedDentists.includes(prev.dentist)
+              ? prev.dentist
+              : loadedDentists[0] || NO_PREFERENCE,
           }));
         }
-      } catch (e) {
+      } catch (err) {
+        console.error("Failed to load services/doctors for outlet:", err);
         if (isMounted) {
           setServices([]);
           setDentists([NO_PREFERENCE]);
         }
+      } finally {
+        if (isMounted) setLoadingOutletData(false);
       }
     }
 
-    loadData();
+    loadOutletServicesAndDoctors();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [form.locationId, tenantSlug]);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -111,23 +160,24 @@ export default function BookingPage() {
     setError(null);
 
     try {
-      const selectedDentist = form.dentist === NO_PREFERENCE || form.dentist === "None" ? undefined : form.dentist;
-
-      if (!TENANT_SLUG?.trim()) {
-        setError("Tenant is not configured. Please set NEXT_PUBLIC_TENANT_SLUG.");
-        return;
-      }
+      const selectedDentist =
+        form.dentist === NO_PREFERENCE || form.dentist === "None"
+          ? undefined
+          : form.dentist;
 
       const res = await submitAppointmentBooking({
-        fullName: form.name,
-        phone: form.phone,
-        email: form.email || undefined,
+        fullName: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim() || undefined,
         preferredDate: form.date,
         preferredTime: form.time,
-        serviceName: form.service,
+        serviceName: form.service || undefined,
         dentistName: selectedDentist,
-        tenantSlug: TENANT_SLUG.trim(),
-        notes: form.notes ? `[Dentist: ${selectedDentist || "No Preference"}] ${form.notes}` : `[Dentist: ${selectedDentist || "No Preference"}]`,
+        tenantSlug,
+        locationId: form.locationId || undefined,
+        notes: form.notes
+          ? `[Dentist: ${selectedDentist || "No Preference"}] ${form.notes}`
+          : `[Dentist: ${selectedDentist || "No Preference"}]`,
         source: "online_booking",
       });
 
@@ -139,32 +189,49 @@ export default function BookingPage() {
     } catch (err: any) {
       setError(
         err?.response?.data?.error ||
-          "Could not connect to server. Please try again later."
+          "Could not connect to server. Please make sure DMS is running."
       );
     } finally {
       setLoading(false);
     }
   }
 
+  const selectedOutlet = outlets.find((o) => o.id === form.locationId);
+
   return (
     <main className="min-h-screen bg-white font-sans text-slate-700">
       <Header />
 
-      <section className="pt-36 pb-20 max-w-3xl mx-auto px-6 lg:px-8">
-        {/* Header Section (Matched to other pages theme) */}
-        <div className="text-center space-y-3">
-          <div className="flex justify-center">
-
+      {/* Styled Header Title Matching Locations/Services Page */}
+      <div className="relative bg-[#eaf4f6]">
+        <div className="pt-50 pb-25">
+          <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+              Let's Get Your Visit Scheduled
+            </h1>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">
+              Select your preferred clinic outlet, service, and time, and our staff will confirm your slot right away.
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#4fa1b0]">
-            Let's Get Your Visit Scheduled
-          </h1>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">
-            Select a service, pick your preferred time, and our staff will confirm your slot right away.
-          </p>
         </div>
 
-        {/* Form Outer Wrapper */}
+        {/* Enhanced Curvier Top Section Wave Divider */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden pointer-events-none z-0">
+          <svg
+            viewBox="0 0 1440 120"
+            className="w-full h-[60px] md:h-[90px]"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
+              fill="#ffffff"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <section className="pb-20 max-w-3xl mx-auto px-6 lg:px-8">
         <div className="mt-10">
           {submitted ? (
             <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white p-10 text-center shadow-xl shadow-slate-200/50 sm:p-14 space-y-6">
@@ -180,7 +247,8 @@ export default function BookingPage() {
                   Thanks, <span className="font-semibold text-slate-900">{form.name.split(" ")[0] || "there"}</span>. We'll reach
                   out at <span className="font-medium text-slate-900">{form.phone || form.email}</span> to confirm your{" "}
                   {form.date ? `${form.date} ` : ""}appointment for{" "}
-                  <span className="font-medium text-[#2596be]">{form.service}</span>.
+                  <span className="font-medium text-[#2596be]">{form.service || "your visit"}</span>
+                  {selectedOutlet ? ` at our ${selectedOutlet.name} branch` : ""}.
                 </p>
               </div>
 
@@ -208,6 +276,30 @@ export default function BookingPage() {
             >
               <div className="grid gap-6 sm:grid-cols-2">
                 
+                {/* Outlet / Location Select */}
+                <label className="block sm:col-span-2 space-y-1.5">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                    <MapPin className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    Select Clinic Outlet
+                  </span>
+                  <select
+                    required
+                    value={form.locationId}
+                    onChange={(e) => update("locationId", e.target.value)}
+                    className={inputClass}
+                  >
+                    {outlets.length === 0 ? (
+                      <option value="">Loading clinic outlets...</option>
+                    ) : (
+                      outlets.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.name} {o.address ? `(${o.address})` : ""}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </label>
+
                 {/* Full Name */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
@@ -265,13 +357,18 @@ export default function BookingPage() {
                   <select
                     value={form.service}
                     onChange={(e) => update("service", e.target.value)}
+                    disabled={loadingOutletData}
                     className={inputClass}
                   >
-                    {services.length === 0 ? (
-                      <option value="">Select Service</option>
+                    {loadingOutletData ? (
+                      <option value="">Loading outlet services...</option>
+                    ) : services.length === 0 ? (
+                      <option value="">No services available for this outlet</option>
                     ) : (
                       services.map((s, idx) => (
-                        <option key={`service-${s}-${idx}`} value={s}>{s}</option>
+                        <option key={`service-${s}-${idx}`} value={s}>
+                          {s}
+                        </option>
                       ))
                     )}
                   </select>
@@ -286,11 +383,18 @@ export default function BookingPage() {
                   <select
                     value={form.dentist}
                     onChange={(e) => update("dentist", e.target.value)}
+                    disabled={loadingOutletData}
                     className={inputClass}
                   >
-                    {dentists.map((d, idx) => (
-                      <option key={`dentist-${d}-${idx}`} value={d}>{d}</option>
-                    ))}
+                    {loadingOutletData ? (
+                      <option value="">Loading doctors...</option>
+                    ) : (
+                      dentists.map((d, idx) => (
+                        <option key={`dentist-${d}-${idx}`} value={d}>
+                          {d}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </label>
 
@@ -349,8 +453,8 @@ export default function BookingPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
-                className="mt-8 w-full h-12 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 flex items-center justify-center disabled:opacity-60"
+                disabled={loading || loadingOutletData}
+                className="mt-8 w-full h-12 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 flex items-center justify-center disabled:opacity-60 cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

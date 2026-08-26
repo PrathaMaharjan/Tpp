@@ -1,17 +1,54 @@
 import axios from "axios";
 
-const POS_URL = process.env.NEXT_PUBLIC_POS_API_URL || "http://localhost:3000";
+const POS_URL = (process.env.NEXT_PUBLIC_POS_API_URL || "http://localhost:3000").replace(/\/$/, "");
+const DEFAULT_TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG?.trim() || "tpp";
 
 export const posApi = axios.create({
-    baseURL: POS_URL.trim() ? POS_URL : "http://localhost:3000",
+  baseURL: POS_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Helper functions for Public Booking
-export const getPublicDoctors = (locationId?: string) =>
-    posApi.get("/api/public/doctors", { params: { locationId } });
+// 1. Fetch Outlets / Locations for a Tenant
+export const getPublicLocations = (tenantSlug: string = DEFAULT_TENANT_SLUG) =>
+  posApi.get("/api/public/locations", {
+    params: { tenantSlug },
+  });
 
-export const getPublicServices = (locationId?: string) =>
-    posApi.get("/api/public/treatments", { params: { locationId } });
+// 2. Fetch Doctors (filtered by Outlet locationId and/or tenantSlug)
+export const getPublicDoctors = (params?: { locationId?: string; tenantSlug?: string }) =>
+  posApi.get("/api/public/doctors", {
+    params: {
+      tenantSlug: params?.tenantSlug || DEFAULT_TENANT_SLUG,
+      locationId: params?.locationId,
+    },
+  });
 
-export const submitAppointmentBooking = (bookingPayload: any) =>
-    posApi.post("/api/public/booking", bookingPayload);
+// 3. Fetch Services / Treatments (filtered by Outlet locationId and/or tenantSlug)
+export const getPublicServices = (params?: { locationId?: string; tenantSlug?: string }) =>
+  posApi.get("/api/public/treatments", {
+    params: {
+      tenantSlug: params?.tenantSlug || DEFAULT_TENANT_SLUG,
+      locationId: params?.locationId,
+    },
+  });
+
+// 4. Submit Online Booking
+export const submitAppointmentBooking = (bookingPayload: {
+  fullName: string;
+  phone: string;
+  email?: string;
+  preferredDate: string;
+  preferredTime: string;
+  serviceName?: string;
+  dentistName?: string;
+  tenantSlug?: string;
+  locationId?: string;
+  notes?: string;
+  source?: string;
+}) =>
+  posApi.post("/api/public/booking", {
+    tenantSlug: DEFAULT_TENANT_SLUG,
+    ...bookingPayload,
+  });
