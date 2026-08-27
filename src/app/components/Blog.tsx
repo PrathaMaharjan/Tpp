@@ -44,21 +44,12 @@ const BLOG_POSTS: BlogPost[] = [
 
 export default function BlogSection() {
   return (
-    <section className="py-24 bg-[#f0f8fb] relative overflow-hidden font-sans">
-      
-      {/* Soft Opaque Background Accent Circles (Fully Contained) */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-12 left-12 w-56 h-56 bg-[#e1f1f6] rounded-full" />
-        <div className="absolute top-24 right-16 w-40 h-40 bg-[#e8f4f8] rounded-full" />
-        <div className="absolute bottom-12 left-20 w-44 h-44 bg-[#e8f4f8] rounded-full" />
-        <div className="absolute bottom-8 right-12 w-64 h-64 bg-[#e1f1f6] rounded-full" />
-      </div>
-
-      <div className="max-w-[1240px] mx-auto px-6 relative z-10 space-y-16">
+    <section className="py-24 bg-[#e0f2fe] font-sans">
+      <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
-        {/* Sleek Header */}
+        {/* Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
             Insights &amp; Articles
           </span>
           <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
@@ -67,7 +58,7 @@ export default function BlogSection() {
           <div className="w-12 h-0.5 bg-[#4fa1b0] mx-auto rounded-full mt-2" />
         </div>
 
-        {/* 3-Column Sleek Layout */}
+        {/* 3-Column Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {BLOG_POSTS.map((post) => (
             <article
@@ -86,7 +77,7 @@ export default function BlogSection() {
 
                 {/* Content */}
                 <div className="p-7 space-y-3">
-                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#4fa1b0] transition-colors">
+                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#2596be] transition-colors">
                     <Link href={post.slug}>{post.title}</Link>
                   </h3>
 
@@ -100,7 +91,7 @@ export default function BlogSection() {
               <div className="px-7 pb-7 pt-0">
                 <Link
                   href={post.slug}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4fa1b0] group-hover:text-slate-900 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2596be] group-hover:text-slate-900 transition-colors"
                 >
                   Read Article
                   <ArrowUpRight size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

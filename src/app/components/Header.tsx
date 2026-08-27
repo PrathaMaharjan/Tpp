@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X, Phone, Calendar } from 'lucide-react';
@@ -11,6 +12,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const isHomePage = pathname === '/';
+  const isTransparent = isHomePage && !isScrolled;
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -70,14 +72,24 @@ export default function Header() {
       )}
 
       <div className="relative w-full max-w-[1400px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center shrink-0 z-10">
-          <div className="relative w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 border border-slate-200 hover:scale-105 transition-transform duration-200">
-            <span className="text-[10px] text-slate-600 font-bold">LOGO</span>
-          </div>
-        </Link>
+   <Link href="/" className="flex items-center shrink-0 z-10">
+  <div className="relative w-16 h-16 flex items-center justify-center rounded-full overflow-hidden hover:scale-105 transition-transform duration-300">
+    <Image
+      src="/logo.png"
+      alt="Texas Primary & Pediatric Care logo"
+      fill
+      className="object-contain"
+      priority
+    />
+  </div>
+</Link>
 
         {/* Dynamic Navigation Links */}
-        <nav className="hidden lg:flex items-center justify-center absolute left-1/2 -translate-x-1/2 gap-6 xl:gap-8 text-sm font-medium text-slate-700">
+        <nav
+          className={`hidden lg:flex items-center justify-center absolute left-1/2 -translate-x-1/2 gap-6 xl:gap-8 text-sm font-medium transition-colors duration-300 ${
+            isTransparent ? 'text-white' : 'text-slate-700'
+          }`}
+        >
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -87,6 +99,8 @@ export default function Header() {
                 className={`transition-all duration-200 ${
                   isActive
                     ? 'text-[#2596be] font-semibold underline underline-offset-8 decoration-[#2596be] decoration-2'
+                    : isTransparent
+                    ? 'hover:text-[#67bed9]'
                     : 'hover:text-[#2596be]'
                 }`}
               >
@@ -99,7 +113,11 @@ export default function Header() {
         <div className="flex items-center gap-3 shrink-0 z-10">
           <Link
             href="tel:4693726188"
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 bg-white/80 text-slate-800 hover:border-[#2596be] hover:text-[#2596be] transition-all duration-200"
+            className={`hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-300 ${
+              isTransparent
+                ? 'border-white/40 bg-white/15 text-white backdrop-blur-sm hover:border-white hover:bg-white/25'
+                : 'border-slate-200 bg-white/80 text-slate-800 hover:border-[#2596be] hover:text-[#2596be]'
+            }`}
           >
             <Phone size={14} />
             <span>Call Us</span>

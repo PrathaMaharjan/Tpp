@@ -6,6 +6,7 @@ import ServicesSection from './components/ServicesSection';
 import Map from './components/Map';
 import Footer from './components/Footer';
 import Blog from './components/Blog';
+import GoogleReviewCarousel from './components/GoogleReviewCarousel';
 
 export default function Home() {
   return (
@@ -14,7 +15,9 @@ export default function Home() {
       <Hero />
       <AboutSection />
       <DoctorsCarousel />
+      
       <ServicesSection />
+      <GoogleReviewCarousel  />
       <Blog/>
       <Map/>
       <Footer />
