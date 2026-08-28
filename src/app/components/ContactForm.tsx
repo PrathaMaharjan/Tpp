@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Building2,
   User,
@@ -11,6 +11,13 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { getPublicLocations, getPublicDoctors } from "../lib/api";
+
+interface OutletOption {
+  id: string;
+  name: string;
+  address?: string | null;
+}
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10";
@@ -30,8 +37,68 @@ export default function ContactForm() {
     consent2: false,
   });
 
+  const [outlets, setOutlets] = useState<OutletOption[]>([]);
+  const [doctors, setDoctors] = useState<string[]>([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG?.trim() || "tpp";
+
+  // 1. Fetch Outlets and All Doctors for the Organization on Mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialData() {
+      try {
+        setLoadingDoctors(true);
+        const [locationsRes, doctorsRes] = await Promise.allSettled([
+          getPublicLocations(tenantSlug),
+          getPublicDoctors({ tenantSlug }),
+        ]);
+
+        if (isMounted) {
+          if (locationsRes.status === "fulfilled") {
+            const locList: OutletOption[] =
+              locationsRes.value?.data?.data?.locations ||
+              locationsRes.value?.data?.locations ||
+              [];
+            if (locList.length > 0) {
+              setOutlets(locList);
+              setForm((prev) => ({
+                ...prev,
+                location: prev.location || locList[0].id,
+              }));
+            }
+          }
+
+          if (doctorsRes.status === "fulfilled") {
+            const rawDoctors =
+              doctorsRes.value?.data?.data?.doctors ||
+              doctorsRes.value?.data?.doctors ||
+              [];
+            if (Array.isArray(rawDoctors)) {
+              const docNames = rawDoctors
+                .map((d: any) =>
+                  typeof d === "string" ? d : d.name || d.fullName || d.title || ""
+                )
+                .filter(Boolean);
+              setDoctors(docNames);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load clinic outlets and doctors:", err);
+      } finally {
+        if (isMounted) setLoadingDoctors(false);
+      }
+    }
+
+    loadInitialData();
+    return () => {
+      isMounted = false;
+    };
+  }, [tenantSlug]);
 
   function update<K extends keyof typeof form>(key: K, value: any) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -86,6 +153,7 @@ export default function ContactForm() {
             
             {/* Left Column: Selects & Personal Info */}
             <div className="space-y-4">
+              {/* Dynamic Locations / Outlets Dropdown */}
               <div>
                 <label className={labelClass}>
                   <Building2 size={13} className="text-[#2596be]" /> LOCATION
@@ -96,12 +164,19 @@ export default function ContactForm() {
                   className={inputClass}
                   required
                 >
-                  <option value="">- Select One -</option>
-                  <option value="irving">Irving Location</option>
-                  <option value="celina">Celina Location</option>
+                  {outlets.length === 0 ? (
+                    <option value="">Loading clinic outlets...</option>
+                  ) : (
+                    outlets.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name} {o.address ? `(${o.address})` : ""}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
+              {/* Dynamic Doctors Dropdown */}
               <div>
                 <label className={labelClass}>
                   <User size={13} className="text-[#2596be]" /> DOCTOR
@@ -109,11 +184,23 @@ export default function ContactForm() {
                 <select
                   value={form.doctor}
                   onChange={(e) => update("doctor", e.target.value)}
+                  disabled={loadingDoctors}
                   className={inputClass}
                 >
-                  <option value="">- Select One -</option>
-                  <option value="primary">Primary Care Provider</option>
-                  <option value="pediatric">Pediatric Care Provider</option>
+                  {loadingDoctors ? (
+                    <option value="">Loading doctors...</option>
+                  ) : doctors.length === 0 ? (
+                    <option value="">No doctors available for this outlet</option>
+                  ) : (
+                    <>
+                      <option value="">- Select Doctor -</option>
+                      {doctors.map((doc, idx) => (
+                        <option key={`doc-${doc}-${idx}`} value={doc}>
+                          {doc}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 

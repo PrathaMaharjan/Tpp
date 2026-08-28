@@ -1,28 +1,22 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { Calendar, ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { getPublicServices } from "../lib/api";
+import { getPublicServices, slugify } from "../lib/api";
 
 interface ServiceItem {
   id: string;
   name: string;
   category: string;
   description?: string | null;
-  priceCents?: number | null;
-  durationMinutes?: number | null;
   imageUrl?: string | null;
 }
 
 const FALLBACK_TREATMENT_IMG =
   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600";
-
-function formatPrice(cents?: number | null) {
-  if (!cents || cents <= 0) return "";
-  return `NPR ${(cents / 100).toLocaleString()}`;
-}
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -138,51 +132,53 @@ export default function ServicesPage() {
             No treatments found for this category.
           </div>
         ) : (
-          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayedServices.map((service) => {
               const photo = service.imageUrl || FALLBACK_TREATMENT_IMG;
-              const formattedPrice = formatPrice(service.priceCents);
 
               return (
-                <div key={service.id} className="group flex flex-col justify-between">
+                <Link
+                  key={service.id}
+                  href={`/services/${slugify(service.name) || service.id}`}
+                  className="group flex flex-col justify-between rounded-2xl bg-white border border-slate-200/90 p-6 hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
+                >
                   <div>
                     {/* Image with Fallback */}
-                    <div className="w-full aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 mb-5 border border-slate-100 shadow-sm">
+                    <div className="w-full aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 mb-5 border border-slate-100 shadow-sm relative">
                       <img
                         src={photo}
                         alt={service.name}
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = FALLBACK_TREATMENT_IMG;
                         }}
                       />
                     </div>
 
-                    {/* Content */}
+                                       {/* Content */}
                     <div className="space-y-2">
-                      <span className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#4fa1b0]">
+                      <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#4fa1b0]">
                         {service.category}
                       </span>
-                      <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug">
+                      <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug group-hover:text-[#2596be] transition-colors">
                         {service.name}
                       </h3>
-                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
-                        {service.description || "Comprehensive clinical care tailored to your oral health and smile."}
-                      </p>
+                      <div
+                        className="text-sm text-slate-600 leading-relaxed line-clamp-2 [&_p]:inline [&_strong]:font-semibold [&_h2]:hidden [&_h3]:hidden"
+                        dangerouslySetInnerHTML={{
+                          __html: service.description || "Comprehensive clinical care tailored to your health and smile.",
+                        }}
+                      />
                     </div>
+
                   </div>
 
-                  {/* Pricing / Duration */}
-                  <div className="flex items-center gap-4 pt-3 text-xs font-medium text-slate-500 border-t border-slate-100 mt-4">
-                    {formattedPrice && <span>{formattedPrice}</span>}
-                    {formattedPrice && service.durationMinutes && (
-                      <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    )}
-                    {service.durationMinutes ? (
-                      <span>{service.durationMinutes} min</span>
-                    ) : null}
+                  {/* View Details Link Footer */}
+                  <div className="flex items-center justify-between pt-4 text-xs font-semibold text-[#4fa1b0] group-hover:text-[#2596be] border-t border-slate-100 mt-5 transition-colors">
+                    <span>View Treatment Details</span>
+                    <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -200,13 +196,13 @@ export default function ServicesPage() {
             plan for your needs.
           </p>
           
-            <a 
-  href="/booking"
-  className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
->
-  <Calendar size={16} />
-  <span>Book Appointment</span>
-</a>
+          <Link 
+            href="/booking"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
+          >
+            <Calendar size={16} />
+            <span>Book Appointment</span>
+          </Link>
         </div>
       </section>
 

@@ -52,3 +52,15 @@ export const submitAppointmentBooking = (bookingPayload: {
     tenantSlug: DEFAULT_TENANT_SLUG,
     ...bookingPayload,
   });
+
+// 5. Utility helper to create SEO-friendly clean URL slugs from names
+export function slugify(text: string): string {
+  if (!text) return "";
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

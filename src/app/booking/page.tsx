@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -33,7 +34,11 @@ interface OutletOption {
 const inputClass =
   "w-full rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#2596be] focus:bg-white focus:ring-4 focus:ring-[#2596be]/10";
 
-export default function BookingPage() {
+function BookingForm() {
+  const searchParams = useSearchParams();
+  const paramDentist = searchParams.get("dentist") || searchParams.get("provider") || "";
+  const paramService = searchParams.get("service") || "";
+
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingOutletData, setLoadingOutletData] = useState(false);
@@ -48,8 +53,8 @@ export default function BookingPage() {
     email: "",
     phone: "",
     locationId: "",
-    service: "",
-    dentist: NO_PREFERENCE,
+    service: paramService,
+    dentist: paramDentist || NO_PREFERENCE,
     date: "",
     time: "",
     notes: "",
@@ -111,27 +116,61 @@ export default function BookingPage() {
 
         let loadedDentists: string[] = [NO_PREFERENCE];
         if (doctorsRes.status === "fulfilled" && doctorsRes.value?.data?.success) {
-          const rawDoctors = doctorsRes.value.data.data?.doctors || [];
+          const rawDoctors = doctorsRes.value.data.data?.doctors || doctorsRes.value.data?.doctors || [];
           if (Array.isArray(rawDoctors)) {
             const docNames = rawDoctors
-              .map((d: any) => d.name || d.fullName || d)
+              .map((d: any) => (typeof d === "string" ? d : d.name || d.fullName || d.title || ""))
               .filter(Boolean);
-            loadedDentists = [NO_PREFERENCE, ...docNames];
+            if (docNames.length > 0) {
+              loadedDentists = [NO_PREFERENCE, ...docNames];
+            }
+          }
+        }
+
+        // If no doctors are tied specifically to this outlet, load all doctors for the organization
+        if (loadedDentists.length <= 1) {
+          try {
+            const allDocRes = await getPublicDoctors({ tenantSlug });
+            const allRaw = allDocRes?.data?.data?.doctors || allDocRes?.data?.doctors || [];
+            if (Array.isArray(allRaw)) {
+              const allNames = allRaw
+                .map((d: any) => (typeof d === "string" ? d : d.name || d.fullName || d.title || ""))
+                .filter(Boolean);
+              if (allNames.length > 0) {
+                loadedDentists = [NO_PREFERENCE, ...allNames];
+              }
+            }
+          } catch (e) {
+            console.error("Fallback load all doctors error in booking:", e);
           }
         }
 
         if (isMounted) {
           setServices(loadedServices);
           setDentists(loadedDentists);
-          setForm((prev) => ({
-            ...prev,
-            service: loadedServices.includes(prev.service)
-              ? prev.service
-              : loadedServices[0] || "",
-            dentist: loadedDentists.includes(prev.dentist)
-              ? prev.dentist
-              : loadedDentists[0] || NO_PREFERENCE,
-          }));
+          setForm((prev) => {
+            let selectedService = prev.service;
+            if (!loadedServices.includes(selectedService)) {
+              const matchedSvc = loadedServices.find(
+                (s) => paramService && s.toLowerCase().includes(paramService.toLowerCase())
+              );
+              selectedService = matchedSvc || loadedServices[0] || "";
+            }
+
+            let selectedDentist = prev.dentist;
+            if (!loadedDentists.includes(selectedDentist)) {
+              const matchedDoc = loadedDentists.find(
+                (d) => paramDentist && d.toLowerCase().includes(paramDentist.toLowerCase())
+              );
+              selectedDentist = matchedDoc || loadedDentists[0] || NO_PREFERENCE;
+            }
+
+            return {
+              ...prev,
+              service: selectedService,
+              dentist: selectedDentist,
+            };
+          });
         }
       } catch (err) {
         console.error("Failed to load services/doctors for outlet:", err);
@@ -472,5 +511,19 @@ export default function BookingPage() {
 
       <Footer />
     </main>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white font-sans text-slate-700 flex items-center justify-center">
+          <div className="text-slate-400 text-sm">Loading appointment form...</div>
+        </main>
+      }
+    >
+      <BookingForm />
+    </Suspense>
   );
 }

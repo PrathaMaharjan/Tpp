@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Stethoscope } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import { getPublicDoctors } from "../lib/api";
+import Link from "next/link";
+import { getPublicDoctors, slugify } from "../lib/api";
 
 interface Doctor {
   id: string;
@@ -14,7 +15,7 @@ interface Doctor {
 }
 
 const FALLBACK_AVATAR =
-  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400";
+  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800";
 
 export default function DoctorsCarousel({ locationId }: { locationId?: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -82,7 +83,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
 
     setIsPaused(true);
 
-    const cardWidth = 344;
+    const cardWidth = 336;
     const scrollAmount = direction === "left" ? -cardWidth : cardWidth;
 
     container.scrollBy({
@@ -96,9 +97,9 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
   };
 
   return (
-    <section className="py-24 bg-white overflow-hidden relative font-sans">
-      <div className="relative z-10 max-w-[1400px] mx-auto pb-12">
-        
+    <section className="py-24 bg-slate-50 overflow-hidden relative font-sans">
+      <div className="relative z-10 max-w-[1400px] mx-auto pb-4">
+
         {/* Header */}
         <div className="px-6 text-center space-y-3 mb-16 max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
@@ -112,7 +113,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
 
         {/* Carousel Outer Wrapper */}
         <div className="relative px-4 md:px-12">
-          
+
           {/* Left Arrow Button */}
           <button
             onClick={() => handleScroll("left")}
@@ -150,35 +151,40 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
             ) : (
               displayList.map((doc, idx) => {
                 const photo = doc.imageUrl || doc.photoUrl || FALLBACK_AVATAR;
-                const specialization = doc.specialization || doc.qualification || "General Dentistry";
+                const specialization = doc.specialization || doc.qualification || "Primary Care & Pediatrics";
 
                 return (
-                  <div
+                  <Link
+                    href={`/providers/${slugify(doc.name) || doc.id}`}
                     key={`${doc.id}-${idx}`}
-                    className="w-[300px] md:w-[320px] bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center p-8 shrink-0 text-center space-y-5 transform hover:-translate-y-1"
+                    className="group relative w-[280px] md:w-[300px] h-[400px] shrink-0 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block cursor-pointer"
                   >
-                    {/* Circular Avatar with Fallback */}
-                    <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm bg-slate-50 flex items-center justify-center">
-                      <img
-                        src={photo}
-                        alt={doc.name}
-                        className="w-full h-full object-cover object-top"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
-                        }}
-                      />
-                    </div>
+                    {/* Full-bleed image */}
+                    <img
+                      src={photo}
+                      alt={doc.name}
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+                      }}
+                    />
 
-                    {/* Name & Title */}
-                    <div className="space-y-1.5 min-h-[72px] flex flex-col justify-center">
-                      <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+
+                    {/* Accent line that grows on hover */}
+                    <div className="absolute bottom-[76px] left-6 h-0.5 w-8 bg-[#4fa1b0] rounded-full transition-all duration-500 group-hover:w-14" />
+
+                    {/* Name & specialization */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 space-y-1">
+                      <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm group-hover:text-[#67bed9] transition-colors">
                         {doc.name}
                       </h3>
-                      <p className="text-slate-500 text-xs leading-relaxed max-w-[240px] mx-auto font-normal">
+                      <p className="text-white/75 text-xs leading-relaxed font-normal">
                         {specialization}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })
             )}
@@ -186,22 +192,6 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
 
         </div>
 
-      </div>
-
-      {/* SVG Background Wave */}
-      <div className="absolute bottom-0 left-0 w-full h-[480px] pointer-events-none z-0">
-        <svg
-          className="absolute bottom-0 left-0 w-full h-full text-[#4fa1b0]"
-          viewBox="0 0 1440 480"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,160 C320,40 720,240 1440,80 V480 H0 Z"
-            fill="currentColor"
-          />
-        </svg>
       </div>
     </section>
   );

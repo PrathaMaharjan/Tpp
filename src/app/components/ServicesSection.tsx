@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { 
   Activity, 
   Stethoscope, 
-  ArrowUpRight 
+  ArrowUpRight,
+  ArrowRight 
 } from "lucide-react";
-import { getPublicServices } from "../lib/api";
+import { getPublicServices, slugify } from "../lib/api";
 
 interface ServiceItem {
   id: string;
   name: string;
   category: string;
   description?: string | null;
-  priceCents?: number | null;
-  durationMinutes?: number | null;
   imageUrl?: string | null;
 }
 
@@ -60,12 +60,18 @@ export default function ServicesSection({ locationId }: { locationId?: string })
   }, [services]);
 
   // 3. Filter services by active tab
-  const displayedServices = useMemo(() => {
+  const filteredServices = useMemo(() => {
     if (activeCategory === "All") return services;
     return services.filter(
       (s) => s.category?.toLowerCase() === activeCategory.toLowerCase()
     );
   }, [services, activeCategory]);
+
+  // 4. Cap displayed services to 6
+  const displayedServices = useMemo(
+    () => filteredServices.slice(0, 6),
+    [filteredServices]
+  );
 
   return (
     <section className="py-24 bg-slate-50/40 relative overflow-hidden font-sans">
@@ -120,7 +126,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           </div>
         )}
 
-        {/* 3-Column Grid with Real Images from DMS */}
+        {/* 3-Column Grid with Real Images from DMS (capped at 6) */}
         {loading ? (
           <div className="text-center py-16 text-slate-400 text-sm">
             Loading treatments...
@@ -133,9 +139,10 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
             {displayedServices.map((service) => {
               return (
-                <div
+                <Link
                   key={service.id}
-                  className="group bg-white rounded-2xl border border-slate-200/70 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between"
+                  href={`/services/${slugify(service.name) || service.id}`}
+                  className="group bg-white rounded-2xl border border-slate-200/70 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between cursor-pointer"
                 >
                   <div>
                     {/* Full-Bleed Top Image (only if a real image exists) */}
@@ -151,6 +158,9 @@ export default function ServicesSection({ locationId }: { locationId?: string })
 
                     {/* Content */}
                     <div className="p-6 space-y-2">
+                      <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#4fa1b0]">
+                        {service.category}
+                      </span>
                       <h3 className="text-base font-bold text-slate-900 leading-snug group-hover:text-[#2596be] transition-colors">
                         {service.name}
                       </h3>
@@ -161,16 +171,27 @@ export default function ServicesSection({ locationId }: { locationId?: string })
                   </div>
 
                   {/* Action Link Footer */}
-                  <div className="px-6 pb-6 pt-0 flex items-center justify-between text-xs font-semibold text-[#2596be]">
-                    <a href="/booking" className="group-hover:text-slate-900 transition-colors">
-                      Book this treatment
-                    </a>
+                  <div className="px-6 pb-6 pt-0 flex items-center justify-between text-xs font-semibold text-[#2596be] group-hover:text-slate-900 transition-colors">
+                    <span>View Treatment Details</span>
                     <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </div>
 
-                </div>
+                </Link>
               );
             })}
+          </div>
+        )}
+
+        {/* Bottom CTA Link */}
+        {!loading && filteredServices.length > 0 && (
+          <div className="text-center">
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2596be] hover:text-[#4fa1b0] transition-colors group"
+            >
+              <span>Explore More</span>
+              <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         )}
 

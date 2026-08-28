@@ -21,7 +21,7 @@ export default function Header() {
     { name: 'Providers', href: '/providers' },
     { name: 'Insurance', href: '/insurance' },
     { name: 'Services', href: '/services' },
-    { name: 'Patient Portal', href: '/portal' },
+    
   ];
 
   useEffect(() => {

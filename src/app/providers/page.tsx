@@ -5,7 +5,7 @@ import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ArrowRight, Stethoscope } from "lucide-react";
-import { getPublicDoctors } from "../lib/api";
+import { getPublicDoctors, slugify } from "../lib/api";
 
 interface ProviderItem {
   id: string;
@@ -95,17 +95,20 @@ export default function ProvidersPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {providers.map((provider) => {
                 const photo = provider.imageUrl || provider.photoUrl || FALLBACK_DOCTOR_AVATAR;
-                const specialization = provider.specialization || provider.qualification || "General Dentistry";
+                const specialization = provider.specialization || provider.qualification || "Primary Care & Pediatrics";
 
                 return (
                   <div
                     key={provider.id}
-                    className="group relative bg-white border border-slate-200/90 rounded-2xl p-6 text-center flex flex-col items-center justify-between transition-all duration-300 hover:border-[#4fa1b0]/50 hover:shadow-lg overflow-hidden"
+                    className="group relative bg-white border border-slate-200/90 rounded-2xl p-6 text-center flex flex-col items-center justify-between transition-all duration-300 hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1 overflow-hidden"
                   >
                     {/* Subtle Teal Line on Hover */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-[#4fa1b0] transition-colors duration-300" />
 
-                    <div className="flex flex-col items-center space-y-4 w-full pt-2">
+                    <Link
+                      href={`/providers/${slugify(provider.name) || provider.id}`}
+                      className="flex flex-col items-center space-y-4 w-full pt-2 cursor-pointer focus:outline-none"
+                    >
                       {/* Avatar Container with Image Fallback */}
                       <div className="relative w-32 h-32 rounded-full p-1 bg-[#4fa1b0]/10 group-hover:bg-[#4fa1b0]/30 transition-all duration-300">
                         <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
@@ -122,23 +125,30 @@ export default function ProvidersPage() {
 
                       {/* Provider Info */}
                       <div className="space-y-1.5 px-2">
-                        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#4fa1b0] transition-colors">
+                        <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#2596be] transition-colors">
                           {provider.name}
                         </h3>
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                           {specialization}
                         </p>
                       </div>
-                    </div>
+                    </Link>
 
-                    {/* Card Action Link */}
-                    <div className="w-full pt-6 mt-6 border-t border-slate-100">
+                    {/* Card Actions */}
+                    <div className="w-full pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-2">
                       <Link
-                        href="/booking"
-                        className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-[#4fa1b0] hover:text-[#2596be] transition-colors"
+                        href={`/providers/${slugify(provider.name) || provider.id}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#2596be] transition-colors"
                       >
-                        <span>Book with {provider.name.split(" ")[0] || "Doctor"}</span>
-                        <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                        <span>View Profile</span>
+                        <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+
+                      <Link
+                        href={`/booking?dentist=${encodeURIComponent(provider.name)}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#eaf4f6] text-[#2596be] hover:bg-[#2596be] hover:text-white transition-all"
+                      >
+                        <span>Book Visit</span>
                       </Link>
                     </div>
                   </div>
