@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { Calendar, ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { getPublicServices, slugify } from "../lib/api";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface ServiceItem {
   id: string;
@@ -19,6 +26,7 @@ const FALLBACK_TREATMENT_IMG =
   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600";
 
 export default function ServicesPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
@@ -66,17 +74,51 @@ export default function ServicesPage() {
     );
   }, [services, activeCategory]);
 
+  useGSAP(
+    () => {
+      // Header Animation
+      gsap.fromTo(
+        ".services-page-header",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
+      );
+
+      // Services Cards Entrance on separate wrappers
+      if (!loading && displayedServices.length > 0) {
+        gsap.fromTo(
+          ".service-card-wrapper",
+          { y: 30, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.07,
+            ease: "power2.out",
+            clearProps: "all",
+          }
+        );
+      }
+    },
+    { scope: containerRef, dependencies: [loading, activeCategory, displayedServices.length] }
+  );
+
   return (
-    <main className="min-h-screen bg-white font-sans">
+    <main ref={containerRef} className="min-h-screen bg-white font-sans">
       <Header />
 
       {/* Header Section */}
       <div className="relative bg-[#eaf4f6]">
         <div className="pt-50 pb-28">
-          <div className="max-w-3xl mx-auto px-6 space-y-4 text-center">
-            <h1 className="text-3xl pb-10 sm:text-4xl font-bold tracking-tight text-slate-900">
+          <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+              Clinical Specialties
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
               Our Services &amp; Treatments
             </h1>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+              Comprehensive primary and pediatric healthcare services tailored to every stage of life.
+            </p>
           </div>
 
           {/* Category Tabs */}
@@ -91,7 +133,7 @@ export default function ServicesPage() {
                   onClick={() => setActiveCategory(cat)}
                   className={`relative pb-4 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     activeCategory === cat
-                      ? "text-slate-900"
+                      ? "text-slate-900 font-semibold"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
@@ -137,48 +179,57 @@ export default function ServicesPage() {
               const photo = service.imageUrl || FALLBACK_TREATMENT_IMG;
 
               return (
-                <Link
-                  key={service.id}
-                  href={`/services/${slugify(service.name) || service.id}`}
-                  className="group flex flex-col justify-between rounded-2xl bg-white border border-slate-200/90 p-6 hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer"
-                >
-                  <div>
-                    {/* Image with Fallback */}
-                    <div className="w-full aspect-[4/3] overflow-hidden rounded-xl bg-slate-50 mb-5 border border-slate-100 shadow-sm relative">
-                      <img
-                        src={photo}
-                        alt={service.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = FALLBACK_TREATMENT_IMG;
-                        }}
-                      />
+                <div key={service.id} className="service-card-wrapper">
+                  <Link
+                    href={`/services/${slugify(service.name) || service.id}`}
+                    className="group flex flex-col justify-between h-full rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer shadow-xs"
+                  >
+                    <div>
+                      {/* Image with Fallback and Sleek Hover Overlay - Full Width */}
+                      <div className="w-full aspect-[4/3] overflow-hidden bg-slate-50 relative">
+                        <img
+                          src={photo}
+                          alt={service.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = FALLBACK_TREATMENT_IMG;
+                          }}
+                        />
+
+                        {/* Sleek Details Overlay on Hover */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/65 to-transparent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 flex flex-col justify-end">
+                          <span className="text-[0.6rem] font-bold uppercase tracking-wider text-[#67bed9] mb-1">
+                            About Treatment
+                          </span>
+                          <div
+                            className="text-xs text-white/95 leading-relaxed line-clamp-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 [&_*]:!text-white/95 [&_*]:font-normal [&_p]:inline [&_strong]:!font-semibold [&_h2]:hidden [&_h3]:hidden"
+                            dangerouslySetInnerHTML={{
+                              __html: service.description || "Comprehensive clinical care tailored to your health and wellness.",
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6 pb-2 space-y-1.5">
+                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#4fa1b0]">
+                          {service.category}
+                        </span>
+                        <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug group-hover:text-[#2596be] transition-colors">
+                          {service.name}
+                        </h3>
+                      </div>
                     </div>
 
-                                       {/* Content */}
-                    <div className="space-y-2">
-                      <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#4fa1b0]">
-                        {service.category}
-                      </span>
-                      <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug group-hover:text-[#2596be] transition-colors">
-                        {service.name}
-                      </h3>
-                      <div
-                        className="text-sm text-slate-600 leading-relaxed line-clamp-2 [&_p]:inline [&_strong]:font-semibold [&_h2]:hidden [&_h3]:hidden"
-                        dangerouslySetInnerHTML={{
-                          __html: service.description || "Comprehensive clinical care tailored to your health and smile.",
-                        }}
-                      />
+                    {/* View Details Link Footer */}
+                    <div className="px-6 pb-6 pt-0">
+                      <div className="flex items-center justify-between pt-4 text-xs font-semibold text-[#4fa1b0] group-hover:text-[#2596be] border-t border-slate-100 transition-colors">
+                        <span>View Treatment Details</span>
+                        <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+                      </div>
                     </div>
-
-                  </div>
-
-                  {/* View Details Link Footer */}
-                  <div className="flex items-center justify-between pt-4 text-xs font-semibold text-[#4fa1b0] group-hover:text-[#2596be] border-t border-slate-100 mt-5 transition-colors">
-                    <span>View Treatment Details</span>
-                    <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               );
             })}
           </div>
@@ -195,8 +246,8 @@ export default function ServicesPage() {
             Schedule a consultation and our team will help you find the right care
             plan for your needs.
           </p>
-          
-          <Link 
+
+          <Link
             href="/booking"
             className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
           >

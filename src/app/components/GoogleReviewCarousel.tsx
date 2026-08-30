@@ -3,6 +3,13 @@
 import Link from 'next/link';
 import { useRef } from 'react';
 import { Star, ArrowRight, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface Review {
   id: string;
@@ -83,11 +90,12 @@ const staticReviews: Review[] = [
 ];
 
 export default function GoogleReviewsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 400; // Scrolls by approximately one card width
+      const scrollAmount = 400;
       scrollContainerRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth',
@@ -95,21 +103,69 @@ export default function GoogleReviewsSection() {
     }
   };
 
+  useGSAP(
+    () => {
+      // Header Animation
+      gsap.from('.reviews-header', {
+        scrollTrigger: {
+          trigger: '.reviews-header',
+          start: 'top 85%',
+        },
+        y: 35,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+      });
+
+      // Carousel Wrapper
+      gsap.from('.reviews-carousel', {
+        scrollTrigger: {
+          trigger: '.reviews-carousel',
+          start: 'top 85%',
+        },
+        y: 40,
+        opacity: 0,
+        duration: 1,
+        ease: 'power3.out',
+      });
+
+      // Ambient Floating Bubbles
+      gsap.to('.review-bubble-1', {
+        y: -15,
+        x: 10,
+        duration: 4.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+
+      gsap.to('.review-bubble-2', {
+        y: 20,
+        x: -12,
+        duration: 5.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+    },
+    { scope: sectionRef }
+  );
+
   return (
-    <section className="relative py-24 bg-[#67bed9]/10 overflow-hidden font-sans">
-      
+    <section ref={sectionRef} className="relative py-24 bg-[#67bed9]/10 overflow-hidden font-sans">
+
       {/* Fully Contained Opaque Circles Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-[#67bed9]/20 rounded-full border border-[#4fa1b0]/20" />
-        <div className="absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-[#4fa1b0]/15 rounded-full border border-[#2596be]/20" />
+        <div className="review-bubble-1 absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-[#67bed9]/20 rounded-full border border-[#4fa1b0]/20" />
+        <div className="review-bubble-2 absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-[#4fa1b0]/15 rounded-full border border-[#2596be]/20" />
         <div className="absolute top-1/3 right-24 w-16 h-16 bg-[#2596be]/15 rounded-full border border-[#2596be]/20 hidden sm:block" />
         <div className="absolute bottom-1/3 left-20 w-12 h-12 bg-[#67bed9]/30 rounded-full hidden sm:block" />
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-10 space-y-16">
-        
+
         {/* Header */}
-        <div className="text-center space-y-3 w-full mx-auto">
+        <div className="reviews-header text-center space-y-3 w-full mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
             Patient Stories
           </span>
@@ -120,12 +176,12 @@ export default function GoogleReviewsSection() {
         </div>
 
         {/* Carousel Container with Side Navigation Arrows */}
-        <div className="relative group/carousel">
-          
+        <div className="reviews-carousel relative group/carousel">
+
           {/* Left Side Arrow Button */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
             aria-label="Scroll left"
           >
             <ChevronLeft size={24} />
@@ -134,7 +190,7 @@ export default function GoogleReviewsSection() {
           {/* Right Side Arrow Button */}
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
             aria-label="Scroll right"
           >
             <ChevronRight size={24} />

@@ -1,7 +1,15 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface BlogPost {
   id: string;
@@ -43,12 +51,45 @@ const BLOG_POSTS: BlogPost[] = [
 ];
 
 export default function BlogSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 88%',
+          once: true,
+        },
+      });
+
+      tl.fromTo(
+        '.blog-header',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
+      ).fromTo(
+        '.blog-card',
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power2.out',
+          clearProps: 'all',
+        },
+        '-=0.3'
+      );
+    },
+    { scope: sectionRef }
+  );
+
   return (
-    <section className="py-24 bg-[#e0f2fe] font-sans">
+    <section ref={sectionRef} className="py-24 bg-[#e0f2fe] font-sans">
       <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
         {/* Header */}
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="blog-header text-center space-y-3 max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
             Insights &amp; Articles
           </span>
@@ -59,11 +100,11 @@ export default function BlogSection() {
         </div>
 
         {/* 3-Column Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {BLOG_POSTS.map((post) => (
             <article
               key={post.id}
-              className="group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+              className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
             >
               <div>
                 {/* Image Wrapper */}

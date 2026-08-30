@@ -1,6 +1,14 @@
 'use client';
 
+import { useRef } from 'react';
 import { MapPin, Phone } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface Location {
   id: string;
@@ -13,32 +21,67 @@ interface Location {
 
 const LOCATIONS: Location[] = [
   {
-    id: 'bir-hospital',
-    name: 'Bir Hospital Branch',
-    address: 'Kanti Path, Kathmandu 44600, Nepal',
-    phone: '+977 01-4221119',
+    id: 'irving-clinic',
+    name: 'Las Colinas / Irving Clinic',
+    address: '7429 Las Colinas Blvd Ste 101, Irving, TX 75063',
+    phone: '469-442-0202',
     mapEmbedUrl:
-      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.360157973713!2d85.3125219761168!3d27.706132976182103!2m3!1f0!f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb1907b8b40885%3A0x2f60573719e782d4!2sBir%20Hospital!5e0!3m2!1sen!2snp!4v1700000000000!5m2!1sen!2snp',
-    directionsUrl: 'https://maps.google.com/?q=Bir+Hospital+Kathmandu',
+      'https://www.google.com/maps?ll=32.908927,-96.954422&z=16&t=m&hl=en-US&gl=US&mapclient=embed&cid=9990946045983830915&output=embed',
+    directionsUrl:
+      'https://www.google.com/maps/dir/?api=1&destination=7429+Las+Colinas+Blvd+Ste+101,+Irving,+TX+75063',
   },
   {
-    id: 'patan-branch',
-    name: 'Patan Branch',
-    address: 'Lagankhel, Lalitpur 44700, Nepal',
-    phone: '+977 01-5522278',
+    id: 'celina-clinic',
+    name: 'Celina Clinic',
+    address: '3925 S Preston Rd Ste 100, Celina, TX 75009',
+    phone: '469-442-0202',
     mapEmbedUrl:
-      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3533.48624128031!2d85.3218523!3d27.6713331!2m3!1f0!f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19cd303e68e1%3A0x6b44f07a759e663a!2sPatan%20Hospital!5e0!3m2!1sen!2snp!4v1700000000000!5m2!1sen!2snp',
-    directionsUrl: 'https://maps.google.com/?q=Patan+Hospital+Lalitpur',
+      'https://www.google.com/maps?ll=33.270973,-96.785839&z=16&t=m&hl=en-US&gl=US&mapclient=embed&cid=13749425199604245598&output=embed',
+    directionsUrl:
+      'https://www.google.com/maps/dir/?api=1&destination=3925+S+Preston+Rd+Ste+100,+Celina,+TX+75009',
   },
 ];
 
 export default function LocationsSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 88%',
+          once: true,
+        },
+      });
+
+      tl.fromTo(
+        '.locations-header',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
+      ).fromTo(
+        '.location-card',
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power2.out',
+          clearProps: 'all',
+        },
+        '-=0.3'
+      );
+    },
+    { scope: sectionRef }
+  );
+
   return (
-    <section className="py-20 bg-slate-50/50 font-sans">
+    <section ref={sectionRef} className="py-20 bg-slate-50/50 font-sans">
       <div className="max-w-[1200px] mx-auto px-6 space-y-10">
-        
-        {/* Header (Matched exactly to Blog Section) */}
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
+
+        {/* Header */}
+        <div className="locations-header text-center space-y-3 max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
             Our Locations
           </span>
@@ -49,15 +92,14 @@ export default function LocationsSection() {
         </div>
 
         {/* Scaled Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="locations-grid grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {LOCATIONS.map((loc) => (
             <div
               key={loc.id}
-              className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+              className="location-card bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
             >
-              
               {/* Map View Area */}
-              <div className="relative w-full h-[400px] bg-slate-100">
+              <div className="relative w-full h-[360px] bg-slate-100">
                 <iframe
                   title={loc.name}
                   src={loc.mapEmbedUrl}
@@ -81,14 +123,13 @@ export default function LocationsSection() {
                 </div>
 
                 <a
-                  href={`tel:${loc.phone.replace(/\s+/g, '')}`}
+                  href={`tel:${loc.phone.replace(/[^0-9]/g, '')}`}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-[#4fa1b0]/40 text-[#4fa1b0] hover:bg-[#4fa1b0] hover:text-white transition-all text-xs font-semibold shrink-0"
                 >
                   <Phone size={13} />
                   <span>{loc.phone}</span>
                 </a>
               </div>
-
             </div>
           ))}
         </div>

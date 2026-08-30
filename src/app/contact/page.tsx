@@ -122,10 +122,13 @@ export default function ContactPage() {
       {/* Hero Header Section */}
       <div className="relative bg-[#eaf4f6]">
         <div className="pt-50 pb-20">
-          <div className="max-w-3xl mx-auto px-6 space-y-4 text-center">
-            <h1 className="text-3xl pb-10 sm:text-4xl font-bold tracking-tight text-slate-900">
+          <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
               Contact Us
             </h1>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+              Get in touch with our team for questions, appointments, or general inquiries.
+            </p>
           </div>
         </div>
 

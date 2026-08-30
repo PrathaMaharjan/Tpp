@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { getPublicServices, slugify } from "../../lib/api";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface ServiceItem {
   id: string;
@@ -28,6 +35,7 @@ function formatServiceNameFromId(id: string) {
 }
 
 export default function ServiceDetailPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const serviceId = (params?.id as string) || "";
 
@@ -94,6 +102,43 @@ export default function ServiceDetailPage() {
     }
   }, [serviceId]);
 
+  useGSAP(
+    () => {
+      // Header Animation
+      gsap.fromTo(
+        ".service-detail-header",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
+      );
+
+      // Image & Content Animation
+      gsap.fromTo(
+        ".service-detail-body",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: "power2.out", clearProps: "all" }
+      );
+
+      // Bottom CTA Section ScrollTrigger
+      gsap.fromTo(
+        ".service-cta-block",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: ".service-cta-section",
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+    },
+    { scope: containerRef, dependencies: [loading, service?.id] }
+  );
+
   if (loading && !service) {
     return (
       <main className="min-h-screen bg-white font-sans text-slate-900">
@@ -115,15 +160,13 @@ export default function ServiceDetailPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white font-sans text-slate-900">
+    <main ref={containerRef} className="min-h-screen bg-white font-sans text-slate-900">
       <Header />
 
       {/* Hero / Page Header */}
       <section className="relative bg-[#eaf4f6] pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
-
-
-          <div className="space-y-2 max-w-3xl">
+          <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
               <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
                 {currentService.category}
@@ -151,8 +194,8 @@ export default function ServiceDetailPage() {
         </div>
       </section>
 
-      {/* Main Content Area - Image & Description Only */}
-      <section className="py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-8">
+      {/* Main Content Area - Image & Description */}
+      <section className="service-detail-body py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-8">
         {/* Treatment Image */}
         <div className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm relative">
           <img
@@ -165,19 +208,18 @@ export default function ServiceDetailPage() {
           />
         </div>
 
-            {/* Description */}
+        {/* Description */}
         <div className="pt-2">
           <div
             className="text-slate-700 text-base sm:text-lg leading-relaxed space-y-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-bold [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-3 [&_li]:my-1"
             dangerouslySetInnerHTML={{ __html: currentService.description || "" }}
           />
         </div>
-
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="bg-[#eaf4f6] py-20 mt-12">
-        <div className="max-w-2xl mx-auto text-center space-y-4 px-6">
+      <section className="service-cta-section bg-[#eaf4f6] py-20 mt-12">
+        <div className="service-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             Book an Appointment for {currentService.name}
           </h2>

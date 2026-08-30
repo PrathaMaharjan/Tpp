@@ -1,22 +1,48 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Stethoscope } from "lucide-react";
+import {
+  Calendar,
+  Stethoscope,
+  Clock,
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Award,
+} from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { getPublicDoctors, slugify } from "../../lib/api";
+import { getPublicDoctors, getPublicServices, slugify } from "../../lib/api";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
-interface DoctorItem {
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+export interface TreatmentItem {
+  id: string;
+  name: string;
+  category?: string | null;
+  durationMinutes?: number | null;
+  priceCents?: number | null;
+  description?: string | null;
+}
+
+export interface DoctorItem {
   id: string;
   name: string;
   specialization?: string | null;
   qualification?: string | null;
+  yearsOfExperience?: number | null;
   imageUrl?: string | null;
   photoUrl?: string | null;
   bio?: string | null;
   about?: string | null;
+  treatments?: TreatmentItem[];
 }
 
 const FALLBACK_DOCTOR_AVATAR =
@@ -32,31 +58,52 @@ function formatDoctorNameFromId(id: string) {
 }
 
 export default function DoctorDetailPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const doctorId = (params?.id as string) || "";
 
   const [doctor, setDoctor] = useState<DoctorItem | null>(null);
+  const [treatments, setTreatments] = useState<TreatmentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchDoctorDetails() {
+    async function fetchDoctorAndTreatments() {
       try {
         setLoading(true);
-        const res = await getPublicDoctors();
-        const docList: any[] = res?.data?.data?.doctors || [];
+
+        // Fetch doctors and all public treatments in parallel
+        const [doctorsRes, servicesRes] = await Promise.allSettled([
+          getPublicDoctors(),
+          getPublicServices ? getPublicServices() : Promise.resolve(null),
+        ]);
+
+        const docList: any[] =
+          doctorsRes.status === "fulfilled"
+            ? doctorsRes.value?.data?.data?.doctors || doctorsRes.value?.data?.doctors || []
+            : [];
+
+        const allServices: any[] =
+          servicesRes.status === "fulfilled" && servicesRes.value
+            ? servicesRes.value?.data?.data?.treatments ||
+              servicesRes.value?.data?.treatments ||
+              servicesRes.value?.data ||
+              []
+            : [];
+
         const decodedParam = decodeURIComponent(doctorId).toLowerCase().trim();
         const targetSlug = slugify(decodedParam);
 
+        // Match doctor by ID or Slug or Name
         const found = docList.find((d) => {
-          const nameSlug = slugify(d.name);
+          const nameSlug = slugify(d.name || "");
           return (
             String(d.id).toLowerCase() === decodedParam ||
             nameSlug === targetSlug ||
             nameSlug === decodedParam ||
-            d.name.toLowerCase() === decodedParam ||
-            d.name.toLowerCase().replace(/\s+/g, "-") === decodedParam
+            d.name?.toLowerCase() === decodedParam ||
+            d.name?.toLowerCase().replace(/\s+/g, "-") === decodedParam
           );
         });
 
@@ -65,24 +112,64 @@ export default function DoctorDetailPage() {
           found?.specialization || found?.qualification || "Primary Care & Pediatrics";
         const docPhoto = found?.imageUrl || found?.photoUrl || FALLBACK_DOCTOR_AVATAR;
 
+        // Resolve treatments assigned to this doctor
+        let docTreatments: TreatmentItem[] = [];
+
+        // 1. Check if treatments are directly attached to doctor object
+        if (Array.isArray(found?.treatments) && found.treatments.length > 0) {
+          docTreatments = found.treatments.map((t: any) => ({
+            id: String(t.id || t.treatmentId || t.name),
+            name: t.name || t.title || "Treatment Procedure",
+            category: t.category || null,
+            durationMinutes: t.durationMinutes || null,
+            priceCents: t.priceCents || null,
+            description: t.description || null,
+          }));
+        }
+        // 2. Cross-reference from public treatments list if doctorIds match
+        else if (found?.id && Array.isArray(allServices) && allServices.length > 0) {
+          const matchedFromServices = allServices.filter((service: any) => {
+            const hasDoctorId = service.doctorIds?.includes(found.id);
+            const hasDoctorObj = service.doctors?.some(
+              (doc: any) => doc.id === found.id || doc.name === found.name
+            );
+            return hasDoctorId || hasDoctorObj;
+          });
+
+          if (matchedFromServices.length > 0) {
+            docTreatments = matchedFromServices.map((t: any) => ({
+              id: String(t.id || t.name),
+              name: t.name || t.title,
+              category: t.category || null,
+              durationMinutes: t.durationMinutes || null,
+              priceCents: t.priceCents || null,
+              description: t.description || null,
+            }));
+          }
+        }
+
         const doctorData: DoctorItem = {
           id: found?.id || doctorId,
           name: docName,
           specialization: docSpecialization,
           qualification: found?.qualification || null,
+          yearsOfExperience: found?.yearsOfExperience || null,
           imageUrl: docPhoto,
           photoUrl: docPhoto,
+          treatments: docTreatments,
           bio:
             found?.bio ||
+            found?.bioHtml ||
             found?.about ||
             `${docName} is a compassionate healthcare provider at Texas Primary & Pediatric Care, dedicated to delivering patient-centered, high-quality medical care. ${docName} works closely with individuals and families to support long-term wellness, preventive health, and personalized care plans.`,
         };
 
         if (isMounted) {
           setDoctor(doctorData);
+          setTreatments(docTreatments);
         }
       } catch (err) {
-        console.error("Failed to load doctor details:", err);
+        console.error("Failed to load doctor details & treatments:", err);
         if (isMounted) {
           const fallbackName = formatDoctorNameFromId(doctorId);
           setDoctor({
@@ -93,7 +180,9 @@ export default function DoctorDetailPage() {
             imageUrl: FALLBACK_DOCTOR_AVATAR,
             photoUrl: FALLBACK_DOCTOR_AVATAR,
             bio: `${fallbackName} is committed to delivering comprehensive, personalized healthcare for patients and families across our community.`,
+            treatments: [],
           });
+          setTreatments([]);
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -101,9 +190,65 @@ export default function DoctorDetailPage() {
     }
 
     if (doctorId) {
-      fetchDoctorDetails();
+      fetchDoctorAndTreatments();
     }
   }, [doctorId]);
+
+  useGSAP(
+    () => {
+      // Header Animation
+      gsap.fromTo(
+        ".doctor-detail-header",
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
+      );
+
+      // Body Image & Bio Animation
+      gsap.fromTo(
+        ".doctor-detail-body",
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: "power2.out", clearProps: "all" }
+      );
+
+      // Treatments Grid Animation
+      gsap.fromTo(
+        ".doctor-treatment-card",
+        { y: 20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.08,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: ".doctor-treatments-section",
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+
+      // Bottom CTA Section ScrollTrigger
+      gsap.fromTo(
+        ".doctor-cta-block",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: ".doctor-cta-section",
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+    },
+    { scope: containerRef, dependencies: [loading, doctor?.id, treatments.length] }
+  );
 
   if (loading && !doctor) {
     return (
@@ -125,18 +270,21 @@ export default function DoctorDetailPage() {
     imageUrl: FALLBACK_DOCTOR_AVATAR,
     photoUrl: FALLBACK_DOCTOR_AVATAR,
     bio: "Dedicated healthcare provider committed to personalized patient care.",
+    treatments: [],
   };
 
+  const displayName = currentDoctor.name.toLowerCase().startsWith("dr")
+    ? currentDoctor.name
+    : `Dr. ${currentDoctor.name}`;
+
   return (
-    <main className="min-h-screen bg-white font-sans text-slate-900">
+    <main ref={containerRef} className="min-h-screen bg-white font-sans text-slate-900">
       <Header />
 
       {/* Hero / Page Header */}
       <section className="relative bg-[#eaf4f6] pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
-
-
-          <div className="space-y-2 max-w-3xl">
+          <div className="doctor-detail-header space-y-2 max-w-3xl">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
               {currentDoctor.specialization || "Healthcare Provider"}
             </span>
@@ -144,8 +292,9 @@ export default function DoctorDetailPage() {
               {currentDoctor.name}
             </h1>
             {currentDoctor.qualification && (
-              <p className="text-sm font-medium text-slate-600">
-                {currentDoctor.qualification}
+              <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                <Award size={16} className="text-[#2596be]" />
+                <span>{currentDoctor.qualification}</span>
               </p>
             )}
           </div>
@@ -168,7 +317,7 @@ export default function DoctorDetailPage() {
       </section>
 
       {/* Main Content Area */}
-      <section className="py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-10">
+      <section className="doctor-detail-body py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-12">
         {/* Doctor Image */}
         <div className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm relative">
           <img
@@ -184,7 +333,7 @@ export default function DoctorDetailPage() {
         {/* Overview / Bio Section */}
         <div className="space-y-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            About {currentDoctor.name.toLowerCase().startsWith("dr") ? currentDoctor.name : `Dr. ${currentDoctor.name}`}
+            About {displayName}
           </h2>
           <div
             className="text-slate-600 text-base leading-relaxed space-y-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-bold [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-3 [&_li]:my-1"
@@ -192,11 +341,83 @@ export default function DoctorDetailPage() {
           />
         </div>
 
+        {/* Treatments & Specialized Procedures Section */}
+        <div className="doctor-treatments-section pt-6 border-t border-slate-100 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+             
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                Treatments & Procedures
+              </h2>
+            </div>
+      
+          </div>
+
+          {treatments.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+              {treatments.map((treatment) => (
+                <div
+                  key={treatment.id}
+                  className="doctor-treatment-card group relative bg-white border border-slate-200/90 hover:border-[#4fa1b0] rounded-xl p-5 transition-all duration-300 hover:shadow-md flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-lg bg-[#eaf4f6] text-[#2596be] group-hover:bg-[#2596be] group-hover:text-white flex items-center justify-center transition-colors duration-200">
+                        <Stethoscope size={20} />
+                      </div>
+                      {treatment.durationMinutes && (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 font-medium bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                          <Clock size={12} />
+                          {treatment.durationMinutes} mins
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      {treatment.category && (
+                        <span className="text-[11px] font-semibold tracking-wider text-[#4fa1b0] uppercase block mb-1">
+                          {treatment.category}
+                        </span>
+                      )}
+                      <h3 className="text-base font-bold text-slate-900 group-hover:text-[#2596be] transition-colors leading-snug">
+                        {treatment.name}
+                      </h3>
+                      {treatment.description && (
+                        <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                          {treatment.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
+                 
+                    <Link
+                      href={`/booking?dentist=${encodeURIComponent(currentDoctor.name)}&service=${encodeURIComponent(treatment.name)}`}
+                      className="inline-flex items-center gap-1 text-[#2596be] group-hover:text-[#1e7898] transition-colors"
+                    >
+                      <span>Book Treatment</span>
+                      <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-slate-50 border border-slate-200/70 rounded-xl p-8 text-center space-y-3">
+              <Stethoscope className="mx-auto text-slate-400" size={32} />
+              <p className="text-sm font-medium text-slate-700">
+                {displayName} provides comprehensive primary care, pediatric health consultations, and preventive treatments.
+              </p>
+              
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* Bottom CTA Section (Matching Services Page) */}
-      <section className="bg-[#eaf4f6] py-20 mt-12">
-        <div className="max-w-2xl mx-auto text-center space-y-4 px-6">
+      {/* Bottom CTA Section */}
+      <section className="doctor-cta-section bg-[#eaf4f6] py-20 mt-12">
+        <div className="doctor-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             Ready to schedule with {currentDoctor.name.split(" ")[0] || "our provider"}?
           </h2>

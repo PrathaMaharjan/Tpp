@@ -4,6 +4,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { getPublicDoctors, slugify } from "../lib/api";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface Doctor {
   id: string;
@@ -18,6 +25,7 @@ const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800";
 
 export default function DoctorsCarousel({ locationId }: { locationId?: string }) {
+  const sectionRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -48,6 +56,47 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
       isMounted = false;
     };
   }, [locationId]);
+
+  useGSAP(
+    () => {
+      gsap.fromTo(
+        ".doctors-header",
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.7,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 88%",
+            once: true,
+          },
+        }
+      );
+
+      if (!loading && doctors.length > 0) {
+        gsap.fromTo(
+          ".doctors-carousel-wrapper",
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 88%",
+              once: true,
+            },
+          }
+        );
+      }
+    },
+    { scope: sectionRef, dependencies: [loading, doctors.length] }
+  );
 
   // Repeat for continuous scroll if items exist
   const displayList = doctors.length > 0 ? [...doctors, ...doctors, ...doctors] : [];
@@ -97,11 +146,11 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
   };
 
   return (
-    <section className="py-24 bg-slate-50 overflow-hidden relative font-sans">
+    <section ref={sectionRef} className="py-24 bg-slate-50 overflow-hidden relative font-sans">
       <div className="relative z-10 max-w-[1400px] mx-auto pb-4">
 
         {/* Header */}
-        <div className="px-6 text-center space-y-3 mb-16 max-w-2xl mx-auto">
+        <div className="doctors-header px-6 text-center space-y-3 mb-16 max-w-2xl mx-auto">
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
             Our Team
           </span>
@@ -112,7 +161,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
         </div>
 
         {/* Carousel Outer Wrapper */}
-        <div className="relative px-4 md:px-12">
+        <div className="doctors-carousel-wrapper relative px-4 md:px-12">
 
           {/* Left Arrow Button */}
           <button

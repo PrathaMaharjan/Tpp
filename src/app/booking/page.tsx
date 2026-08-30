@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Calendar,
@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Layers,
 } from "lucide-react";
 import {
   getPublicLocations,
@@ -24,11 +25,30 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const NO_PREFERENCE = "No Preference";
+const ALL_CATEGORIES = "All Categories";
 
 interface OutletOption {
   id: string;
   name: string;
   address?: string | null;
+}
+
+interface RawTreatment {
+  id: string;
+  name: string;
+  category?: string | null;
+  durationMinutes?: number | null;
+  priceCents?: number | null;
+  doctorIds?: string[];
+  doctors?: { id: string; name: string; specialization?: string | null }[];
+}
+
+interface RawDoctor {
+  id: string;
+  name: string;
+  specialization?: string | null;
+  treatmentIds?: string[];
+  treatments?: { id: string; name: string; category?: string }[];
 }
 
 const inputClass =
@@ -45,8 +65,9 @@ function BookingForm() {
   const [error, setError] = useState<string | null>(null);
 
   const [outlets, setOutlets] = useState<OutletOption[]>([]);
-  const [services, setServices] = useState<string[]>([]);
-  const [dentists, setDentists] = useState<string[]>([]);
+  const [rawTreatments, setRawTreatments] = useState<RawTreatment[]>([]);
+  const [rawDoctors, setRawDoctors] = useState<RawDoctor[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORIES);
 
   const [form, setForm] = useState({
     name: "",
@@ -62,7 +83,7 @@ function BookingForm() {
 
   const tenantSlug = process.env.NEXT_PUBLIC_TENANT_SLUG?.trim() || "tpp";
 
-  // 1. Fetch Outlets for the Clinic on Mount
+  // 1. Fetch Outlets for Clinic on Mount
   useEffect(() => {
     let isMounted = true;
 
@@ -89,7 +110,7 @@ function BookingForm() {
     };
   }, [tenantSlug]);
 
-  // 2. Fetch Services & Doctors specific to the selected Outlet
+  // 2. Fetch Services & Doctors for the selected Outlet
   useEffect(() => {
     let isMounted = true;
 
@@ -104,41 +125,49 @@ function BookingForm() {
           getPublicDoctors({ locationId: form.locationId, tenantSlug }),
         ]);
 
-        let loadedServices: string[] = [];
+        let loadedTreatments: RawTreatment[] = [];
         if (servicesRes.status === "fulfilled" && servicesRes.value?.data?.success) {
-          const rawTreatments = servicesRes.value.data.data?.treatments || [];
-          if (Array.isArray(rawTreatments)) {
-            loadedServices = rawTreatments
-              .map((t: any) => t.name || t.title || t)
-              .filter(Boolean);
+          const raw = servicesRes.value.data.data?.treatments || [];
+          if (Array.isArray(raw)) {
+            loadedTreatments = raw.map((t: any) => ({
+              id: t.id || "",
+              name: t.name || t.title || String(t),
+              category: t.category || "General",
+              durationMinutes: t.durationMinutes,
+              priceCents: t.priceCents,
+              doctorIds: t.doctorIds || [],
+              doctors: t.doctors || [],
+            }));
           }
         }
 
-        let loadedDentists: string[] = [NO_PREFERENCE];
+        let loadedDoctors: RawDoctor[] = [];
         if (doctorsRes.status === "fulfilled" && doctorsRes.value?.data?.success) {
-          const rawDoctors = doctorsRes.value.data.data?.doctors || doctorsRes.value.data?.doctors || [];
-          if (Array.isArray(rawDoctors)) {
-            const docNames = rawDoctors
-              .map((d: any) => (typeof d === "string" ? d : d.name || d.fullName || d.title || ""))
-              .filter(Boolean);
-            if (docNames.length > 0) {
-              loadedDentists = [NO_PREFERENCE, ...docNames];
-            }
+          const raw = doctorsRes.value.data.data?.doctors || doctorsRes.value.data?.doctors || [];
+          if (Array.isArray(raw)) {
+            loadedDoctors = raw.map((d: any) => ({
+              id: d.id || "",
+              name: typeof d === "string" ? d : d.name || d.fullName || d.title || "",
+              specialization: d.specialization,
+              treatmentIds: d.treatmentIds || [],
+              treatments: d.treatments || [],
+            })).filter((d) => Boolean(d.name));
           }
         }
 
-        // If no doctors are tied specifically to this outlet, load all doctors for the organization
-        if (loadedDentists.length <= 1) {
+        // If no doctors are tied specifically to this outlet, fallback load all org doctors
+        if (loadedDoctors.length === 0) {
           try {
             const allDocRes = await getPublicDoctors({ tenantSlug });
             const allRaw = allDocRes?.data?.data?.doctors || allDocRes?.data?.doctors || [];
             if (Array.isArray(allRaw)) {
-              const allNames = allRaw
-                .map((d: any) => (typeof d === "string" ? d : d.name || d.fullName || d.title || ""))
-                .filter(Boolean);
-              if (allNames.length > 0) {
-                loadedDentists = [NO_PREFERENCE, ...allNames];
-              }
+              loadedDoctors = allRaw.map((d: any) => ({
+                id: d.id || "",
+                name: typeof d === "string" ? d : d.name || d.fullName || d.title || "",
+                specialization: d.specialization,
+                treatmentIds: d.treatmentIds || [],
+                treatments: d.treatments || [],
+              })).filter((d) => Boolean(d.name));
             }
           } catch (e) {
             console.error("Fallback load all doctors error in booking:", e);
@@ -146,37 +175,40 @@ function BookingForm() {
         }
 
         if (isMounted) {
-          setServices(loadedServices);
-          setDentists(loadedDentists);
+          setRawTreatments(loadedTreatments);
+          setRawDoctors(loadedDoctors);
+
+          // If a paramService exists, set category matching that service
+          if (paramService) {
+            const matched = loadedTreatments.find(
+              (t) => t.name.toLowerCase() === paramService.toLowerCase()
+            );
+            if (matched && matched.category) {
+              setSelectedCategory(matched.category);
+            }
+          }
+
           setForm((prev) => {
+            const names = loadedTreatments.map((t) => t.name);
             let selectedService = prev.service;
-            if (!loadedServices.includes(selectedService)) {
-              const matchedSvc = loadedServices.find(
+            if (!names.includes(selectedService)) {
+              const matchedSvc = names.find(
                 (s) => paramService && s.toLowerCase().includes(paramService.toLowerCase())
               );
-              selectedService = matchedSvc || loadedServices[0] || "";
-            }
-
-            let selectedDentist = prev.dentist;
-            if (!loadedDentists.includes(selectedDentist)) {
-              const matchedDoc = loadedDentists.find(
-                (d) => paramDentist && d.toLowerCase().includes(paramDentist.toLowerCase())
-              );
-              selectedDentist = matchedDoc || loadedDentists[0] || NO_PREFERENCE;
+              selectedService = matchedSvc || names[0] || "";
             }
 
             return {
               ...prev,
               service: selectedService,
-              dentist: selectedDentist,
             };
           });
         }
       } catch (err) {
         console.error("Failed to load services/doctors for outlet:", err);
         if (isMounted) {
-          setServices([]);
-          setDentists([NO_PREFERENCE]);
+          setRawTreatments([]);
+          setRawDoctors([]);
         }
       } finally {
         if (isMounted) setLoadingOutletData(false);
@@ -187,7 +219,84 @@ function BookingForm() {
     return () => {
       isMounted = false;
     };
-  }, [form.locationId, tenantSlug]);
+  }, [form.locationId, tenantSlug, paramService]);
+
+  // Derive unique categories from treatments
+  const categories = useMemo(() => {
+    const catSet = new Set<string>();
+    rawTreatments.forEach((t) => {
+      if (t.category && t.category.trim()) {
+        catSet.add(t.category.trim());
+      }
+    });
+    return [ALL_CATEGORIES, ...Array.from(catSet)];
+  }, [rawTreatments]);
+
+  // Filter services by selected category
+  const filteredServices = useMemo(() => {
+    if (selectedCategory === ALL_CATEGORIES) {
+      return rawTreatments;
+    }
+    return rawTreatments.filter(
+      (t) => t.category?.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  }, [rawTreatments, selectedCategory]);
+
+  // When category changes, verify/update the selected service
+  function handleCategoryChange(newCategory: string) {
+    setSelectedCategory(newCategory);
+    const availableUnderCategory =
+      newCategory === ALL_CATEGORIES
+        ? rawTreatments
+        : rawTreatments.filter((t) => t.category?.toLowerCase() === newCategory.toLowerCase());
+
+    const isCurrentServiceValid = availableUnderCategory.some(
+      (t) => t.name === form.service
+    );
+
+    if (!isCurrentServiceValid && availableUnderCategory.length > 0) {
+      setForm((prev) => ({
+        ...prev,
+        service: availableUnderCategory[0].name,
+      }));
+    }
+  }
+
+  // Filter doctors who can perform the currently selected service
+  const availableDentists = useMemo(() => {
+    if (!form.service || rawDoctors.length === 0) {
+      return [NO_PREFERENCE, ...rawDoctors.map((d) => d.name)];
+    }
+
+    const currentTreatment = rawTreatments.find((t) => t.name === form.service);
+
+    const qualifiedDoctors = rawDoctors.filter((doc) => {
+      // 1. Match by treatment ID in doctor's assigned treatments
+      const byTreatmentId = currentTreatment && doc.treatmentIds?.includes(currentTreatment.id);
+      // 2. Match by treatment name
+      const byTreatmentName = doc.treatments?.some(
+        (t) => t.name.toLowerCase() === form.service.toLowerCase()
+      );
+      // 3. Match from treatment's assigned doctors list
+      const byTreatmentDocIds = currentTreatment && currentTreatment.doctorIds?.includes(doc.id);
+
+      return byTreatmentId || byTreatmentName || byTreatmentDocIds;
+    });
+
+    // If no specific doctor is explicitly assigned yet, show all doctors
+    if (qualifiedDoctors.length === 0) {
+      return [NO_PREFERENCE, ...rawDoctors.map((d) => d.name)];
+    }
+
+    return [NO_PREFERENCE, ...qualifiedDoctors.map((d) => d.name)];
+  }, [form.service, rawTreatments, rawDoctors]);
+
+  // If chosen dentist is no longer qualified for the newly selected service, reset to No Preference
+  useEffect(() => {
+    if (form.dentist !== NO_PREFERENCE && !availableDentists.includes(form.dentist)) {
+      setForm((prev) => ({ ...prev, dentist: NO_PREFERENCE }));
+    }
+  }, [availableDentists, form.dentist]);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -241,7 +350,7 @@ function BookingForm() {
     <main className="min-h-screen bg-white font-sans text-slate-700">
       <Header />
 
-      {/* Styled Header Title Matching Locations/Services Page */}
+      {/* Styled Header Title */}
       <div className="relative bg-[#eaf4f6]">
         <div className="pt-50 pb-25">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
@@ -249,12 +358,12 @@ function BookingForm() {
               Let's Get Your Visit Scheduled
             </h1>
             <p className="text-slate-500 text-sm max-w-md mx-auto">
-              Select your preferred clinic outlet, service, and time, and our staff will confirm your slot right away.
+              Select your preferred clinic outlet, category, service, and provider, and our staff will confirm your slot.
             </p>
           </div>
         </div>
 
-        {/* Enhanced Curvier Top Section Wave Divider */}
+        {/* Wave Divider */}
         <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden pointer-events-none z-0">
           <svg
             viewBox="0 0 1440 120"
@@ -387,11 +496,31 @@ function BookingForm() {
                   />
                 </label>
 
-                {/* Service Select */}
+                {/* Category Filter Select */}
+                <label className="block space-y-1.5">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                    <Layers className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    Service Category
+                  </span>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    disabled={loadingOutletData || categories.length <= 1}
+                    className={inputClass}
+                  >
+                    {categories.map((cat) => (
+                      <option key={`cat-${cat}`} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {/* Service Select (No time/duration shown) */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
                     <Stethoscope className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
-                    Service
+                    Service / Treatment
                   </span>
                   <select
                     value={form.service}
@@ -400,25 +529,32 @@ function BookingForm() {
                     className={inputClass}
                   >
                     {loadingOutletData ? (
-                      <option value="">Loading outlet services...</option>
-                    ) : services.length === 0 ? (
-                      <option value="">No services available for this outlet</option>
+                      <option value="">Loading services...</option>
+                    ) : filteredServices.length === 0 ? (
+                      <option value="">No services in this category</option>
                     ) : (
-                      services.map((s, idx) => (
-                        <option key={`service-${s}-${idx}`} value={s}>
-                          {s}
+                      filteredServices.map((s) => (
+                        <option key={`service-${s.id || s.name}`} value={s.name}>
+                          {s.name}
                         </option>
                       ))
                     )}
                   </select>
                 </label>
 
-                {/* Preferred Provider */}
-                <label className="block space-y-1.5">
-                  <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <User className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
-                    Preferred provider
-                  </span>
+                {/* Preferred Provider (Filtered to doctors who can do this service) */}
+                <label className="block sm:col-span-2 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                      <User className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                      Preferred Provider
+                    </span>
+                    {availableDentists.length > 1 && (
+                      <span className="text-[0.7rem] text-[#2596be] font-medium">
+                        {availableDentists.length - 1} specialist{availableDentists.length - 1 !== 1 ? "s" : ""} available
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={form.dentist}
                     onChange={(e) => update("dentist", e.target.value)}
@@ -426,9 +562,9 @@ function BookingForm() {
                     className={inputClass}
                   >
                     {loadingOutletData ? (
-                      <option value="">Loading doctors...</option>
+                      <option value="">Loading available providers...</option>
                     ) : (
-                      dentists.map((d, idx) => (
+                      availableDentists.map((d, idx) => (
                         <option key={`dentist-${d}-${idx}`} value={d}>
                           {d}
                         </option>

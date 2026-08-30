@@ -1,19 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Phone, CalendarCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const HERO_IMAGES = [
-  '/hero-1.png',
-  '/hero-2.png',
+  '/hero-1.jpeg',
+  '/hero-2.jpeg',
   '/hero-3.png',
-   '/hero-4.png',
+  '/hero-4.png',
+  '/hero-5.jpeg',
 ];
 
 export default function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -30,8 +35,40 @@ export default function Hero() {
     return () => clearInterval(timer);
   }, [nextSlide]);
 
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.from('.hero-headline', {
+        y: 40,
+        opacity: 0,
+        duration: 1,
+        delay: 0.2,
+      })
+        .from(
+          '.hero-subtext',
+          {
+            y: 25,
+            opacity: 0,
+            duration: 0.8,
+          },
+          '-=0.6'
+        )
+        .from(
+          '.hero-btn',
+          {
+            scale: 0.9,
+            opacity: 0,
+            duration: 0.7,
+            ease: 'back.out(1.7)',
+          },
+          '-=0.4'
+        );
+    },
+    { scope: heroRef }
+  );
+
   return (
-    <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white">
+    <section ref={heroRef} className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white">
       {/* Background Image Carousel */}
       {HERO_IMAGES.map((src, index) => (
         <div
@@ -74,37 +111,31 @@ export default function Hero() {
       {/* Main Content Area */}
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-10 pt-36 pb-20">
         <div className="max-w-2xl space-y-6">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
+          <h1 className="hero-headline text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
             Texas Primary & <br />
             <span className="text-[#67bed9]">Pediatric Care</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/90 font-normal leading-relaxed">
+          <p className="hero-subtext text-lg md:text-xl text-white/90 font-normal leading-relaxed">
             Dedicated primary care providers and pediatric specialists located in Las Colinas, Irving, and Celina, TX.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-            {/* Primary Action Button with Fill Effect */}
+          <div className="hero-btn">
             <Link
-              href="#"
-              className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#4fa1b0] text-white text-sm font-semibold overflow-hidden shadow-md shadow-[#4fa1b0]/20 transition-all duration-300 transform hover:-translate-y-0.5"
+              href="/booking"
+              className="group relative inline-flex items-center gap-4 pl-6 pr-2 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold shadow-lg hover:shadow-lg hover:shadow-[#2596be]/30 active:scale-[0.99] transition-all duration-300 transform hover:-translate-y-0.5 overflow-hidden"
             >
-              <span className="absolute inset-0 w-full h-full bg-[#2596be] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
-              <span className="relative z-10 flex items-center gap-2">
-                <CalendarCheck size={16} />
-                <span>Book An Appointment</span>
-              </span>
-            </Link>
+              {/* Gradient Fill Background Overlay on Hover */}
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left rounded-full" />
 
-            {/* Secondary Action Button with Outline Fill Effect */}
-            <Link
-              href="tel:4693726188"
-              className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-white/40 bg-white/90 text-slate-800 text-sm font-semibold overflow-hidden transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              <span className="absolute inset-0 w-full h-full bg-[#4fa1b0] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
-              <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors duration-300">
-                <Phone size={16} />
-                <span>Call or Text Us</span>
+              {/* Button Text */}
+              <span className="relative z-10 group-hover:text-white transition-colors duration-300">
+                Book an Appointment
+              </span>
+
+              {/* Arrow Circle Icon Badge */}
+              <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-[#2596be] group-hover:bg-white/20 text-white transition-colors duration-300">
+                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform duration-300" />
               </span>
             </Link>
           </div>

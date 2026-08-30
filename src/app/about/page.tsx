@@ -11,10 +11,13 @@ export default function AboutPage() {
       {/* Styled Header Title Matching Locations Page */}
       <div className="relative bg-[#eaf4f6]">
         <div className="pt-50 pb-20">
-          <div className="max-w-3xl mx-auto px-6 space-y-4 text-center">
-            <h1 className="text-3xl pb-10 sm:text-4xl font-bold tracking-tight text-slate-900">
+          <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
               About Texas Primary &amp; Pediatric Care
             </h1>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+              Providing personalized, high-quality healthcare for patients and families across North Texas.
+            </p>
           </div>
         </div>
 
