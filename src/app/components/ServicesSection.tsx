@@ -3,64 +3,145 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ArrowUpRight, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { getPublicServices, slugify } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { getPublicServices, slugify, type Service } from "../lib/api";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+const FALLBACK_SERVICE_IMAGE =
+  "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800";
+
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG || "tpp";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_SERVICE_IMAGE): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 interface ServiceItem {
   id: string;
   name: string;
+  slug: string;
   category: string;
   description?: string | null;
   imageUrl?: string | null;
+  price?: string | null;
 }
 
-export default function ServicesSection({ locationId }: { locationId?: string }) {
+function parseServiceDescription(desc?: string | null): string {
+  if (!desc) return "Expert clinical care and treatment provided by our experienced medical team.";
+  try {
+    const parsed = JSON.parse(desc);
+    if (Array.isArray(parsed?.blocks)) {
+      const texts: string[] = [];
+      for (const b of parsed.blocks) {
+        if (typeof b.data?.text === "string" && b.data.text.trim()) {
+          texts.push(b.data.text.replace(/<[^>]*>/g, ""));
+        }
+      }
+      if (texts.length > 0) return texts.join(" ");
+    }
+  } catch {
+    // Plain text or HTML
+  }
+  return desc;
+}
+
+export default function ServicesSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [services, setServices] = useState<ServiceItem[]>([]);
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
 
-  // 1. Fetch treatments from DMS
+  // 1. Fetch treatments and dynamic categories from CMS
   useEffect(() => {
     let isMounted = true;
 
-    async function loadTreatments() {
+    async function loadData() {
       try {
         setLoading(true);
-        const res = await getPublicServices({ locationId });
-        const list: ServiceItem[] = res?.data?.data?.treatments || [];
+
+        // Fetch treatments and categories in parallel
+        const [servicesRes, categoriesRes] = await Promise.allSettled([
+          getPublicServices(),
+          fetch(`${CMS_URL}/api/${SITE_SLUG}/service-categories`).then((r) =>
+            r.ok ? r.json() : []
+          ),
+        ]);
 
         if (isMounted) {
+          // Unpack services
+          const rawServices: any[] =
+            servicesRes.status === "fulfilled"
+              ? Array.isArray(servicesRes.value)
+                ? servicesRes.value
+                : (servicesRes.value as any)?.data?.data?.treatments ||
+                  (servicesRes.value as any)?.data?.treatments ||
+                  []
+              : [];
+
+          const list: ServiceItem[] = rawServices.map((item) => ({
+            id: item.id,
+            name: item.title || item.name || "Specialized Treatment",
+            slug: item.slug || slugify(item.title || item.name || item.id),
+            // ✅ Read category directly from CMS with graceful fallback
+            category: item.category?.trim() || "Specialized Care",
+            description: parseServiceDescription(item.description),
+            imageUrl: resolveImageUrl(item.imageUrl || item.image_url),
+            price: item.price,
+          }));
+
           setServices(list);
+
+          // Unpack categories from DB
+          if (categoriesRes.status === "fulfilled" && Array.isArray(categoriesRes.value)) {
+            const catNames = categoriesRes.value
+              .map((c: any) => c.name?.trim())
+              .filter(Boolean);
+            setDbCategories(catNames);
+          }
         }
       } catch (err) {
-        console.error("Failed to load services from DMS:", err);
+        console.error("Failed to load treatments & categories from CMS:", err);
       } finally {
         if (isMounted) setLoading(false);
       }
     }
 
-    loadTreatments();
+    loadData();
     return () => {
       isMounted = false;
     };
-  }, [locationId]);
+  }, []);
 
-  // 2. Extract dynamic categories from actual DMS treatments
+  // 2. Combine categories from DB and existing treatments
   const categories = useMemo(() => {
     const set = new Set<string>();
-    services.forEach((s) => {
-      if (s.category) set.add(s.category);
+
+    // Add categories from categories table
+    dbCategories.forEach((cat) => {
+      if (cat) set.add(cat);
     });
+
+    // Add categories assigned to existing services
+    services.forEach((s) => {
+      if (s.category?.trim()) set.add(s.category.trim());
+    });
+
     const unique = Array.from(set);
     return unique.length > 0 ? ["All", ...unique] : ["All"];
-  }, [services]);
+  }, [dbCategories, services]);
 
   // 3. Filter services by active tab
   const filteredServices = useMemo(() => {
@@ -84,7 +165,6 @@ export default function ServicesSection({ locationId }: { locationId?: string })
 
   useGSAP(
     () => {
-      // Header Animation
       gsap.fromTo(
         ".services-header",
         { y: 30, opacity: 0 },
@@ -102,7 +182,6 @@ export default function ServicesSection({ locationId }: { locationId?: string })
         }
       );
 
-      // Animate carousel once data is loaded and rendered
       if (!loading && filteredServices.length > 0) {
         gsap.fromTo(
           ".services-carousel-wrapper",
@@ -122,7 +201,6 @@ export default function ServicesSection({ locationId }: { locationId?: string })
         );
       }
 
-      // Animate tabs if they exist
       if (categories.length > 1) {
         gsap.fromTo(
           ".services-tabs",
@@ -147,8 +225,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
 
   return (
     <section ref={sectionRef} className="py-24 bg-slate-50/40 relative overflow-hidden font-sans">
-      
-      {/* SVG Background Wave with #4fa1b0 fill */}
+      {/* SVG Background Wave */}
       <div className="absolute top-0 right-0 w-full h-[600px] pointer-events-none z-0">
         <svg
           className="absolute top-0 right-0 w-full h-full text-[#4fa1b0]"
@@ -157,16 +234,12 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
         >
-          <path
-            d="M0,0 H1440 V420 C1050,580 550,300 0,520 Z"
-            fill="currentColor"
-          />
+          <path d="M0,0 H1440 V420 C1050,580 550,300 0,520 Z" fill="currentColor" />
         </svg>
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto space-y-12">
-        
-        {/* Header - Aligned with Doctors Carousel width & spacing */}
+        {/* Header */}
         <div className="services-header px-6 md:px-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-100/90">
@@ -179,7 +252,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           </div>
 
           <p className="text-sm text-white/85 leading-relaxed max-w-sm md:text-right font-normal">
-            We provide a wide range of pediatric and adult health services, covering all your family's medical needs.
+            We provide a wide range of specialized healthcare and clinical procedures, covering all your family&apos;s needs.
           </p>
         </div>
 
@@ -192,13 +265,13 @@ export default function ServicesSection({ locationId }: { locationId?: string })
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`relative shrink-0 pb-3 text-sm tracking-wide whitespace-nowrap transition-colors duration-300 cursor-pointer ${
-                    activeCategory === cat
+                    activeCategory.toLowerCase() === cat.toLowerCase()
                       ? "text-white font-semibold"
                       : "text-white/70 hover:text-white font-medium"
                   }`}
                 >
                   {cat}
-                  {activeCategory === cat && (
+                  {activeCategory.toLowerCase() === cat.toLowerCase() && (
                     <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-white rounded-full" />
                   )}
                 </button>
@@ -214,11 +287,11 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           </div>
         ) : filteredServices.length === 0 ? (
           <div className="text-center py-16 text-slate-400 text-sm bg-white rounded-2xl border border-slate-200/60 p-8 max-w-md mx-auto">
-            No treatments found for this category.
+            No treatments found in &ldquo;{activeCategory}&rdquo;.
           </div>
         ) : (
           <div className="services-carousel-wrapper relative px-4 md:px-12">
-            {/* Left Arrow Button */}
+            {/* Left Arrow */}
             <button
               onClick={() => scroll("left")}
               aria-label="Previous Treatment"
@@ -227,7 +300,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
               <ChevronLeft size={24} />
             </button>
 
-            {/* Right Arrow Button */}
+            {/* Right Arrow */}
             <button
               onClick={() => scroll("right")}
               aria-label="Next Treatment"
@@ -246,18 +319,21 @@ export default function ServicesSection({ locationId }: { locationId?: string })
                 return (
                   <Link
                     key={service.id}
-                    href={`/services/${slugify(service.name) || service.id}`}
+                    href={`/services/${service.slug || service.id}`}
                     className="group relative w-[280px] md:w-[300px] h-[400px] shrink-0 rounded-3xl border border-slate-200/70 overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 p-6 flex flex-col justify-between cursor-pointer"
                   >
-                    {/* Always visible background image layer */}
+                    {/* Background image layer */}
                     <div className="absolute inset-0 z-0">
                       <img
-                        src={
-                          service.imageUrl ||
-                          "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600"
-                        }
+                        src={service.imageUrl || FALLBACK_SERVICE_IMAGE}
                         alt={service.name}
+                        crossOrigin="anonymous"
                         className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = FALLBACK_SERVICE_IMAGE;
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/50 to-slate-900/20 group-hover:from-slate-950/95 group-hover:via-slate-900/70 transition-colors duration-500" />
                     </div>
@@ -269,19 +345,14 @@ export default function ServicesSection({ locationId }: { locationId?: string })
                       </span>
                     </div>
 
-                    {/* Title + Description (Revealed smoothly on hover) */}
+                    {/* Title + Description */}
                     <div className="relative z-10 space-y-2 pr-12">
                       <h3 className="text-lg font-bold text-white leading-snug transition-colors duration-300">
                         {service.name}
                       </h3>
-                      <div
-                        className="text-xs text-white/90 leading-relaxed max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden line-clamp-3 [&_*]:text-inherit [&_p]:inline [&_strong]:font-semibold [&_h2]:hidden [&_h3]:hidden"
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            service.description ||
-                            "Expert clinical care and treatment provided by our experienced medical team.",
-                        }}
-                      />
+                      <p className="text-xs text-white/90 leading-relaxed max-h-0 opacity-0 group-hover:max-h-24 group-hover:opacity-100 transition-all duration-500 ease-in-out overflow-hidden line-clamp-3">
+                        {service.description}
+                      </p>
                     </div>
 
                     {/* Bottom Action Indicator */}
@@ -307,7 +378,6 @@ export default function ServicesSection({ locationId }: { locationId?: string })
             </Link>
           </div>
         )}
-
       </div>
     </section>
   );

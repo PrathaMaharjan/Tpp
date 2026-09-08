@@ -89,6 +89,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/blog" className="hover:underline transition-all">
+                  Health Blog
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact-us" className="hover:underline transition-all">
                   Contact Us
                 </Link>

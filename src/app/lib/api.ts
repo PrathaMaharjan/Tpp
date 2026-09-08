@@ -1,63 +1,153 @@
-import axios from "axios";
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG || "tpp";
 
-const POS_URL = (process.env.NEXT_PUBLIC_POS_API_URL || "http://localhost:3000").replace(/\/$/, "");
-const DEFAULT_TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG?.trim() || "tpp";
+// ── Types ────────────────────────────────────────────────────────
 
-export const posApi = axios.create({
-  baseURL: POS_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+export interface Doctor {
+  id: string;
+  name: string;
+  slug: string;
+  specialty?: string | null;
+  bio?: string | null;
+  imageUrl?: string | null;
+  isActive?: boolean | null;
+  createdAt?: string | null;
+}
 
-// 1. Fetch Outlets / Locations for a Tenant
-export const getPublicLocations = (tenantSlug: string = DEFAULT_TENANT_SLUG) =>
-  posApi.get("/api/public/locations", {
-    params: { tenantSlug },
-  });
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  content?: string | null;
+  coverImage?: string | null;
+  authorName?: string | null;
+  authorImage?: string | null;
+  status?: "draft" | "published" | null;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+}
 
-// 2. Fetch Doctors (filtered by Outlet locationId and/or tenantSlug)
-export const getPublicDoctors = (params?: { locationId?: string; tenantSlug?: string }) =>
-  posApi.get("/api/public/doctors", {
-    params: {
-      tenantSlug: params?.tenantSlug || DEFAULT_TENANT_SLUG,
-      locationId: params?.locationId,
-    },
-  });
+export interface Service {
+  id: string;
+  title: string;
+  name: string; // alias so item.title and item.name both work
+  slug: string;
+  description?: string | null;
+  price?: string | null;
+  imageUrl?: string | null;
+  isActive?: boolean | null;
+  createdAt?: string | null;
+}
 
-// 3. Fetch Services / Treatments (filtered by Outlet locationId and/or tenantSlug)
-export const getPublicServices = (params?: { locationId?: string; tenantSlug?: string }) =>
-  posApi.get("/api/public/treatments", {
-    params: {
-      tenantSlug: params?.tenantSlug || DEFAULT_TENANT_SLUG,
-      locationId: params?.locationId,
-    },
-  });
+export type Treatment = Service;
 
-// 4. Submit Online Booking
-export const submitAppointmentBooking = (bookingPayload: {
-  fullName: string;
-  phone: string;
-  email?: string;
-  preferredDate: string;
-  preferredTime: string;
-  serviceName?: string;
-  dentistName?: string;
-  tenantSlug?: string;
-  locationId?: string;
-  notes?: string;
-  source?: string;
-}) =>
-  posApi.post("/api/public/booking", {
-    tenantSlug: DEFAULT_TENANT_SLUG,
-    ...bookingPayload,
-  });
+// ── Doctors API ──────────────────────────────────────────────────
 
-// 5. Utility helper to create SEO-friendly clean URL slugs from names
+export async function getPublicDoctors(): Promise<Doctor[]> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/doctors`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data: Doctor[] = await res.json();
+    return Array.isArray(data) ? data.filter((d) => d.isActive !== false) : [];
+  } catch (error) {
+    console.error("Error in getPublicDoctors:", error);
+    return [];
+  }
+}
+
+export async function getDoctorBySlug(slug: string): Promise<Doctor | null> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/doctors/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Error in getDoctorBySlug:", error);
+    return null;
+  }
+}
+
+// ── Blog Posts API ───────────────────────────────────────────────
+
+export async function getPublicBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/blog-posts`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data: BlogPost[] = await res.json();
+    return Array.isArray(data) ? data.filter((p) => p.status === "published") : [];
+  } catch (error) {
+    console.error("Error in getPublicBlogPosts:", error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/blog-posts/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Error in getBlogPostBySlug:", error);
+    return null;
+  }
+}
+
+// ── Services / Treatments API ────────────────────────────────────
+
+export async function getPublicServices(): Promise<Service[]> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/treatments`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter((item) => item.isActive !== false)
+      .map((item) => ({
+        ...item,
+        name: item.title || item.name,
+      }));
+  } catch (error) {
+    console.error("Error in getPublicServices:", error);
+    return [];
+  }
+}
+
+export async function getServiceBySlug(slug: string): Promise<Service | null> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/treatments/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const item = await res.json();
+    return {
+      ...item,
+      name: item.title || item.name,
+    };
+  } catch (error) {
+    console.error("Error in getServiceBySlug:", error);
+    return null;
+  }
+}
+
+export const getPublicTreatments = getPublicServices;
+export const getTreatmentBySlug = getServiceBySlug;
+
+// ── Utility ──────────────────────────────────────────────────────
+
 export function slugify(text: string): string {
   if (!text) return "";
   return text
-    .toString()
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")

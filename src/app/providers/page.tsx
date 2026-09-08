@@ -5,36 +5,54 @@ import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ArrowRight } from "lucide-react";
-import { getPublicDoctors, slugify } from "../lib/api";
+import { getPublicDoctors, slugify, type Doctor } from "../lib/api";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
 interface ProviderItem {
   id: string;
   name: string;
+  slug?: string;
   specialization?: string | null;
+  specialty?: string | null;
   qualification?: string | null;
   imageUrl?: string | null;
   photoUrl?: string | null;
 }
 
 const FALLBACK_DOCTOR_AVATAR =
-  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400";
+  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=600";
+
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_DOCTOR_AVATAR): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
 
 export default function ProvidersPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch doctors dynamically from DMS
+  // Fetch doctors dynamically from CMS
   useEffect(() => {
     let isMounted = true;
 
     async function loadProviders() {
       try {
         setLoading(true);
-        const res = await getPublicDoctors();
-        const docList: ProviderItem[] = res?.data?.data?.doctors || [];
+        const res: any = await getPublicDoctors();
+
+        // Support both direct array and nested response formats
+        const docList: ProviderItem[] = Array.isArray(res)
+          ? res
+          : res?.data?.data?.doctors || res?.data?.doctors || [];
 
         if (isMounted) {
           setProviders(docList);
@@ -54,14 +72,12 @@ export default function ProvidersPage() {
 
   useGSAP(
     () => {
-      // Header Animation
       gsap.fromTo(
         ".providers-header-content",
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
 
-      // Provider Cards Entrance on separate wrappers to prevent hover transition conflict
       if (!loading && providers.length > 0) {
         gsap.fromTo(
           ".provider-card-wrapper",
@@ -86,7 +102,7 @@ export default function ProvidersPage() {
 
       {/* Styled Header Title */}
       <div className="relative bg-[#eaf4f6]">
-        <div className="pt-50 pb-20">
+        <div className="pt-40 pb-20">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
               Medical Team
@@ -95,7 +111,7 @@ export default function ProvidersPage() {
               Meet Our Providers
             </h1>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-              Meet our board-certified physicians dedicated to your family&apos;s health and wellness.
+              Meet our board-certified healthcare professionals dedicated to your family&apos;s health and wellness.
             </p>
           </div>
         </div>
@@ -122,7 +138,7 @@ export default function ProvidersPage() {
           {/* Provider Cards Grid */}
           {loading ? (
             <div className="text-center py-20 text-slate-400 text-sm">
-              Loading healthcare providers from DMS...
+              Loading healthcare providers...
             </div>
           ) : providers.length === 0 ? (
             <div className="text-center py-20 text-slate-400 text-sm">
@@ -131,8 +147,14 @@ export default function ProvidersPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {providers.map((provider) => {
-                const photo = provider.imageUrl || provider.photoUrl || FALLBACK_DOCTOR_AVATAR;
-                const specialization = provider.specialization || provider.qualification || "Primary Care & Pediatrics";
+                const rawPhoto = provider.imageUrl || provider.photoUrl || (provider as any).image_url;
+                const photo = resolveImageUrl(rawPhoto, FALLBACK_DOCTOR_AVATAR);
+                const specialization =
+                  provider.specialty ||
+                  provider.specialization ||
+                  provider.qualification ||
+                  "Healthcare Specialist";
+                const profileSlug = provider.slug || slugify(provider.name) || provider.id;
 
                 return (
                   <div key={provider.id} className="provider-card-wrapper">
@@ -141,18 +163,21 @@ export default function ProvidersPage() {
                       <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-[#4fa1b0] transition-colors duration-300" />
 
                       <Link
-                        href={`/providers/${slugify(provider.name) || provider.id}`}
+                        href={`/providers/${profileSlug}`}
                         className="flex flex-col items-center space-y-4 w-full pt-2 cursor-pointer focus:outline-none"
                       >
-                        {/* Avatar Container with Image Fallback */}
+                        {/* Avatar Container */}
                         <div className="relative w-32 h-32 rounded-full p-1 bg-[#4fa1b0]/10 group-hover:bg-[#4fa1b0]/30 transition-all duration-300">
                           <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
                             <img
                               src={photo}
                               alt={provider.name}
+                              crossOrigin="anonymous"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = FALLBACK_DOCTOR_AVATAR;
+                                const target = e.currentTarget as HTMLImageElement;
+                                target.onerror = null;
+                                target.src = FALLBACK_DOCTOR_AVATAR;
                               }}
                             />
                           </div>
@@ -172,7 +197,7 @@ export default function ProvidersPage() {
                       {/* Card Actions */}
                       <div className="w-full pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-2">
                         <Link
-                          href={`/providers/${slugify(provider.name) || provider.id}`}
+                          href={`/providers/${profileSlug}`}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#2596be] transition-colors"
                         >
                           <span>View Profile</span>

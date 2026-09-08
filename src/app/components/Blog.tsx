@@ -1,58 +1,93 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Calendar, User } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import { getPublicBlogPosts, type BlogPost } from '../lib/api';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-interface BlogPost {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  slug: string;
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=800';
+
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000';
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_IMAGE): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
 }
 
-const BLOG_POSTS: BlogPost[] = [
-  {
-    id: 'post-1',
-    title: 'Not Just For Kids: Important Vaccines Every Adult Needs',
-    description:
-      'Vaccines aren’t just for kids. Learn which essential immunizations you need as an adult to protect your health, and how our primary care team in Texas can help you stay up to date.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/important-vaccines-every-adult-needs',
-  },
-  {
-    id: 'post-2',
-    title: 'Why A Sports Physical Is Important?',
-    description:
-      'A sports physical is far more than a checklist for school athletics. From screening for hidden cardiovascular risks to evaluating joint stability, learn why this annual exam is vital.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/why-a-sports-physical-is-important',
-  },
-  {
-    id: 'post-3',
-    title:
-      'Are You Traveling This Summer? Make Sure Your Kids Are Up-To-Date On Vaccines',
-    description:
-      'Planning a summer getaway? Whether traveling internationally or crossing state lines, ensuring your children are up to date on immunizations is your best defense.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1631815588090-d4bfec5b1cb9?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/summer-travel-kids-vaccines-up-to-date',
-  },
-];
+function parseExcerpt(excerpt?: string | null, content?: string | null): string {
+  if (excerpt && excerpt.trim()) return excerpt.trim();
+  if (!content) return 'Read our latest medical insights, health advice, and clinical news.';
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed?.blocks)) {
+      for (const b of parsed.blocks) {
+        if (typeof b.data?.text === 'string' && b.data.text.trim()) {
+          return b.data.text.replace(/<[^>]*>/g, '').trim();
+        }
+      }
+    }
+  } catch {
+    return content.replace(/<[^>]*>/g, '').trim();
+  }
+  return 'Read our latest medical insights, health advice, and clinical news.';
+}
+
+function formatDate(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return null;
+  }
+}
 
 export default function BlogSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch published blog posts from CMS
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPosts() {
+      try {
+        setLoading(true);
+        const data = await getPublicBlogPosts();
+        if (isMounted) {
+          setPosts(data);
+        }
+      } catch (err) {
+        console.error('Failed to load blog posts from CMS:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadPosts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // GSAP Animations
   useGSAP(
     () => {
       const tl = gsap.timeline({
@@ -67,21 +102,25 @@ export default function BlogSection() {
         '.blog-header',
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
-      ).fromTo(
-        '.blog-card',
-        { y: 35, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power2.out',
-          clearProps: 'all',
-        },
-        '-=0.3'
       );
+
+      if (!loading && posts.length > 0) {
+        tl.fromTo(
+          '.blog-card',
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            clearProps: 'all',
+          },
+          '-=0.3'
+        );
+      }
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [loading, posts.length] }
   );
 
   return (
@@ -100,48 +139,128 @@ export default function BlogSection() {
         </div>
 
         {/* 3-Column Cards Grid */}
-        <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          {BLOG_POSTS.map((post) => (
-            <article
-              key={post.id}
-              className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
-            >
-              <div>
-                {/* Image Wrapper */}
-                <Link href={post.slug} className="block relative overflow-hidden aspect-[16/10] bg-slate-100">
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                </Link>
+        {loading ? (
+          <div className="text-center py-16 text-slate-500 text-sm">
+            Loading latest articles...
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 text-slate-500 text-sm bg-white/70 rounded-2xl p-8 max-w-md mx-auto">
+            No published articles at this time. Check back soon!
+          </div>
+        ) : (
+          <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {posts.slice(0, 3).map((post) => {
+              const rawCover = post.coverImage || (post as any).cover_image || (post as any).imageUrl;
+              const cover = resolveImageUrl(rawCover, FALLBACK_IMAGE);
+              const authorPhoto = resolveImageUrl(post.authorImage || (post as any).author_image, '');
+              const excerpt = parseExcerpt(post.excerpt, post.content);
+              const postDate = formatDate(post.publishedAt || post.createdAt);
+              const postUrl = `/blog/${post.slug}`;
 
-                {/* Content */}
-                <div className="p-7 space-y-3">
-                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#2596be] transition-colors">
-                    <Link href={post.slug}>{post.title}</Link>
-                  </h3>
-
-                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
-                    {post.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Card Footer Link */}
-              <div className="px-7 pb-7 pt-0">
-                <Link
-                  href={post.slug}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2596be] group-hover:text-slate-900 transition-colors"
+              return (
+                <article
+                  key={post.id}
+                  className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
                 >
-                  Read Article
-                  <ArrowUpRight size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </Link>
-              </div>
+                  <div>
+                    {/* Cover Image Wrapper */}
+                    <Link
+                      href={postUrl}
+                      className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
+                    >
+                      <img
+                        src={cover}
+                        alt={post.title}
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = FALLBACK_IMAGE;
+                        }}
+                      />
+                    </Link>
 
-            </article>
-          ))}
-        </div>
+                    {/* Content */}
+                    <div className="p-7 space-y-3">
+                      <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#2596be] transition-colors line-clamp-2">
+                        <Link href={postUrl}>{post.title}</Link>
+                      </h3>
+
+                      <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
+                        {excerpt}
+                      </p>
+
+                      {/* Author & Date Bar */}
+                      {(post.authorName || postDate) && (
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-400">
+                          {/* Author */}
+                          <div className="flex items-center gap-2">
+                            {authorPhoto ? (
+                              <img
+                                src={authorPhoto}
+                                alt={post.authorName || 'Author'}
+                                crossOrigin="anonymous"
+                                className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-200"
+                                onError={(e) => {
+                                  // Hide avatar if image broken
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <User size={14} className="text-slate-400" />
+                            )}
+                            <span className="font-medium text-slate-700">
+                              {post.authorName || 'Medical Staff'}
+                            </span>
+                          </div>
+
+                          {/* Published Date */}
+                          {postDate && (
+                            <div className="flex items-center gap-1">
+                              <Calendar size={13} />
+                              <span>{postDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Footer Link */}
+                  <div className="px-7 pb-7 pt-0">
+                    <Link
+                      href={postUrl}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2596be] group-hover:text-slate-900 transition-colors"
+                    >
+                      Read Article
+                      <ArrowUpRight
+                        size={15}
+                        className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* View All Articles CTA */}
+        {!loading && posts.length > 0 && (
+          <div className="text-center pt-2">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200/80 text-sm font-semibold text-slate-800 hover:text-[#2596be] hover:border-[#2596be] shadow-xs hover:shadow-md transition-all group"
+            >
+              <span>Explore All Health Articles</span>
+              <ArrowUpRight
+                size={16}
+                className="text-[#2596be] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+              />
+            </Link>
+          </div>
+        )}
 
       </div>
     </section>
