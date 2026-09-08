@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Calendar, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CtaSection from "../components/CtaSection";
 import { getPublicServices, slugify } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -107,10 +108,10 @@ export default function ServicesPage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-28">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Clinical Specialties
             </span>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -139,7 +140,7 @@ export default function ServicesPage() {
                 >
                   {cat}
                   {activeCategory === cat && (
-                    <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-[#4fa1b0]" />
+                    <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-mid" />
                   )}
                 </button>
               ))}
@@ -182,7 +183,7 @@ export default function ServicesPage() {
                 <div key={service.id} className="service-card-wrapper">
                   <Link
                     href={`/services/${slugify(service.name) || service.id}`}
-                    className="group flex flex-col justify-between h-full rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer shadow-xs"
+                    className="group flex flex-col justify-between h-full rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:border-brand-mid/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer shadow-xs"
                   >
                     <div>
                       {/* Image with Fallback and Sleek Hover Overlay - Full Width */}
@@ -198,7 +199,7 @@ export default function ServicesPage() {
 
                         {/* Sleek Details Overlay on Hover */}
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/65 to-transparent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 flex flex-col justify-end">
-                          <span className="text-[0.6rem] font-bold uppercase tracking-wider text-[#67bed9] mb-1">
+                          <span className="text-[0.6rem] font-bold uppercase tracking-wider text-brand-soft mb-1">
                             About Treatment
                           </span>
                           <div
@@ -212,10 +213,10 @@ export default function ServicesPage() {
 
                       {/* Content */}
                       <div className="p-6 pb-2 space-y-1.5">
-                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-[#4fa1b0]">
+                        <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-brand-mid">
                           {service.category}
                         </span>
-                        <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug group-hover:text-[#2596be] transition-colors">
+                        <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug group-hover:text-brand transition-colors">
                           {service.name}
                         </h3>
                       </div>
@@ -223,7 +224,7 @@ export default function ServicesPage() {
 
                     {/* View Details Link Footer */}
                     <div className="px-6 pb-6 pt-0">
-                      <div className="flex items-center justify-between pt-4 text-xs font-semibold text-[#4fa1b0] group-hover:text-[#2596be] border-t border-slate-100 transition-colors">
+                      <div className="flex items-center justify-between pt-4 text-xs font-semibold text-brand-mid group-hover:text-brand border-t border-slate-100 transition-colors">
                         <span>View Treatment Details</span>
                         <ArrowRight size={15} className="group-hover:translate-x-1.5 transition-transform duration-300" />
                       </div>
@@ -237,25 +238,15 @@ export default function ServicesPage() {
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="bg-[#eaf4f6] py-20">
-        <div className="max-w-2xl mx-auto text-center space-y-4 px-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Not sure which treatment is right for you?
-          </h2>
-          <p className="text-slate-600 text-base leading-relaxed">
-            Schedule a consultation and our team will help you find the right care
-            plan for your needs.
-          </p>
-
-          <Link
-            href="/booking"
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
-          >
-            <Calendar size={16} />
-            <span>Book Appointment</span>
-          </Link>
-        </div>
-      </section>
+      <div className="max-w-[1400px] mx-auto px-6 pb-4">
+        <CtaSection
+          eyebrow="Not Sure Where To Start?"
+          title="Not Sure Which Treatment Is Right For You?"
+          description="Schedule a consultation and our team will help you find the right care plan for your needs."
+          primary={{ label: 'Book Appointment', href: '/booking' }}
+          secondary={{ label: 'Contact Us', href: '/contact' }}
+        />
+      </div>
 
       <Footer />
     </main>

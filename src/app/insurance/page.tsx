@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { Phone } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CtaSection from "../components/CtaSection";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -79,7 +78,7 @@ export default function InsurancePage() {
 
       // Bottom CTA Section ScrollTrigger
       gsap.fromTo(
-        ".insurance-cta-content",
+        ".insurance-cta-section",
         { y: 30, opacity: 0 },
         {
           y: 0,
@@ -103,10 +102,10 @@ export default function InsurancePage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-20">
           <div className="insurance-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Coverage &amp; Networks
             </span>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -147,7 +146,7 @@ export default function InsurancePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredInsurances.map((plan, idx) => (
                 <div key={idx} className="insurance-card-wrapper">
-                  <div className="group relative bg-white border border-slate-200/90 rounded-2xl p-6 h-36 flex items-center justify-center shadow-sm hover:border-[#4fa1b0]/50 hover:shadow-lg transition-all duration-300">
+                  <div className="group relative bg-white border border-slate-200/90 rounded-2xl p-6 h-36 flex items-center justify-center shadow-sm hover:border-brand-mid/50 hover:shadow-lg transition-all duration-300">
                     <div className="relative w-full h-14">
                       <Image
                         src={plan.logoUrl}
@@ -166,24 +165,15 @@ export default function InsurancePage() {
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="insurance-cta-section bg-[#eaf4f6] py-20">
-        <div className="insurance-cta-content max-w-2xl mx-auto text-center space-y-4 px-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Not covered by any of these plans? 
-          </h2>
-          <p className="text-slate-600 text-base leading-relaxed">
-            Contact us and we will find the best solution to suit your healthcare needs.
-          </p>
-
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
-          >
-            <Phone size={16} />
-            <span>Contact Us</span>
-          </Link>
-        </div>
-      </section>
+      <div className="insurance-cta-section max-w-[1400px] mx-auto px-6 pb-4">
+        <CtaSection
+          eyebrow="We Can Still Help"
+          title="Not Covered By Any Of These Plans?"
+          description="Contact us and we will find the best solution to suit your healthcare needs."
+          primary={{ label: 'Contact Us', href: '/contact' }}
+          secondary={{ label: 'Book Appointment', href: '/booking' }}
+        />
+      </div>
 
       <Footer />
     </main>

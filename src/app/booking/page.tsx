@@ -23,6 +23,8 @@ import {
 } from "../lib/api";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Select from "../components/Select";
+import DatePicker from "../components/DatePicker";
 
 const NO_PREFERENCE = "No Preference";
 const ALL_CATEGORIES = "All Categories";
@@ -52,7 +54,22 @@ interface RawDoctor {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#2596be] focus:bg-white focus:ring-4 focus:ring-[#2596be]/10";
+  "w-full rounded-xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/10";
+
+
+/** Bookable slots across clinic hours, in 30-minute steps. */
+const TIME_SLOTS = (() => {
+  const out: { value: string; label: string }[] = [];
+  for (let mins = 8 * 60 + 30; mins <= 19 * 60; mins += 30) {
+    const h24 = Math.floor(mins / 60);
+    const m = mins % 60;
+    const value = `${`${h24}`.padStart(2, "0")}:${`${m}`.padStart(2, "0")}`;
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    const label = `${h12}:${`${m}`.padStart(2, "0")} ${h24 < 12 ? "AM" : "PM"}`;
+    out.push({ value, label });
+  }
+  return out;
+})();
 
 function BookingForm() {
   const searchParams = useSearchParams();
@@ -351,7 +368,7 @@ function BookingForm() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-25">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -383,7 +400,7 @@ function BookingForm() {
         <div className="mt-10">
           {submitted ? (
             <div className="flex flex-col items-center rounded-2xl border border-slate-200/80 bg-white p-10 text-center shadow-xl shadow-slate-200/50 sm:p-14 space-y-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#4fa1b0]/10 text-[#2596be]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-mid/10 text-brand">
                 <CheckCircle2 className="h-8 w-8" strokeWidth={2} />
               </div>
 
@@ -395,13 +412,13 @@ function BookingForm() {
                   Thanks, <span className="font-semibold text-slate-900">{form.name.split(" ")[0] || "there"}</span>. We'll reach
                   out at <span className="font-medium text-slate-900">{form.phone || form.email}</span> to confirm your{" "}
                   {form.date ? `${form.date} ` : ""}appointment for{" "}
-                  <span className="font-medium text-[#2596be]">{form.service || "your visit"}</span>
+                  <span className="font-medium text-brand">{form.service || "your visit"}</span>
                   {selectedOutlet ? ` at our ${selectedOutlet.name} branch` : ""}.
                 </p>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-[#67bed9]/30 bg-[#67bed9]/10 p-4 text-left text-xs text-slate-800 max-w-md">
-                <Clock className="h-4 w-4 shrink-0 text-[#2596be] mt-0.5" strokeWidth={2} />
+              <div className="flex items-start gap-3 rounded-xl border border-brand-soft/30 bg-brand-soft/10 p-4 text-left text-xs text-slate-800 max-w-md">
+                <Clock className="h-4 w-4 shrink-0 text-brand mt-0.5" strokeWidth={2} />
                 <div>
                   <span className="font-bold block text-slate-900 text-xs mb-0.5">Early Arrival Preferred</span>
                   <span className="text-slate-600 leading-relaxed block">
@@ -412,7 +429,7 @@ function BookingForm() {
 
               <button
                 onClick={() => setSubmitted(false)}
-                className="text-xs font-bold text-[#2596be] hover:text-[#4fa1b0] transition-colors uppercase tracking-wider pt-2"
+                className="text-xs font-bold text-brand hover:text-brand-mid transition-colors uppercase tracking-wider pt-2"
               >
                 Book Another Appointment
               </button>
@@ -427,31 +444,26 @@ function BookingForm() {
                 {/* Outlet / Location Select */}
                 <label className="block sm:col-span-2 space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <MapPin className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <MapPin className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Select Clinic Outlet
                   </span>
-                  <select
+                  <Select
                     required
                     value={form.locationId}
-                    onChange={(e) => update("locationId", e.target.value)}
-                    className={inputClass}
-                  >
-                    {outlets.length === 0 ? (
-                      <option value="">Loading clinic outlets...</option>
-                    ) : (
-                      outlets.map((o) => (
-                        <option key={o.id} value={o.id}>
-                          {o.name} {o.address ? `(${o.address})` : ""}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                    onChange={(v) => update("locationId", v)}
+                    placeholder={outlets.length === 0 ? "Loading clinic outlets..." : "Select a clinic"}
+                    aria-label="Select clinic outlet"
+                    options={outlets.map((o) => ({
+                      value: o.id,
+                      label: `${o.name}${o.address ? ` (${o.address})` : ""}`,
+                    }))}
+                  />
                 </label>
 
                 {/* Full Name */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <User className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <User className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Full name
                   </span>
                   <input
@@ -467,7 +479,7 @@ function BookingForm() {
                 {/* Phone */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Phone className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Phone className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Phone number
                   </span>
                   <input
@@ -483,7 +495,7 @@ function BookingForm() {
                 {/* Email */}
                 <label className="block sm:col-span-2 space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Mail className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Mail className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Email address
                   </span>
                   <input
@@ -499,107 +511,96 @@ function BookingForm() {
                 {/* Category Filter Select */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Layers className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Layers className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Service Category
                   </span>
-                  <select
+                  <Select
                     value={selectedCategory}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    onChange={handleCategoryChange}
                     disabled={loadingOutletData || categories.length <= 1}
-                    className={inputClass}
-                  >
-                    {categories.map((cat) => (
-                      <option key={`cat-${cat}`} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </option>
-                    ))}
-                  </select>
+                    aria-label="Service category"
+                    options={categories.map((cat) => ({
+                      value: cat,
+                      label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                    }))}
+                  />
                 </label>
 
                 {/* Service Select (No time/duration shown) */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Stethoscope className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Stethoscope className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Service / Treatment
                   </span>
-                  <select
+                  <Select
                     value={form.service}
-                    onChange={(e) => update("service", e.target.value)}
+                    onChange={(v) => update("service", v)}
                     disabled={loadingOutletData}
-                    className={inputClass}
-                  >
-                    {loadingOutletData ? (
-                      <option value="">Loading services...</option>
-                    ) : filteredServices.length === 0 ? (
-                      <option value="">No services in this category</option>
-                    ) : (
-                      filteredServices.map((s) => (
-                        <option key={`service-${s.id || s.name}`} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                    aria-label="Service or treatment"
+                    placeholder={
+                      loadingOutletData
+                        ? "Loading services..."
+                        : "No services in this category"
+                    }
+                    options={filteredServices.map((sv) => ({
+                      value: sv.name,
+                      label: sv.name,
+                    }))}
+                  />
                 </label>
 
                 {/* Preferred Provider (Filtered to doctors who can do this service) */}
                 <label className="block sm:col-span-2 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                      <User className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                      <User className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                       Preferred Provider
                     </span>
                     {availableDentists.length > 1 && (
-                      <span className="text-[0.7rem] text-[#2596be] font-medium">
+                      <span className="text-[0.7rem] text-brand font-medium">
                         {availableDentists.length - 1} specialist{availableDentists.length - 1 !== 1 ? "s" : ""} available
                       </span>
                     )}
                   </div>
-                  <select
+                  <Select
                     value={form.dentist}
-                    onChange={(e) => update("dentist", e.target.value)}
+                    onChange={(v) => update("dentist", v)}
                     disabled={loadingOutletData}
-                    className={inputClass}
-                  >
-                    {loadingOutletData ? (
-                      <option value="">Loading available providers...</option>
-                    ) : (
-                      availableDentists.map((d, idx) => (
-                        <option key={`dentist-${d}-${idx}`} value={d}>
-                          {d}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                    aria-label="Preferred provider"
+                    placeholder={
+                      loadingOutletData ? "Loading available providers..." : "Any provider"
+                    }
+                    options={availableDentists.map((d) => ({ value: d, label: d }))}
+                  />
                 </label>
 
                 {/* Preferred Date */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Calendar className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Calendar className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Preferred date
                   </span>
-                  <input
+                  <DatePicker
                     required
-                    type="date"
                     value={form.date}
-                    onChange={(e) => update("date", e.target.value)}
-                    className={inputClass}
+                    onChange={(v) => update("date", v)}
+                    aria-label="Preferred date"
                   />
                 </label>
 
                 {/* Preferred Time */}
                 <label className="block space-y-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    <Clock className="h-3.5 w-3.5 text-[#2596be]" strokeWidth={2} />
+                    <Clock className="h-3.5 w-3.5 text-brand" strokeWidth={2} />
                     Preferred time
                   </span>
-                  <input
+                  <Select
                     required
-                    type="time"
                     value={form.time}
-                    onChange={(e) => update("time", e.target.value)}
-                    className={inputClass}
+                    onChange={(v) => update("time", v)}
+                    aria-label="Preferred time"
+                    placeholder="Select a time"
+                    options={TIME_SLOTS}
                   />
                 </label>
 
@@ -629,7 +630,7 @@ function BookingForm() {
               <button
                 type="submit"
                 disabled={loading || loadingOutletData}
-                className="mt-8 w-full h-12 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                className="mt-8 w-full h-12 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200 flex items-center justify-center disabled:opacity-60 cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

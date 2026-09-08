@@ -12,7 +12,12 @@ import {
   CheckCircle2,
   Loader2,
   ShieldCheck,
+  MapPin,
+  Clock,
+  Printer,
+  Navigation,
 } from "lucide-react";
+import Select from "../components/Select";
 import { getPublicLocations, getPublicDoctors } from "../lib/api";
 
 interface OutletOption {
@@ -22,7 +27,24 @@ interface OutletOption {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#4fa1b0] focus:ring-4 focus:ring-[#4fa1b0]/10";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/10";
+
+const CLINICS = [
+  {
+    city: "Irving",
+    address: "7429 Las Colinas Blvd, Ste 101, Irving, TX 75063",
+    hours: "Mon–Fri 8:30 am – 7:00 pm · Sat 10:00 am – 3:30 pm (by appt)",
+    directionsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=7429+Las+Colinas+Blvd+Ste+101,+Irving,+TX+75063",
+  },
+  {
+    city: "Celina",
+    address: "3925 S Preston Rd, Ste 100, Celina, TX 75009",
+    hours: "Mon–Fri 8:30 am – 5:30 pm · Sat & Sun Closed",
+    directionsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=3925+S+Preston+Rd+Ste+100,+Celina,+TX+75009",
+  },
+];
 
 const labelClass =
   "block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5";
@@ -120,7 +142,7 @@ export default function ContactPage() {
       <Header />
 
       {/* Hero Header Section */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-20">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -150,16 +172,94 @@ export default function ContactPage() {
 
       {/* Main Content Area */}
       <section className="pb-24 pt-8 max-w-[1400px] mx-auto px-6 md:px-10">
-        <div className="max-w-6xl mx-auto space-y-16">
-          {/* Form Container */}
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[42%_58%] gap-10 lg:gap-16 items-start">
+
+          {/* LEFT: reach us directly */}
+          <div className="space-y-8 lg:pt-4">
+            <div className="space-y-3">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+                / get in touch /
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 leading-tight">
+                We&apos;re always ready to help and answer your questions
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                Call us for appointments and urgent questions, or send a message
+                and our team will get back to you.
+              </p>
+            </div>
+
+            {/* Call + email */}
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900">Call Center</h3>
+                <a
+                  href="tel:4694420202"
+                  className="flex items-center gap-2 text-sm text-slate-600 hover:text-brand transition-colors duration-300"
+                >
+                  <Phone size={14} className="shrink-0 text-brand-mid" />
+                  469-442-0202
+                </a>
+                <p className="flex items-center gap-2 text-xs text-slate-500">
+                  <Printer size={13} className="shrink-0 text-brand-mid" />
+                  fax: 469-372-6188
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900">Email</h3>
+                <a
+                  href="mailto:admin@tppcare.com"
+                  className="flex items-center gap-2 text-sm text-slate-600 hover:text-brand transition-colors duration-300 break-all"
+                >
+                  <Mail size={14} className="shrink-0 text-brand-mid" />
+                  admin@tppcare.com
+                </a>
+              </div>
+            </div>
+
+            {/* Locations */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-900">Our Locations</h3>
+              <div className="grid sm:grid-cols-2 gap-5">
+                {CLINICS.map((clinic) => (
+                  <div key={clinic.city} className="space-y-1.5">
+                    <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                      <MapPin size={14} className="shrink-0 text-brand-mid" />
+                      {clinic.city}
+                    </p>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {clinic.address}
+                    </p>
+                    <p className="flex items-start gap-1.5 text-xs text-slate-500 leading-relaxed">
+                      <Clock size={12} className="mt-0.5 shrink-0 text-brand-mid" />
+                      {clinic.hours}
+                    </p>
+                    <a
+                      href={clinic.directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand-dark transition-colors duration-300"
+                    >
+                      <Navigation size={11} />
+                      Directions
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: the form */}
           <div className="w-full bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-lg shadow-slate-100">
             {/* Form Header */}
-            <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                Send A Message To Texas Primary &amp; Pediatric Care
+            <div className="space-y-2 mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Send Us A Message
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                If you have any questions, concerns, or comments regarding our services, please fill out the contact form below.
+                Questions, concerns, or comments about our services — fill out the
+                form and we&apos;ll be in touch.
               </p>
             </div>
 
@@ -176,7 +276,7 @@ export default function ContactPage() {
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
-                  className="text-xs font-bold text-[#4fa1b0] uppercase tracking-wider hover:underline pt-3 block mx-auto"
+                  className="text-xs font-bold text-brand-mid uppercase tracking-wider hover:underline pt-3 block mx-auto"
                 >
                   Send another message
                 </button>
@@ -189,57 +289,49 @@ export default function ContactPage() {
                     {/* Dynamic Locations / Outlets Dropdown */}
                     <div>
                       <label className={labelClass}>
-                        <Building2 size={13} className="text-[#4fa1b0]" /> LOCATION
+                        <Building2 size={13} className="text-brand-mid" /> LOCATION
                       </label>
-                      <select
-                        value={form.location}
-                        onChange={(e) => update("location", e.target.value)}
-                        className={inputClass}
+                      <Select
                         required
-                      >
-                        {outlets.length === 0 ? (
-                          <option value="">Loading clinic outlets...</option>
-                        ) : (
-                          outlets.map((o) => (
-                            <option key={o.id} value={o.id}>
-                              {o.name} {o.address ? `(${o.address})` : ""}
-                            </option>
-                          ))
-                        )}
-                      </select>
+                        value={form.location}
+                        onChange={(v) => update("location", v)}
+                        aria-label="Location"
+                        placeholder={
+                          outlets.length === 0
+                            ? "Loading clinic outlets..."
+                            : "Select a location"
+                        }
+                        options={outlets.map((o) => ({
+                          value: o.id,
+                          label: `${o.name}${o.address ? ` (${o.address})` : ""}`,
+                        }))}
+                      />
                     </div>
 
                     {/* Dynamic Doctors Dropdown */}
                     <div>
                       <label className={labelClass}>
-                        <User size={13} className="text-[#4fa1b0]" /> DOCTOR
+                        <User size={13} className="text-brand-mid" /> DOCTOR
                       </label>
-                      <select
+                      <Select
                         value={form.doctor}
-                        onChange={(e) => update("doctor", e.target.value)}
+                        onChange={(v) => update("doctor", v)}
                         disabled={loadingDoctors}
-                        className={inputClass}
-                      >
-                        {loadingDoctors ? (
-                          <option value="">Loading doctors...</option>
-                        ) : doctors.length === 0 ? (
-                          <option value="">No doctors available for this outlet</option>
-                        ) : (
-                          <>
-                            <option value="">- Select Doctor -</option>
-                            {doctors.map((doc, idx) => (
-                              <option key={`doc-${doc}-${idx}`} value={doc}>
-                                {doc}
-                              </option>
-                            ))}
-                          </>
-                        )}
-                      </select>
+                        aria-label="Doctor"
+                        placeholder={
+                          loadingDoctors
+                            ? "Loading doctors..."
+                            : doctors.length === 0
+                              ? "No doctors available for this outlet"
+                              : "- Select Doctor -"
+                        }
+                        options={doctors.map((doc) => ({ value: doc, label: doc }))}
+                      />
                     </div>
 
                     <div>
                       <label className={labelClass}>
-                        <User size={13} className="text-[#4fa1b0]" /> NAME
+                        <User size={13} className="text-brand-mid" /> NAME
                       </label>
                       <input
                         type="text"
@@ -253,7 +345,7 @@ export default function ContactPage() {
 
                     <div>
                       <label className={labelClass}>
-                        <Mail size={13} className="text-[#4fa1b0]" /> EMAIL ADDRESS
+                        <Mail size={13} className="text-brand-mid" /> EMAIL ADDRESS
                       </label>
                       <input
                         type="email"
@@ -267,7 +359,7 @@ export default function ContactPage() {
 
                     <div>
                       <label className={labelClass}>
-                        <Phone size={13} className="text-[#4fa1b0]" /> PHONE NUMBER
+                        <Phone size={13} className="text-brand-mid" /> PHONE NUMBER
                       </label>
                       <input
                         type="tel"
@@ -284,7 +376,7 @@ export default function ContactPage() {
                   <div className="space-y-4">
                     <div>
                       <label className={labelClass}>
-                        <MessageSquare size={13} className="text-[#4fa1b0]" /> COMMENTS
+                        <MessageSquare size={13} className="text-brand-mid" /> COMMENTS
                       </label>
                       <textarea
                         rows={5}
@@ -304,7 +396,7 @@ export default function ContactPage() {
                           required
                           checked={form.consent1}
                           onChange={(e) => update("consent1", e.target.checked)}
-                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#4fa1b0] focus:ring-[#4fa1b0] shrink-0"
+                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-mid focus:ring-brand-mid shrink-0"
                         />
                         <span className="group-hover:text-slate-900 transition-colors">
                           I understand and agree that any information submitted will be forwarded to our office by email and not via a secure messaging system. This form should not be used to transmit private health information, and we disclaim all warranties with respect to confidentiality.
@@ -316,7 +408,7 @@ export default function ContactPage() {
                           type="checkbox"
                           checked={form.consent2}
                           onChange={(e) => update("consent2", e.target.checked)}
-                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#4fa1b0] focus:ring-[#4fa1b0] shrink-0"
+                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-mid focus:ring-brand-mid shrink-0"
                         />
                         <span className="group-hover:text-slate-900 transition-colors">
                           By checking this box, I consent to receive text messages related to SMS from Texas Primary &amp; Pediatric Care. Reply &apos;STOP&apos; to opt-out at any time.
@@ -332,17 +424,17 @@ export default function ContactPage() {
                     </div>
 
                     {/* Captcha Box */}
-                    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 flex items-center justify-between text-xs text-slate-600">
+                    <div className="rounded-xl border border-slate-200 bg-surface p-3.5 flex items-center justify-between text-xs text-slate-600">
                       <label className="flex items-center gap-2.5 cursor-pointer">
                         <input
                           type="checkbox"
                           required
-                          className="h-5 w-5 rounded border-slate-300 text-[#4fa1b0] focus:ring-[#4fa1b0]"
+                          className="h-5 w-5 rounded border-slate-300 text-brand-mid focus:ring-brand-mid"
                         />
                         <span className="font-medium text-slate-700">I&apos;m not a robot</span>
                       </label>
                       <div className="flex flex-col items-center justify-center text-[9px] text-slate-400 font-bold leading-tight">
-                        <ShieldCheck size={16} className="text-[#4fa1b0] mb-0.5" />
+                        <ShieldCheck size={16} className="text-brand-mid mb-0.5" />
                         <span>reCAPTCHA</span>
                       </div>
                     </div>
@@ -354,7 +446,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full sm:w-64 h-12 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-60 uppercase tracking-wider cursor-pointer"
+                    className="w-full sm:w-64 h-12 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-60 uppercase tracking-wider cursor-pointer"
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">

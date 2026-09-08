@@ -11,6 +11,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import Select from "./Select";
 import { getPublicLocations, getPublicDoctors } from "../lib/api";
 
 interface OutletOption {
@@ -20,7 +21,7 @@ interface OutletOption {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10";
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/10";
 
 const labelClass =
   "block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5";
@@ -117,10 +118,10 @@ export default function ContactForm() {
     <div className="w-full max-w-5xl mx-auto bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 shadow-xl shadow-slate-200/50">
       {/* Header Section */}
       <div className="text-center max-w-2xl mx-auto space-y-2 mb-8">
-        <span className="text-xs font-bold uppercase tracking-widest text-[#2596be]">
+        <span className="text-xs font-bold uppercase tracking-widest text-brand">
           CONTACT US
         </span>
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+        <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
           Send A Message To Texas Primary & Pediatric Care
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
@@ -141,7 +142,7 @@ export default function ContactForm() {
           </p>
           <button
             onClick={() => setSubmitted(false)}
-            className="text-xs font-bold text-[#2596be] uppercase tracking-wider hover:underline pt-3 block mx-auto"
+            className="text-xs font-bold text-brand uppercase tracking-wider hover:underline pt-3 block mx-auto"
           >
             Send another message
           </button>
@@ -156,57 +157,47 @@ export default function ContactForm() {
               {/* Dynamic Locations / Outlets Dropdown */}
               <div>
                 <label className={labelClass}>
-                  <Building2 size={13} className="text-[#2596be]" /> LOCATION
+                  <Building2 size={13} className="text-brand" /> LOCATION
                 </label>
-                <select
-                  value={form.location}
-                  onChange={(e) => update("location", e.target.value)}
-                  className={inputClass}
+                <Select
                   required
-                >
-                  {outlets.length === 0 ? (
-                    <option value="">Loading clinic outlets...</option>
-                  ) : (
-                    outlets.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.name} {o.address ? `(${o.address})` : ""}
-                      </option>
-                    ))
-                  )}
-                </select>
+                  value={form.location}
+                  onChange={(v) => update("location", v)}
+                  aria-label="Location"
+                  placeholder={
+                    outlets.length === 0 ? "Loading clinic outlets..." : "Select a location"
+                  }
+                  options={outlets.map((o) => ({
+                    value: o.id,
+                    label: `${o.name}${o.address ? ` (${o.address})` : ""}`,
+                  }))}
+                />
               </div>
 
               {/* Dynamic Doctors Dropdown */}
               <div>
                 <label className={labelClass}>
-                  <User size={13} className="text-[#2596be]" /> DOCTOR
+                  <User size={13} className="text-brand" /> DOCTOR
                 </label>
-                <select
+                <Select
                   value={form.doctor}
-                  onChange={(e) => update("doctor", e.target.value)}
+                  onChange={(v) => update("doctor", v)}
                   disabled={loadingDoctors}
-                  className={inputClass}
-                >
-                  {loadingDoctors ? (
-                    <option value="">Loading doctors...</option>
-                  ) : doctors.length === 0 ? (
-                    <option value="">No doctors available for this outlet</option>
-                  ) : (
-                    <>
-                      <option value="">- Select Doctor -</option>
-                      {doctors.map((doc, idx) => (
-                        <option key={`doc-${doc}-${idx}`} value={doc}>
-                          {doc}
-                        </option>
-                      ))}
-                    </>
-                  )}
-                </select>
+                  aria-label="Doctor"
+                  placeholder={
+                    loadingDoctors
+                      ? "Loading doctors..."
+                      : doctors.length === 0
+                        ? "No doctors available for this outlet"
+                        : "- Select Doctor -"
+                  }
+                  options={doctors.map((doc) => ({ value: doc, label: doc }))}
+                />
               </div>
 
               <div>
                 <label className={labelClass}>
-                  <User size={13} className="text-[#2596be]" /> NAME
+                  <User size={13} className="text-brand" /> NAME
                 </label>
                 <input
                   type="text"
@@ -220,7 +211,7 @@ export default function ContactForm() {
 
               <div>
                 <label className={labelClass}>
-                  <Mail size={13} className="text-[#2596be]" /> EMAIL ADDRESS
+                  <Mail size={13} className="text-brand" /> EMAIL ADDRESS
                 </label>
                 <input
                   type="email"
@@ -234,7 +225,7 @@ export default function ContactForm() {
 
               <div>
                 <label className={labelClass}>
-                  <Phone size={13} className="text-[#2596be]" /> PHONE NUMBER
+                  <Phone size={13} className="text-brand" /> PHONE NUMBER
                 </label>
                 <input
                   type="tel"
@@ -251,7 +242,7 @@ export default function ContactForm() {
             <div className="space-y-4">
               <div>
                 <label className={labelClass}>
-                  <MessageSquare size={13} className="text-[#2596be]" /> COMMENTS
+                  <MessageSquare size={13} className="text-brand" /> COMMENTS
                 </label>
                 <textarea
                   rows={5}
@@ -271,7 +262,7 @@ export default function ContactForm() {
                     required
                     checked={form.consent1}
                     onChange={(e) => update("consent1", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#2596be] focus:ring-[#2596be] shrink-0"
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand shrink-0"
                   />
                   <span className="group-hover:text-slate-900 transition-colors">
                     I understand and agree that any information submitted will be forwarded to our office by email and not via a secure messaging system. This form should not be used to transmit private health information, and we disclaim all warranties with respect to the privacy and confidentiality of any information submitted through this form.
@@ -283,7 +274,7 @@ export default function ContactForm() {
                     type="checkbox"
                     checked={form.consent2}
                     onChange={(e) => update("consent2", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#2596be] focus:ring-[#2596be] shrink-0"
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand shrink-0"
                   />
                   <span className="group-hover:text-slate-900 transition-colors">
                     By checking this box, I consent to receive text messages related to SMS from Texas Primary & Pediatric Care. You can reply 'STOP' at any time to opt-out. Message and data rates may apply. Message frequency may vary; text HELP for assistance.
@@ -300,17 +291,17 @@ export default function ContactForm() {
               </div>
 
               {/* reCAPTCHA Widget Placeholder */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 flex items-center justify-between text-xs text-slate-600">
+              <div className="rounded-xl border border-slate-200 bg-surface p-3.5 flex items-center justify-between text-xs text-slate-600">
                 <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     required
-                    className="h-5 w-5 rounded border-slate-300 text-[#2596be] focus:ring-[#2596be]"
+                    className="h-5 w-5 rounded border-slate-300 text-brand focus:ring-brand"
                   />
-                  <span className="font-medium text-slate-700">I'm not a robot</span>
+                  <span className="font-medium text-slate-700">I&apos;m not a robot</span>
                 </label>
                 <div className="flex flex-col items-center justify-center text-[9px] text-slate-400 font-bold leading-tight">
-                  <ShieldCheck size={16} className="text-[#2596be] mb-0.5" />
+                  <ShieldCheck size={16} className="text-brand mb-0.5" />
                   <span>reCAPTCHA</span>
                 </div>
               </div>
@@ -322,7 +313,7 @@ export default function ContactForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-64 h-12 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-60 uppercase tracking-wider"
+              className="w-full sm:w-64 h-12 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all flex items-center justify-center disabled:opacity-60 uppercase tracking-wider"
             >
               {loading ? (
                 <span className="flex items-center gap-2">

@@ -9,7 +9,7 @@ export default function AboutPage() {
       <Header />
 
       {/* Styled Header Title Matching Locations Page */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-20">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -58,9 +58,9 @@ export default function AboutPage() {
             </p>
 
             {/* Structured Highlight Block */}
-            <div className="my-8 space-y-5 border-l-2 border-[#4fa1b0]/30 pl-6 py-1">
+            <div className="my-8 space-y-5 border-l-2 border-brand-mid/30 pl-6 py-1">
               <p>
-                <strong className="text-[#4fa1b0] font-semibold uppercase tracking-wider text-xs block mb-1">
+                <strong className="text-brand-mid font-semibold uppercase tracking-wider text-xs block mb-1">
                   Adult Care Services
                 </strong>
                 The team offers a variety of medical services on-site, including adult primary care, chronic disease management, 
@@ -70,7 +70,7 @@ export default function AboutPage() {
               </p>
 
               <p>
-                <strong className="text-[#4fa1b0] font-semibold uppercase tracking-wider text-xs block mb-1">
+                <strong className="text-brand-mid font-semibold uppercase tracking-wider text-xs block mb-1">
                   Pediatric Care Services
                 </strong>
                 Children and teenagers can receive comprehensive pediatric care, including pediatric growth and developmental 

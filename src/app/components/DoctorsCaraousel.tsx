@@ -7,6 +7,7 @@ import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import BgMotif from "./BgMotif";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -146,27 +147,30 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
   };
 
   return (
-    <section ref={sectionRef} className="py-24 bg-slate-50 overflow-hidden relative font-sans">
-      <div className="relative z-10 max-w-[1400px] mx-auto pb-4">
+    <section ref={sectionRef} className="py-24 bg-surface overflow-hidden relative font-sans">
+      <BgMotif variant="cross" side="left" position="top" opacity={0.04} />
+      <BgMotif variant="family" side="right" position="bottom" opacity={0.045} />
+
+      <div className="relative z-10 pb-4">
 
         {/* Header */}
         <div className="doctors-header px-6 text-center space-y-3 mb-16 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
             Our Team
           </span>
           <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Compassionate &amp; Experienced Healthcare Providers
           </h2>
-          <div className="w-12 h-0.5 bg-[#4fa1b0] mx-auto rounded-full mt-2" />
+          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
         </div>
 
         {/* Carousel Outer Wrapper */}
-        <div className="doctors-carousel-wrapper relative px-4 md:px-12">
+        <div className="doctors-carousel-wrapper relative">
 
           {/* Left Arrow Button */}
           <button
             onClick={() => handleScroll("left")}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             aria-label="Previous Doctor"
           >
             <ChevronLeft size={24} />
@@ -175,7 +179,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
           {/* Right Arrow Button */}
           <button
             onClick={() => handleScroll("right")}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             aria-label="Next Doctor"
           >
             <ChevronRight size={24} />
@@ -186,7 +190,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
             ref={scrollRef}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="flex gap-6 overflow-x-auto scroll-smooth py-6 px-4 no-scrollbar"
+            className="flex gap-6 overflow-x-auto scroll-smooth py-6 px-6 md:px-24 no-scrollbar"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {loading ? (
@@ -222,11 +226,11 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
 
                     {/* Accent line that grows on hover */}
-                    <div className="absolute bottom-[76px] left-6 h-0.5 w-8 bg-[#4fa1b0] rounded-full transition-all duration-500 group-hover:w-14" />
+                    <div className="absolute bottom-[76px] left-6 h-0.5 w-8 bg-brand-mid rounded-full transition-all duration-500 group-hover:w-14" />
 
                     {/* Name & specialization */}
                     <div className="absolute bottom-0 left-0 right-0 p-6 space-y-1">
-                      <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm group-hover:text-[#67bed9] transition-colors">
+                      <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm group-hover:text-brand-soft transition-colors">
                         {doc.name}
                       </h3>
                       <p className="text-white/75 text-xs leading-relaxed font-normal">

@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import BgMotif from './BgMotif';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -45,7 +46,7 @@ const BLOG_POSTS: BlogPost[] = [
     description:
       'Planning a summer getaway? Whether traveling internationally or crossing state lines, ensuring your children are up to date on immunizations is your best defense.',
     imageUrl:
-      'https://images.unsplash.com/photo-1631815588090-d4bfec5b1cb9?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=600',
     slug: '/blog/summer-travel-kids-vaccines-up-to-date',
   },
 ];
@@ -85,18 +86,21 @@ export default function BlogSection() {
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-[#e0f2fe] font-sans">
-      <div className="max-w-[1240px] mx-auto px-6 space-y-16">
+    <section ref={sectionRef} className="relative pt-20 pb-6 bg-white overflow-hidden font-sans">
+      <BgMotif variant="cross" side="left" position="top" opacity={0.045} />
+      <BgMotif variant="stethoscope" side="right" position="bottom" opacity={0.04} />
+
+      <div className="relative z-10 max-w-[1240px] mx-auto px-6 space-y-12">
         
         {/* Header */}
         <div className="blog-header text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
             Insights &amp; Articles
           </span>
           <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Latest Health News
           </h2>
-          <div className="w-12 h-0.5 bg-[#4fa1b0] mx-auto rounded-full mt-2" />
+          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
         </div>
 
         {/* 3-Column Cards Grid */}
@@ -104,39 +108,41 @@ export default function BlogSection() {
           {BLOG_POSTS.map((post) => (
             <article
               key={post.id}
-              className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+              className="blog-card reveal-card group relative flex flex-col"
             >
-              <div>
-                {/* Image Wrapper */}
-                <Link href={post.slug} className="block relative overflow-hidden aspect-[16/10] bg-slate-100">
-                  <img
-                    src={post.imageUrl}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
+              {/* Image — shrinks on hover, pulling the title upward */}
+              <Link
+                href={post.slug}
+                className="reveal-media relative block w-full h-[240px] shrink-0 overflow-hidden rounded-2xl bg-slate-100 transition-all duration-500 ease-in-out"
+              >
+                <img
+                  src={post.imageUrl}
+                  alt={post.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+
+                {/* Arrow badge, revealed on hover */}
+                <span className="reveal-arrow absolute bottom-3 right-4 grid place-items-center w-10 h-10 rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
+                  <ArrowUpRight size={18} />
+                </span>
+              </Link>
+
+              {/* Content */}
+              <div className="reveal-content pt-5">
+                <Link href={post.slug}>
+                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors duration-300 line-clamp-3">
+                    {post.title}
+                  </h3>
                 </Link>
 
-                {/* Content */}
-                <div className="p-7 space-y-3">
-                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#2596be] transition-colors">
-                    <Link href={post.slug}>{post.title}</Link>
-                  </h3>
-
-                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
+                {/* Description — expands on hover via a collapsing grid
+                    row, so it adapts to any title/description length.
+                    On touch devices it simply stays visible. */}
+                <div className="reveal-body">
+                  <p className="reveal-body-inner text-sm text-slate-500 leading-relaxed line-clamp-4 font-normal">
                     {post.description}
                   </p>
                 </div>
-              </div>
-
-              {/* Card Footer Link */}
-              <div className="px-7 pb-7 pt-0">
-                <Link
-                  href={post.slug}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2596be] group-hover:text-slate-900 transition-colors"
-                >
-                  Read Article
-                  <ArrowUpRight size={15} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </Link>
               </div>
 
             </article>

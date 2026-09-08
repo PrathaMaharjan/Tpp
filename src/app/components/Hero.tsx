@@ -8,11 +8,11 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const HERO_IMAGES = [
-  '/hero-1.jpeg',
-  '/hero-2.jpeg',
-  '/hero-3.png',
-  '/hero-4.png',
-  '/hero-5.jpeg',
+  '/hero-1.webp',
+  '/hero-2.webp',
+  '/hero-3.webp',
+  '/hero-4.webp',
+  '/hero-5.webp',
 ];
 
 export default function Hero() {
@@ -95,7 +95,7 @@ export default function Hero() {
       <button
         onClick={prevSlide}
         aria-label="Previous slide"
-        className="absolute left-4 z-20 p-2.5 rounded-full bg-white/80 hover:bg-[#4fa1b0] hover:text-white text-slate-700 transition-all duration-300 border border-slate-200 shadow-sm hidden md:flex"
+        className="absolute left-4 z-20 p-2.5 rounded-full bg-white/80 hover:bg-brand-mid hover:text-white text-slate-700 transition-all duration-300 border border-slate-200 shadow-sm hidden md:flex"
       >
         <ChevronLeft size={20} />
       </button>
@@ -103,7 +103,7 @@ export default function Hero() {
       <button
         onClick={nextSlide}
         aria-label="Next slide"
-        className="absolute right-4 z-20 p-2.5 rounded-full bg-white/80 hover:bg-[#4fa1b0] hover:text-white text-slate-700 transition-all duration-300 border border-slate-200 shadow-sm hidden md:flex"
+        className="absolute right-4 z-20 p-2.5 rounded-full bg-white/80 hover:bg-brand-mid hover:text-white text-slate-700 transition-all duration-300 border border-slate-200 shadow-sm hidden md:flex"
       >
         <ChevronRight size={20} />
       </button>
@@ -113,7 +113,7 @@ export default function Hero() {
         <div className="max-w-2xl space-y-6">
           <h1 className="hero-headline text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
             Texas Primary & <br />
-            <span className="text-[#67bed9]">Pediatric Care</span>
+            <span className="text-brand-soft">Pediatric Care</span>
           </h1>
 
           <p className="hero-subtext text-lg md:text-xl text-white/90 font-normal leading-relaxed">
@@ -123,10 +123,10 @@ export default function Hero() {
           <div className="hero-btn">
             <Link
               href="/booking"
-              className="group relative inline-flex items-center gap-4 pl-6 pr-2 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold shadow-lg hover:shadow-lg hover:shadow-[#2596be]/30 active:scale-[0.99] transition-all duration-300 transform hover:-translate-y-0.5 overflow-hidden"
+              className="group relative inline-flex items-center gap-4 pl-6 pr-2 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold shadow-lg hover:shadow-lg hover:shadow-brand/30 active:scale-[0.99] transition-all duration-300 transform hover:-translate-y-0.5 overflow-hidden"
             >
               {/* Gradient Fill Background Overlay on Hover */}
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left rounded-full" />
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-brand via-brand-mid to-brand-soft scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left rounded-full" />
 
               {/* Button Text */}
               <span className="relative z-10 group-hover:text-white transition-colors duration-300">
@@ -134,7 +134,7 @@ export default function Hero() {
               </span>
 
               {/* Arrow Circle Icon Badge */}
-              <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-[#2596be] group-hover:bg-white/20 text-white transition-colors duration-300">
+              <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-brand group-hover:bg-white/20 text-white transition-colors duration-300">
                 <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform duration-300" />
               </span>
             </Link>
@@ -150,7 +150,7 @@ export default function Hero() {
             onClick={() => setCurrentIndex(index)}
             aria-label={`Go to slide ${index + 1}`}
             className={`h-2 rounded-full transition-all duration-300 ${
-              index === currentIndex ? 'w-6 bg-[#4fa1b0]' : 'w-2 bg-white/60 hover:bg-white/80'
+              index === currentIndex ? 'w-6 bg-brand-mid' : 'w-2 bg-white/60 hover:bg-white/80'
             }`}
           />
         ))}

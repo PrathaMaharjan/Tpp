@@ -74,7 +74,7 @@ export default function AboutSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-24 bg-[#67bed9]/10 overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative py-24 bg-brand-soft/10 overflow-hidden font-sans">
 
       {/* Signature background: a life-stages arc rather than decorative blobs */}
       <svg
@@ -97,28 +97,28 @@ export default function AboutSection() {
 
         {/* Header */}
         <div className="about-header text-center space-y-3 mb-20 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
             Why Choose Us
           </span>
           <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Comprehensive Care for Every Stage of Life
           </h2>
-          <div className="w-12 h-0.5 bg-[#4fa1b0] mx-auto rounded-full mt-2" />
+          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
         </div>
 
         {/* Life-stages strip */}
         <div className="stages-container relative mb-20">
-          <div className="absolute left-0 right-0 top-6 h-px bg-gradient-to-r from-[#67bed9]/0 via-[#4fa1b0]/40 to-[#2596be]/0 hidden sm:block" />
+          <div className="absolute left-0 right-0 top-6 h-px bg-gradient-to-r from-brand-soft/0 via-brand-mid/40 to-brand/0 hidden sm:block" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4">
             {STAGES.map(({ label, icon: Icon, tint }) => (
               <div key={label} className="stage-item group flex flex-col items-center text-center gap-3 cursor-pointer">
                 <div
-                  className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm ring-4 ring-[#67bed9]/10 transition-all duration-300 group-hover:scale-110 group-hover:ring-[#67bed9]/25 group-hover:shadow-md"
+                  className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-sm ring-4 ring-brand-soft/10 transition-all duration-300 group-hover:scale-110 group-hover:ring-brand-soft/25 group-hover:shadow-md"
                   style={{ backgroundColor: tint }}
                 >
                   <Icon size={20} />
                 </div>
-                <span className="text-sm font-semibold text-slate-600 transition-colors duration-300 group-hover:text-[#2596be]">
+                <span className="text-sm font-semibold text-slate-600 transition-colors duration-300 group-hover:text-brand">
                   {label}
                 </span>
               </div>
@@ -131,11 +131,11 @@ export default function AboutSection() {
 
           {/* Left Card 3-cols */}
           <div className="about-card-wrapper md:col-span-3">
-            <div className="group relative h-full bg-gradient-to-br from-white to-[#67bed9]/10 rounded-2xl border border-slate-200/80 p-8 sm:p-10 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:border-[#2596be]/30 transition-all duration-300">
+            <div className="group relative h-full bg-gradient-to-br from-white to-brand-soft/10 rounded-2xl border border-slate-200/80 p-8 sm:p-10 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:border-brand/30 transition-all duration-300">
               {/* Decorative glow */}
-              <div className="absolute -top-16 -right-16 w-56 h-56 bg-[#67bed9]/20 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-125 pointer-events-none" />
+              <div className="absolute -top-16 -right-16 w-56 h-56 bg-brand-soft/20 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-125 pointer-events-none" />
 
-              <div className="relative w-14 h-14 rounded-2xl bg-[#67bed9]/15 flex items-center justify-center text-[#2596be] mb-6 transition-all duration-300 group-hover:bg-[#2596be] group-hover:text-white group-hover:-rotate-6 group-hover:scale-110">
+              <div className="relative w-14 h-14 rounded-2xl bg-brand-soft/15 flex items-center justify-center text-brand mb-6 transition-all duration-300 group-hover:bg-brand group-hover:text-white group-hover:-rotate-6 group-hover:scale-110">
                 <HeartPulse size={26} />
               </div>
               <h3 className="relative text-2xl font-bold text-slate-900 mb-3 tracking-tight">Pediatric &amp; adult care, under one roof</h3>
@@ -148,12 +148,12 @@ export default function AboutSection() {
 
           {/* Right Card 2-cols */}
           <div className="about-card-wrapper md:col-span-2">
-            <div className="group relative h-full bg-gradient-to-br from-[#2596be] to-[#1d7a94] rounded-2xl p-8 sm:p-10 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="group relative h-full bg-gradient-to-br from-brand to-brand-dark rounded-2xl p-8 sm:p-10 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               {/* Decorative rings */}
               <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full border border-white/10 transition-transform duration-700 group-hover:scale-110 pointer-events-none" />
               <div className="absolute -bottom-10 -left-10 w-28 h-28 rounded-full border border-white/10 pointer-events-none" />
 
-              <div className="relative w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-white mb-6 transition-all duration-300 group-hover:bg-white group-hover:text-[#2596be] group-hover:rotate-6 group-hover:scale-110">
+              <div className="relative w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center text-white mb-6 transition-all duration-300 group-hover:bg-white group-hover:text-brand group-hover:rotate-6 group-hover:scale-110">
                 <ShieldCheck size={26} />
               </div>
               <div className="relative">
@@ -171,7 +171,7 @@ export default function AboutSection() {
         <div className="about-cta flex justify-center">
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2596be] hover:text-[#4fa1b0] transition-colors group shrink-0"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-mid transition-colors group shrink-0"
           >
             <span>Learn more about our practice</span>
             <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />

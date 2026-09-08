@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import Breadcrumbs from "../../components/Breadcrumbs";
 import { getPublicDoctors, getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -192,6 +193,12 @@ export default function DoctorDetailPage() {
     if (doctorId) {
       fetchDoctorAndTreatments();
     }
+
+    // The isMounted guards below were dead: nothing ever set this to
+    // false, so state could still be set after unmount.
+    return () => {
+      isMounted = false;
+    };
   }, [doctorId]);
 
   useGSAP(
@@ -282,10 +289,19 @@ export default function DoctorDetailPage() {
       <Header />
 
       {/* Hero / Page Header */}
-      <section className="relative bg-[#eaf4f6] pt-40 pb-20">
+      <section className="relative bg-surface-2 pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
+          <Breadcrumbs
+            className="doctor-detail-header mb-2"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Providers', href: '/providers' },
+              { label: currentDoctor.name },
+            ]}
+          />
+
           <div className="doctor-detail-header space-y-2 max-w-3xl">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
               {currentDoctor.specialization || "Healthcare Provider"}
             </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
@@ -293,7 +309,7 @@ export default function DoctorDetailPage() {
             </h1>
             {currentDoctor.qualification && (
               <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                <Award size={16} className="text-[#2596be]" />
+                <Award size={16} className="text-brand" />
                 <span>{currentDoctor.qualification}</span>
               </p>
             )}
@@ -332,7 +348,7 @@ export default function DoctorDetailPage() {
 
         {/* Overview / Bio Section */}
         <div className="space-y-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             About {displayName}
           </h2>
           <div
@@ -346,7 +362,7 @@ export default function DoctorDetailPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
              
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
                 Treatments & Procedures
               </h2>
             </div>
@@ -358,11 +374,11 @@ export default function DoctorDetailPage() {
               {treatments.map((treatment) => (
                 <div
                   key={treatment.id}
-                  className="doctor-treatment-card group relative bg-white border border-slate-200/90 hover:border-[#4fa1b0] rounded-xl p-5 transition-all duration-300 hover:shadow-md flex flex-col justify-between"
+                  className="doctor-treatment-card group relative bg-white border border-slate-200/90 hover:border-brand-mid rounded-xl p-5 transition-all duration-300 hover:shadow-md flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-lg bg-[#eaf4f6] text-[#2596be] group-hover:bg-[#2596be] group-hover:text-white flex items-center justify-center transition-colors duration-200">
+                      <div className="w-10 h-10 rounded-lg bg-surface-2 text-brand group-hover:bg-brand group-hover:text-white flex items-center justify-center transition-colors duration-200">
                         <Stethoscope size={20} />
                       </div>
                       {treatment.durationMinutes && (
@@ -375,11 +391,11 @@ export default function DoctorDetailPage() {
 
                     <div>
                       {treatment.category && (
-                        <span className="text-[11px] font-semibold tracking-wider text-[#4fa1b0] uppercase block mb-1">
+                        <span className="text-[11px] font-semibold tracking-wider text-brand-mid uppercase block mb-1">
                           {treatment.category}
                         </span>
                       )}
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-[#2596be] transition-colors leading-snug">
+                      <h3 className="text-base font-bold text-slate-900 group-hover:text-brand transition-colors leading-snug">
                         {treatment.name}
                       </h3>
                       {treatment.description && (
@@ -394,7 +410,7 @@ export default function DoctorDetailPage() {
                  
                     <Link
                       href={`/booking?dentist=${encodeURIComponent(currentDoctor.name)}&service=${encodeURIComponent(treatment.name)}`}
-                      className="inline-flex items-center gap-1 text-[#2596be] group-hover:text-[#1e7898] transition-colors"
+                      className="inline-flex items-center gap-1 text-brand group-hover:text-brand-dark transition-colors"
                     >
                       <span>Book Treatment</span>
                       <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -416,7 +432,7 @@ export default function DoctorDetailPage() {
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="doctor-cta-section bg-[#eaf4f6] py-20 mt-12">
+      <section className="doctor-cta-section bg-surface-2 py-20 mt-12">
         <div className="doctor-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">
             Ready to schedule with {currentDoctor.name.split(" ")[0] || "our provider"}?
@@ -427,7 +443,7 @@ export default function DoctorDetailPage() {
 
           <Link
             href={`/booking?dentist=${encodeURIComponent(currentDoctor.name)}`}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200 mt-2"
           >
             <Calendar size={16} />
             <span>Book Appointment</span>

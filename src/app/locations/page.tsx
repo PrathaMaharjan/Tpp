@@ -3,14 +3,13 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CtaSection from "../components/CtaSection";
+import SectionHeading from "../components/SectionHeading";
 import {
-  MapPin,
   Phone,
-  MessageSquare,
   Clock,
   Printer,
   Mail,
-  ExternalLink,
   Navigation,
 } from "lucide-react";
 
@@ -92,16 +91,16 @@ export default function LocationsPage() {
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
 
   return (
-    <main className="min-h-screen bg-slate-50 font-sans text-slate-700 flex flex-col justify-between">
+    <main className="min-h-screen bg-white font-sans text-slate-700 flex flex-col justify-between">
       <div>
         {/* Fixed Navbar Component */}
         <Header />
 
         {/* Styled Header Title */}
-        <div className="relative bg-[#eaf4f6]">
+        <div className="relative bg-surface-2">
           <div className="pt-50 pb-20">
             <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
                 Clinic Directory
               </span>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -123,7 +122,7 @@ export default function LocationsPage() {
             >
               <path
                 d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
-                fill="#f8fafc"
+                fill="white"
               />
             </svg>
           </div>
@@ -131,7 +130,13 @@ export default function LocationsPage() {
 
         {/* Main Content Area: Side by Side Grid */}
         <div className="max-w-[1400px] mx-auto px-6 pb-20 pt-4 space-y-12">
-          
+
+          <SectionHeading
+            eyebrow="Two Convenient Clinics"
+            title="Find the location nearest you"
+            description="Each clinic has its own hours and direct line. Tap through for maps, driving directions, and contact details."
+          />
+
           {/* Side-by-Side 2-Column Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             {locations.map((loc) => {
@@ -144,7 +149,7 @@ export default function LocationsPage() {
                   onMouseLeave={() => setHoveredLocation(null)}
                   className={`bg-white rounded-3xl border transition-all duration-300 overflow-hidden shadow-sm hover:shadow-2xl flex flex-col justify-between ${
                     isHovered
-                      ? "border-[#2596be]/40 ring-4 ring-[#2596be]/10 -translate-y-1"
+                      ? "border-brand/40 ring-4 ring-brand/10 -translate-y-1"
                       : "border-slate-200/90"
                   }`}
                 >
@@ -168,7 +173,7 @@ export default function LocationsPage() {
                         href={loc.directionsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2596be] hover:text-[#1d7a94] transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand hover:text-brand-dark transition-colors"
                       >
                         <Navigation size={13} />
                         <span>Driving Directions</span>
@@ -181,14 +186,14 @@ export default function LocationsPage() {
                         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                           {loc.name}
                         </h2>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#4fa1b0] mt-0.5">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-brand-mid mt-0.5">
                           {loc.shortName}
                         </p>
                       </div>
 
                       <a
                         href={`tel:${loc.phone.replace(/[^0-9]/g, "")}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2596be]/10 text-[#2596be] hover:bg-[#2596be] hover:text-white transition-all text-xs font-bold shrink-0 self-start sm:self-auto"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand/10 text-brand hover:bg-brand hover:text-white transition-all text-xs font-bold shrink-0 self-start sm:self-auto"
                       >
                         <Phone size={14} />
                         <span>Call Clinic</span>
@@ -199,8 +204,8 @@ export default function LocationsPage() {
                     <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
                       
                       {/* Left Sub-Column: Opening Hours (7 cols) */}
-                      <div className="sm:col-span-7 space-y-3 bg-slate-50/70 p-4 sm:p-5 rounded-2xl border border-slate-100">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#2596be]">
+                      <div className="sm:col-span-7 space-y-3 bg-surface p-4 sm:p-5 rounded-2xl border border-slate-100">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-brand">
                           <Clock size={14} />
                           <span>Opening Hours</span>
                         </div>
@@ -229,14 +234,14 @@ export default function LocationsPage() {
 
                       {/* Right Sub-Column: Get In Touch (5 cols) */}
                       <div className="sm:col-span-5 space-y-4">
-                        <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#2596be]">
+                        <span className="block text-xs font-bold uppercase tracking-[0.18em] text-brand">
                           Get In Touch
                         </span>
 
                         {/* Phone Button */}
                         <a
                           href={`tel:${loc.phone.replace(/[^0-9]/g, "")}`}
-                          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border-2 border-[#67bed9]/40 hover:border-[#2596be] text-[#2596be] hover:bg-[#2596be]/5 transition-all text-xs font-bold shadow-xs"
+                          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border-2 border-brand-soft/40 hover:border-brand text-brand hover:bg-brand/5 transition-all text-xs font-bold shadow-xs"
                         >
                           <Phone size={14} />
                           <span>{loc.phone}</span>
@@ -262,7 +267,7 @@ export default function LocationsPage() {
                             <Mail size={13} className="text-slate-400 shrink-0" />
                             <a
                               href={`mailto:${loc.email}`}
-                              className="text-[#2596be] hover:underline truncate max-w-[170px]"
+                              className="text-brand hover:underline truncate max-w-[170px]"
                             >
                               {loc.email}
                             </a>
@@ -277,16 +282,14 @@ export default function LocationsPage() {
             })}
           </div>
 
-          {/* Texting Banner */}
-          <div className="rounded-2xl bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] py-6 px-6 text-center text-white text-base font-medium shadow-md flex items-center justify-center gap-3">
-            <MessageSquare size={22} className="shrink-0" />
-            <span>
-              Have a quick question? Our texting number is{" "}
-              <strong className="underline underline-offset-4 decoration-white/50">
-                469-442-3344
-              </strong>
-            </span>
-          </div>
+          {/* Closing CTA */}
+          <CtaSection
+            eyebrow="Ready When You Are"
+            title="Accepting New Patients at Both Texas Locations"
+            description="Book online in under a minute, or send us a message and our team will help you find a time that works."
+            primary={{ label: 'Book Appointment', href: '/booking' }}
+            secondary={{ label: 'Contact Us', href: '/contact' }}
+          />
 
         </div>
       </div>

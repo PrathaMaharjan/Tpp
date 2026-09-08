@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Calendar } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import Breadcrumbs from "../../components/Breadcrumbs";
+import CtaSection from "../../components/CtaSection";
 import { getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -100,6 +100,12 @@ export default function ServiceDetailPage() {
     if (serviceId) {
       fetchServiceDetails();
     }
+
+    // The isMounted guards below were dead: nothing ever set this to
+    // false, so state could still be set after unmount.
+    return () => {
+      isMounted = false;
+    };
   }, [serviceId]);
 
   useGSAP(
@@ -120,7 +126,7 @@ export default function ServiceDetailPage() {
 
       // Bottom CTA Section ScrollTrigger
       gsap.fromTo(
-        ".service-cta-block",
+        ".service-cta-section",
         { y: 30, opacity: 0 },
         {
           y: 0,
@@ -164,11 +170,20 @@ export default function ServiceDetailPage() {
       <Header />
 
       {/* Hero / Page Header */}
-      <section className="relative bg-[#eaf4f6] pt-40 pb-20">
+      <section className="relative bg-surface-2 pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
+          <Breadcrumbs
+            className="service-detail-header mb-2"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Services', href: '/services' },
+              { label: currentService.name },
+            ]}
+          />
+
           <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#4fa1b0]">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
                 {currentService.category}
               </span>
             )}
@@ -218,21 +233,18 @@ export default function ServiceDetailPage() {
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="service-cta-section bg-[#eaf4f6] py-20 mt-12">
-        <div className="service-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Book an Appointment for {currentService.name}
-          </h2>
-
-          <Link
-            href={`/booking?service=${encodeURIComponent(currentService.name)}`}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-[#2596be] via-[#4fa1b0] to-[#67bed9] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#2596be]/25 active:scale-[0.99] transition-all duration-200 mt-2"
-          >
-            <Calendar size={16} />
-            <span>Book Appointment</span>
-          </Link>
-        </div>
-      </section>
+      <div className="service-cta-section max-w-[1400px] mx-auto px-6 pb-4">
+        <CtaSection
+          eyebrow="Ready When You Are"
+          title={`Book an Appointment for ${currentService.name}`}
+          description="Our team will confirm your visit and answer any questions about what to expect."
+          primary={{
+            label: "Book Appointment",
+            href: `/booking?service=${encodeURIComponent(currentService.name)}`,
+          }}
+          secondary={{ label: "Contact Us", href: "/contact" }}
+        />
+      </div>
 
       <Footer />
     </main>

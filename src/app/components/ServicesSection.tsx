@@ -146,22 +146,26 @@ export default function ServicesSection({ locationId }: { locationId?: string })
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-slate-50/40 relative overflow-hidden font-sans">
+    <section ref={sectionRef} className="py-24 bg-surface relative overflow-hidden font-sans">
       
-      {/* SVG Background Wave with #4fa1b0 fill */}
-      <div className="absolute top-0 right-0 w-full h-[600px] pointer-events-none z-0">
-        <svg
-          className="absolute top-0 right-0 w-full h-full text-[#4fa1b0]"
-          viewBox="0 0 1440 600"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,0 H1440 V420 C1050,580 550,300 0,520 Z"
-            fill="currentColor"
-          />
-        </svg>
+      {/* Teal backdrop for the upper portion of the section */}
+      <div className="absolute top-0 left-0 w-full h-[600px] pointer-events-none z-0">
+        <div className="absolute inset-0 bg-brand-mid" />
+
+        {/* Wave divider — same path as the page-level dividers */}
+        <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden">
+          <svg
+            viewBox="0 0 1440 120"
+            className="w-full h-[60px] md:h-[90px]"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
+              className="fill-surface"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto space-y-12">
@@ -222,7 +226,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
             <button
               onClick={() => scroll("left")}
               aria-label="Previous Treatment"
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             >
               <ChevronLeft size={24} />
             </button>
@@ -231,7 +235,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
             <button
               onClick={() => scroll("right")}
               aria-label="Next Treatment"
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             >
               <ChevronRight size={24} />
             </button>
@@ -264,7 +268,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
 
                     {/* Top Category Badge */}
                     <div className="relative z-10">
-                      <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 shadow-sm text-[0.65rem] font-bold uppercase tracking-[0.18em] transition-all duration-300 group-hover:bg-[#2596be] group-hover:border-[#2596be]">
+                      <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 shadow-sm text-[0.65rem] font-bold uppercase tracking-[0.18em] transition-all duration-300 group-hover:bg-brand group-hover:border-brand">
                         {service.category}
                       </span>
                     </div>
@@ -285,7 +289,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
                     </div>
 
                     {/* Bottom Action Indicator */}
-                    <div className="absolute bottom-6 right-6 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white group-hover:bg-[#2596be] group-hover:border-[#2596be] flex items-center justify-center transition-all duration-300 shadow-sm group-hover:scale-105">
+                    <div className="absolute bottom-6 right-6 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white group-hover:bg-brand group-hover:border-brand flex items-center justify-center transition-all duration-300 shadow-sm group-hover:scale-105">
                       <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </div>
                   </Link>
@@ -300,7 +304,7 @@ export default function ServicesSection({ locationId }: { locationId?: string })
           <div className="text-center pt-2">
             <Link
               href="/services"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2596be] hover:text-[#4fa1b0] transition-colors group"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-mid transition-colors group"
             >
               <span>Explore All Services</span>
               <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />

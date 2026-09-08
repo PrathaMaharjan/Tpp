@@ -5,6 +5,7 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import BgMotif from './BgMotif';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -56,22 +57,24 @@ export default function MissionSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-20 md:py-28 bg-slate-50/50 overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative py-20 md:py-28 bg-white overflow-hidden font-sans">
       {/* Background Soft Organic Blob Accent (Top Right) */}
       <div
-        className="mission-blob absolute top-0 right-0 w-[500px] h-[500px] bg-[#2596be]/10 rounded-bl-[120px] rounded-tl-[300px] pointer-events-none -z-0 blur-2xl transition-transform"
+        className="mission-blob absolute top-0 right-0 w-[500px] h-[500px] bg-brand/10 rounded-bl-[120px] rounded-tl-[300px] pointer-events-none -z-0 blur-2xl transition-transform"
       />
+
+      <BgMotif variant="stethoscope" side="left" position="bottom" opacity={0.04} />
 
       <div className="max-w-[1240px] mx-auto px-6 md:px-10 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
           {/* Left Column: Mission Text Content */}
           <div ref={textColRef} className="lg:col-span-6 space-y-6">
-            <span className="mission-text-item inline-block text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-[#2596be]">
+            <span className="mission-text-item inline-block text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-brand">
               Our Mission
             </span>
 
-            <h2 className="mission-text-item text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-slate-900 leading-[1.2] tracking-tight">
+            <h2 className="mission-text-item text-3xl md:text-4xl lg:text-[2.75rem] font-semibold text-slate-900 leading-[1.2] tracking-tight">
               Personalized, high-quality care dedicated to your health
             </h2>
 
@@ -83,11 +86,11 @@ export default function MissionSection() {
           {/* Right Column: Local Image */}
           <div ref={imageColRef} className="lg:col-span-6 relative">
             {/* Background decorative highlight behind image */}
-            <div className="absolute -top-6 -right-6 w-full h-full bg-[#4fa1b0]/15 rounded-3xl -z-10 hidden sm:block" />
+            <div className="absolute -top-6 -right-6 w-full h-full bg-brand-mid/15 rounded-3xl -z-10 hidden sm:block" />
 
             <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-xl border border-slate-200/60 bg-white">
               <Image
-                src="/hero-2.jpeg"
+                src="/hero-2.webp"
                 alt="Our Mission"
                 fill
                 className="object-cover object-center hover:scale-105 transition-transform duration-700 ease-out"

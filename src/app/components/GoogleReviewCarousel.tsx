@@ -152,27 +152,27 @@ export default function GoogleReviewsSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-24 bg-[#67bed9]/10 overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative py-24 bg-brand-deep overflow-hidden font-sans">
 
       {/* Fully Contained Opaque Circles Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="review-bubble-1 absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-[#67bed9]/20 rounded-full border border-[#4fa1b0]/20" />
-        <div className="review-bubble-2 absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-[#4fa1b0]/15 rounded-full border border-[#2596be]/20" />
-        <div className="absolute top-1/3 right-24 w-16 h-16 bg-[#2596be]/15 rounded-full border border-[#2596be]/20 hidden sm:block" />
-        <div className="absolute bottom-1/3 left-20 w-12 h-12 bg-[#67bed9]/30 rounded-full hidden sm:block" />
+        <div className="review-bubble-1 absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-white/[0.07] rounded-full border border-white/10" />
+        <div className="review-bubble-2 absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-white/[0.05] rounded-full border border-white/10" />
+        <div className="absolute top-1/3 right-24 w-16 h-16 bg-white/[0.06] rounded-full border border-white/10 hidden sm:block" />
+        <div className="absolute bottom-1/3 left-20 w-12 h-12 bg-white/[0.08] rounded-full hidden sm:block" />
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-10 space-y-16">
 
         {/* Header */}
         <div className="reviews-header text-center space-y-3 w-full mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
             Patient Stories
           </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight whitespace-nowrap">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">
             Trusted by Families Across the Community
           </h2>
-          <div className="w-12 h-0.5 bg-[#4fa1b0] mx-auto rounded-full mt-2" />
+          <div className="w-12 h-0.5 bg-brand-soft mx-auto rounded-full mt-2" />
         </div>
 
         {/* Carousel Container with Side Navigation Arrows */}
@@ -181,7 +181,7 @@ export default function GoogleReviewsSection() {
           {/* Left Side Arrow Button */}
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-white hover:bg-white/25 hover:border-white/50 hover:scale-110 transition-all active:scale-95 cursor-pointer"
             aria-label="Scroll left"
           >
             <ChevronLeft size={24} />
@@ -190,7 +190,7 @@ export default function GoogleReviewsSection() {
           {/* Right Side Arrow Button */}
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white/95 border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-[#2596be] hover:border-[#2596be]/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-white hover:bg-white/25 hover:border-white/50 hover:scale-110 transition-all active:scale-95 cursor-pointer"
             aria-label="Scroll right"
           >
             <ChevronRight size={24} />
@@ -212,12 +212,12 @@ export default function GoogleReviewsSection() {
               >
                 <div className="flex flex-col items-center space-y-4 w-full">
                   {/* Initials Circle */}
-                  <div className="w-14 h-14 rounded-full bg-[#67bed9]/15 border border-[#2596be]/20 flex items-center justify-center text-[#2596be] font-bold text-base tracking-wide group-hover:bg-[#2596be] group-hover:text-white transition-colors duration-300 shadow-sm">
+                  <div className="w-14 h-14 rounded-full bg-brand-soft/15 border border-brand/20 flex items-center justify-center text-brand font-bold text-base tracking-wide group-hover:bg-brand group-hover:text-white transition-colors duration-300 shadow-sm">
                     {review.initials}
                   </div>
 
                   {/* Reviewer Name */}
-                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#2596be] transition-colors">
+                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand transition-colors">
                     {review.name}
                   </h3>
 
@@ -235,7 +235,7 @@ export default function GoogleReviewsSection() {
                 </div>
 
                 {/* Card Footer Link */}
-                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-[#2596be] group-hover:text-[#4fa1b0] transition-colors pt-4 border-t border-slate-100 w-full">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-brand group-hover:text-brand-mid transition-colors pt-4 border-t border-slate-100 w-full">
                   <span>Read review on Google</span>
                   <ExternalLink size={13} className="transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
@@ -250,10 +250,20 @@ export default function GoogleReviewsSection() {
             href={GOOGLE_REVIEW_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2596be] hover:text-[#4fa1b0] transition-colors group"
+            className="group inline-flex items-center gap-2.5 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/20"
           >
-            <span>Leave us a review on Google</span>
-            <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+            {/* Google mark — makes the destination obvious at a glance */}
+            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden className="shrink-0">
+              <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.2-2.2H12v4.1h6.6c-.1 1.1-.8 2.8-2.4 3.9l-.1.1 3.5 2.7.2.1c2.3-2 3.7-5.1 3.7-8.7Z" />
+              <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-2.9l-3.7-2.9c-1 .7-2.3 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5l-.1.1-3.6 2.8-.1.1C3.4 21.3 7.4 24 12 24Z" />
+              <path fill="#FBBC05" d="M5.3 14.4c-.3-.7-.4-1.5-.4-2.4s.1-1.7.4-2.4V9.5L1.6 6.7l-.1.1C.6 8.4 0 10.2 0 12s.5 3.6 1.5 5.2l3.8-2.8Z" />
+              <path fill="#EA4335" d="M12 4.7c2.2 0 3.7.9 4.6 1.8l3.3-3.3C17.9 1.2 15.2 0 12 0 7.4 0 3.4 2.7 1.5 6.7l3.8 2.9C6.2 6.8 8.9 4.7 12 4.7Z" />
+            </svg>
+            <span>Leave us a review</span>
+            <ArrowRight
+              size={15}
+              className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
+            />
           </Link>
         </div>
 

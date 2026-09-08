@@ -85,10 +85,10 @@ export default function ProvidersPage() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-[#eaf4f6]">
+      <div className="relative bg-surface-2">
         <div className="pt-50 pb-20">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#2596be]">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Medical Team
             </span>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
@@ -136,16 +136,16 @@ export default function ProvidersPage() {
 
                 return (
                   <div key={provider.id} className="provider-card-wrapper">
-                    <div className="group relative h-full bg-white border border-slate-200/90 rounded-2xl p-6 text-center flex flex-col items-center justify-between transition-all duration-300 hover:border-[#4fa1b0]/50 hover:shadow-xl hover:-translate-y-1 overflow-hidden shadow-xs">
+                    <div className="group relative h-full bg-white border border-slate-200/90 rounded-2xl p-6 text-center flex flex-col items-center justify-between transition-all duration-300 hover:border-brand-mid/50 hover:shadow-xl hover:-translate-y-1 overflow-hidden shadow-xs">
                       {/* Subtle Teal Line on Hover */}
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-[#4fa1b0] transition-colors duration-300" />
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-brand-mid transition-colors duration-300" />
 
                       <Link
                         href={`/providers/${slugify(provider.name) || provider.id}`}
                         className="flex flex-col items-center space-y-4 w-full pt-2 cursor-pointer focus:outline-none"
                       >
                         {/* Avatar Container with Image Fallback */}
-                        <div className="relative w-32 h-32 rounded-full p-1 bg-[#4fa1b0]/10 group-hover:bg-[#4fa1b0]/30 transition-all duration-300">
+                        <div className="relative w-32 h-32 rounded-full p-1 bg-brand-mid/10 group-hover:bg-brand-mid/30 transition-all duration-300">
                           <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
                             <img
                               src={photo}
@@ -160,7 +160,7 @@ export default function ProvidersPage() {
 
                         {/* Provider Info */}
                         <div className="space-y-1.5 px-2">
-                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#2596be] transition-colors">
+                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand transition-colors">
                             {provider.name}
                           </h3>
                           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -173,7 +173,7 @@ export default function ProvidersPage() {
                       <div className="w-full pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-2">
                         <Link
                           href={`/providers/${slugify(provider.name) || provider.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#2596be] transition-colors"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-brand transition-colors"
                         >
                           <span>View Profile</span>
                           <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -181,7 +181,7 @@ export default function ProvidersPage() {
 
                         <Link
                           href={`/booking?dentist=${encodeURIComponent(provider.name)}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#eaf4f6] text-[#2596be] hover:bg-[#2596be] hover:text-white transition-all"
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-surface-2 text-brand hover:bg-brand hover:text-white transition-all"
                         >
                           <span>Book Visit</span>
                         </Link>
