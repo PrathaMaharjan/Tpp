@@ -27,22 +27,57 @@ function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_IMAGE)
   return `${cleanBase}${cleanPath}`;
 }
 
-function parseExcerpt(excerpt?: string | null, content?: string | null): string {
-  if (excerpt && excerpt.trim()) return excerpt.trim();
-  if (!content) return 'Read our latest medical insights, health advice, and clinical news.';
-  try {
-    const parsed = JSON.parse(content);
-    if (Array.isArray(parsed?.blocks)) {
-      for (const b of parsed.blocks) {
-        if (typeof b.data?.text === 'string' && b.data.text.trim()) {
-          return b.data.text.replace(/<[^>]*>/g, '').trim();
+/**
+ * Extracts and formats the excerpt from the CMS Meta tab (post.excerpt)
+ * or falls back to extracting the first paragraph from the article content.
+ */
+function parseExcerpt(excerpt?: string | null, content?: string | null, maxLength: number = 145): string {
+  // 1. If explicit excerpt is saved in CMS Meta tab, use it
+  if (excerpt && typeof excerpt === 'string' && excerpt.trim()) {
+    const clean = excerpt
+      .replace(/<[^>]*>/g, '') // Strip HTML tags if any
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .trim();
+    if (clean.length > maxLength) {
+      return clean.slice(0, maxLength).trim() + '...';
+    }
+    return clean;
+  }
+
+  // 2. If Meta excerpt was not provided, extract the first paragraph from Editor.js content
+  if (content) {
+    try {
+      const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+      if (Array.isArray(parsed?.blocks)) {
+        // Prioritize paragraph blocks over headers
+        const pBlock = parsed.blocks.find(
+          (b: any) => b.type === 'paragraph' && typeof b.data?.text === 'string' && b.data.text.trim()
+        );
+        const targetBlock = pBlock || parsed.blocks[0];
+
+        if (targetBlock?.data?.text) {
+          const text = targetBlock.data.text
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .trim();
+          if (text) {
+            return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
+          }
         }
       }
+    } catch {
+      // Content is raw text / HTML string
+      const text = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      if (text) {
+        return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
+      }
     }
-  } catch {
-    return content.replace(/<[^>]*>/g, '').trim();
   }
-  return 'Read our latest medical insights, health advice, and clinical news.';
+
+  // 3. Fallback if post is empty
+  return 'Read our latest medical insights, health advice, and clinical news from Texas Primary & Pediatric Care.';
 }
 
 function formatDate(dateStr?: string | null): string | null {
@@ -72,7 +107,11 @@ export default function BlogSection() {
         setLoading(true);
         const data = await getPublicBlogPosts();
         if (isMounted) {
-          setPosts(data);
+          // Filter to published posts if status is present
+          const published = Array.isArray(data)
+            ? data.filter((p: any) => !p.status || p.status === 'published')
+            : [];
+          setPosts(published);
         }
       } catch (err) {
         console.error('Failed to load blog posts from CMS:', err);
@@ -153,7 +192,9 @@ export default function BlogSection() {
               const rawCover = post.coverImage || (post as any).cover_image || (post as any).imageUrl;
               const cover = resolveImageUrl(rawCover, FALLBACK_IMAGE);
               const authorPhoto = resolveImageUrl(post.authorImage || (post as any).author_image, '');
-              const excerpt = parseExcerpt(post.excerpt, post.content);
+              
+              // Reads post.excerpt (set in the CMS Meta tab)
+              const excerpt = parseExcerpt(post.excerpt || (post as any).meta?.excerpt, post.content, 140);
               const postDate = formatDate(post.publishedAt || post.createdAt);
               const postUrl = `/blog/${post.slug}`;
 
@@ -163,7 +204,7 @@ export default function BlogSection() {
                   className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
                 >
                   <div>
-                    {/* Cover Image Wrapper */}
+                    {/* Cover Image */}
                     <Link
                       href={postUrl}
                       className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
@@ -181,13 +222,14 @@ export default function BlogSection() {
                       />
                     </Link>
 
-                    {/* Content */}
+                    {/* Content & Excerpt */}
                     <div className="p-7 space-y-3">
                       <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-[#2596be] transition-colors line-clamp-2">
                         <Link href={postUrl}>{post.title}</Link>
                       </h3>
 
-                      <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
+                      {/* Excerpt from the CMS Meta tab */}
+                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
                         {excerpt}
                       </p>
 
@@ -203,7 +245,6 @@ export default function BlogSection() {
                                 crossOrigin="anonymous"
                                 className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-200"
                                 onError={(e) => {
-                                  // Hide avatar if image broken
                                   (e.currentTarget as HTMLImageElement).style.display = 'none';
                                 }}
                               />
