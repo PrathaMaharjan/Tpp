@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, Phone, Calendar, Menu } from 'lucide-react';
+import { X, Phone, Calendar, Menu, Sparkles, ChevronRight } from 'lucide-react';
+
+const BANNER_DISMISS_KEY = 'tpp-banner-celina-dismissed';
 
 export default function Header() {
   const pathname = usePathname();
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const lastY = useRef(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -25,22 +29,45 @@ export default function Header() {
     { name: 'Blog', href: '/blog' },
   ];
 
+  // Announcement is shown unless this visitor already dismissed it.
   useEffect(() => {
+    let dismissed = false;
+    try {
+      dismissed = localStorage.getItem(BANNER_DISMISS_KEY) === '1';
+    } catch {
+      dismissed = false;
+    }
+    if (dismissed) return;
+    const id = setTimeout(() => setShowBanner(true), 0);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    lastY.current = window.scrollY;
+
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      const y = window.scrollY;
+      setIsScrolled(y > 50);
+
+      // Reveal on scroll up (or near the top), hide on scroll down.
+      // The 4px threshold ignores sub-pixel/elastic scroll jitter.
+      if (y < 50 || y < lastY.current - 4) {
+        setShowHeader(true);
+      } else if (y > lastY.current + 4) {
+        setShowHeader(false);
       }
+      lastY.current = y;
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
+  // Close mobile menu on route change. Deferred so the effect does not
+  // set state synchronously (which can cascade renders).
   useEffect(() => {
-    setIsMenuOpen(false);
+    const id = setTimeout(() => setIsMenuOpen(false), 0);
+    return () => clearTimeout(id);
   }, [pathname]);
 
   // Lock body scroll while mobile menu is open
@@ -52,6 +79,15 @@ export default function Header() {
   }, [isMenuOpen]);
 
   // Background styling for top-level header shell
+  const dismissBanner = () => {
+    setShowBanner(false);
+    try {
+      localStorage.setItem(BANNER_DISMISS_KEY, '1');
+    } catch {
+      // Non-fatal: the banner returns on the next visit.
+    }
+  };
+
   const getHeaderBackground = () => {
     if (isMenuOpen) {
       return 'bg-white shadow-sm border-b border-slate-200/60';
@@ -67,21 +103,43 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${getHeaderBackground()}`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${
+        showHeader || isMenuOpen ? 'translate-y-0' : '-translate-y-full'
+      } ${getHeaderBackground()}`}
     >
       {showBanner && (
-        <div className="bg-brand-mid text-white text-[11px] sm:text-xs md:text-sm px-4 sm:px-6 py-2 relative flex items-center justify-center font-medium">
-          <div className="text-center leading-snug space-y-0.5 md:space-y-0 md:space-x-4 pr-6">
-            <span className="block md:inline">Our 2nd location in Celina is now open!</span>
-            <span className="hidden md:inline">•</span>
-            <span className="block md:inline">Fax Number: 469-372-6188</span>
+        <div className="relative overflow-hidden bg-gradient-to-r from-brand-deeper via-brand to-brand-mid text-white">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_180%_at_15%_50%,rgba(255,255,255,0.16),transparent_60%)]"
+          />
+
+          <div className="relative mx-auto flex max-w-[1400px] items-center justify-center px-12 py-2.5 sm:px-14">
+            <Link href="/locations" className="group flex min-w-0 items-center gap-2.5">
+              <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ring-1 ring-inset ring-white/25 backdrop-blur-sm sm:inline-flex">
+                <Sparkles size={11} className="shrink-0" />
+                New
+              </span>
+
+              <span className="truncate text-xs font-medium sm:text-[13px]">
+                Our second location in <span className="font-bold">Celina</span> is now open
+              </span>
+
+              <span className="hidden shrink-0 items-center gap-1 text-[11px] font-semibold text-white/85 transition-colors duration-300 group-hover:text-white sm:inline-flex">
+                <span className="underline decoration-white/40 underline-offset-2 group-hover:decoration-white">
+                  See locations
+                </span>
+                <ChevronRight size={12} className="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
           </div>
+
           <button
-            onClick={() => setShowBanner(false)}
-            aria-label="Close banner"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 p-1 text-white/80 hover:text-white transition-colors duration-200"
+            onClick={dismissBanner}
+            aria-label="Dismiss announcement"
+            className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-white/70 transition-colors duration-300 hover:bg-white/15 hover:text-white sm:right-3"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
       )}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ArrowRight } from "lucide-react";
-import { getPublicDoctors, slugify, type Doctor } from "../lib/api";
+import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 

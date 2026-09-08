@@ -230,7 +230,7 @@ export default function GoogleReviewsSection() {
 
                   {/* Review Body */}
                   <p className="text-slate-600 text-sm leading-relaxed font-normal max-w-sm">
-                    "{review.text}"
+                    &ldquo;{review.text}&rdquo;
                   </p>
                 </div>
 

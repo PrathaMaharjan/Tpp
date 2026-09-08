@@ -141,7 +141,7 @@ export default function AboutSection() {
               <h3 className="relative text-2xl font-bold text-slate-900 mb-3 tracking-tight">Pediatric &amp; adult care, under one roof</h3>
               <p className="relative text-slate-600 leading-relaxed max-w-md">
                 From newborn checkups to adult wellness exams and chronic disease management,
-                we cover your family's health needs at any age.
+                we cover your family&apos;s health needs at any age.
               </p>
             </div>
           </div>

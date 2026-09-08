@@ -20,7 +20,6 @@ import {
   Calendar,
   Clock,
   User,
-  Share2,
   Copy,
   Check,
   ChevronRight,

@@ -5,9 +5,6 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   Calendar,
-  Stethoscope,
-  Clock,
-  ArrowRight,
   Award,
 } from "lucide-react";
 import Header from "../../components/Header";

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Target, Compass, Sparkles, CheckCircle2, Award, Users, Heart } from 'lucide-react';
+import { Target, Compass, CheckCircle2 } from 'lucide-react';
 
 interface StatItem {
   label: string;

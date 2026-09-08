@@ -13,7 +13,6 @@ import {
   MessageSquare,
   CheckCircle2,
   Loader2,
-  ShieldCheck,
   Send,
 } from 'lucide-react';
 

@@ -6,7 +6,7 @@ import { ArrowUpRight, ArrowRight, ChevronLeft, ChevronRight } from "lucide-reac
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { getPublicServices, slugify, type Service } from "../lib/api";
+import { getPublicServices, slugify } from "../lib/api";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
