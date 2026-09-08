@@ -11,6 +11,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "axios": "^1.19.0",
+    "editorjs-parser": "^3.1.0",
     "gsap": "^3.15.0",
     "lucide-react": "^1.33.0",
     "next": "16.3.2",

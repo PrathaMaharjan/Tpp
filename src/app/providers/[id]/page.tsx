@@ -7,9 +7,7 @@ import {
   Calendar,
   Stethoscope,
   Clock,
-  CheckCircle2,
   ArrowRight,
-  Sparkles,
   Award,
 } from "lucide-react";
 import Header from "../../components/Header";
@@ -36,7 +34,9 @@ export interface TreatmentItem {
 export interface DoctorItem {
   id: string;
   name: string;
+  slug?: string;
   specialization?: string | null;
+  specialty?: string | null;
   qualification?: string | null;
   yearsOfExperience?: number | null;
   imageUrl?: string | null;
@@ -49,7 +49,18 @@ export interface DoctorItem {
 const FALLBACK_DOCTOR_AVATAR =
   "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=1200";
 
-// Helper to format clean doctor name from any ID or slug
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_DOCTOR_AVATAR): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 function formatDoctorNameFromId(id: string) {
   if (!id) return "Healthcare Provider";
   const cleaned = decodeURIComponent(id)
@@ -58,10 +69,14 @@ function formatDoctorNameFromId(id: string) {
   return cleaned.toLowerCase().startsWith("dr") ? cleaned : `Dr. ${cleaned}`;
 }
 
+import { parseEditorJs } from "../../lib/editorParser";
+
 export default function DoctorDetailPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const params = useParams();
-  const doctorId = (params?.id as string) || "";
+
+  // Support both [slug] and [id] parameter naming
+  const doctorParam = (params?.id as string) || (params?.slug as string) || "";
 
   const [doctor, setDoctor] = useState<DoctorItem | null>(null);
   const [treatments, setTreatments] = useState<TreatmentItem[]>([]);
@@ -74,95 +89,73 @@ export default function DoctorDetailPage() {
       try {
         setLoading(true);
 
-        // Fetch doctors and all public treatments in parallel
         const [doctorsRes, servicesRes] = await Promise.allSettled([
           getPublicDoctors(),
-          getPublicServices ? getPublicServices() : Promise.resolve(null),
+          getPublicServices ? getPublicServices() : Promise.resolve([]),
         ]);
 
-        const docList: any[] =
-          doctorsRes.status === "fulfilled"
-            ? doctorsRes.value?.data?.data?.doctors || doctorsRes.value?.data?.doctors || []
-            : [];
+        const rawDocs = doctorsRes.status === "fulfilled" ? doctorsRes.value : [];
+        const docList: any[] = Array.isArray(rawDocs)
+          ? rawDocs
+          : (rawDocs as any)?.data?.data?.doctors || (rawDocs as any)?.data?.doctors || [];
 
-        const allServices: any[] =
-          servicesRes.status === "fulfilled" && servicesRes.value
-            ? servicesRes.value?.data?.data?.treatments ||
-              servicesRes.value?.data?.treatments ||
-              servicesRes.value?.data ||
-              []
-            : [];
+        const rawServices = servicesRes.status === "fulfilled" ? servicesRes.value : [];
+        const allServices: any[] = Array.isArray(rawServices)
+          ? rawServices
+          : (rawServices as any)?.data?.data?.treatments || (rawServices as any)?.data?.treatments || [];
 
-        const decodedParam = decodeURIComponent(doctorId).toLowerCase().trim();
+        const decodedParam = decodeURIComponent(doctorParam).toLowerCase().trim();
         const targetSlug = slugify(decodedParam);
 
-        // Match doctor by ID or Slug or Name
+        // Match doctor by Slug, ID, or Name
         const found = docList.find((d) => {
-          const nameSlug = slugify(d.name || "");
+          const dSlug = d.slug?.toLowerCase();
+          const dNameSlug = slugify(d.name || "");
+          const dId = String(d.id || "").toLowerCase();
+          const dName = d.name?.toLowerCase().trim();
+
           return (
-            String(d.id).toLowerCase() === decodedParam ||
-            nameSlug === targetSlug ||
-            nameSlug === decodedParam ||
-            d.name?.toLowerCase() === decodedParam ||
-            d.name?.toLowerCase().replace(/\s+/g, "-") === decodedParam
+            dSlug === decodedParam ||
+            dSlug === targetSlug ||
+            dId === decodedParam ||
+            dNameSlug === targetSlug ||
+            dNameSlug === decodedParam ||
+            dName === decodedParam
           );
         });
 
-        const docName = found ? found.name : formatDoctorNameFromId(doctorId);
+        const docName = found ? found.name : formatDoctorNameFromId(doctorParam);
         const docSpecialization =
-          found?.specialization || found?.qualification || "Primary Care & Pediatrics";
-        const docPhoto = found?.imageUrl || found?.photoUrl || FALLBACK_DOCTOR_AVATAR;
+          found?.specialty ||
+          found?.specialization ||
+          found?.qualification ||
+          "Healthcare Provider";
+        const rawPhoto = found?.imageUrl || found?.photoUrl || (found as any)?.image_url;
+        const docPhoto = resolveImageUrl(rawPhoto, FALLBACK_DOCTOR_AVATAR);
 
-        // Resolve treatments assigned to this doctor
-        let docTreatments: TreatmentItem[] = [];
+        // Format procedures from CMS services
+        const docTreatments: TreatmentItem[] = allServices.map((t: any) => ({
+          id: String(t.id || t.slug || t.title),
+          name: t.title || t.name || "Treatment Procedure",
+          category: t.category || "Clinical Care",
+          durationMinutes: t.durationMinutes || null,
+          priceCents: t.price ? parseInt(t.price) * 100 : null,
+          description: t.description || null,
+        }));
 
-        // 1. Check if treatments are directly attached to doctor object
-        if (Array.isArray(found?.treatments) && found.treatments.length > 0) {
-          docTreatments = found.treatments.map((t: any) => ({
-            id: String(t.id || t.treatmentId || t.name),
-            name: t.name || t.title || "Treatment Procedure",
-            category: t.category || null,
-            durationMinutes: t.durationMinutes || null,
-            priceCents: t.priceCents || null,
-            description: t.description || null,
-          }));
-        }
-        // 2. Cross-reference from public treatments list if doctorIds match
-        else if (found?.id && Array.isArray(allServices) && allServices.length > 0) {
-          const matchedFromServices = allServices.filter((service: any) => {
-            const hasDoctorId = service.doctorIds?.includes(found.id);
-            const hasDoctorObj = service.doctors?.some(
-              (doc: any) => doc.id === found.id || doc.name === found.name
-            );
-            return hasDoctorId || hasDoctorObj;
-          });
-
-          if (matchedFromServices.length > 0) {
-            docTreatments = matchedFromServices.map((t: any) => ({
-              id: String(t.id || t.name),
-              name: t.name || t.title,
-              category: t.category || null,
-              durationMinutes: t.durationMinutes || null,
-              priceCents: t.priceCents || null,
-              description: t.description || null,
-            }));
-          }
-        }
+        const defaultBio = `${docName} is a dedicated healthcare provider offering comprehensive, personalized care for patients and families.`;
 
         const doctorData: DoctorItem = {
-          id: found?.id || doctorId,
+          id: found?.id || doctorParam,
           name: docName,
+          slug: found?.slug,
           specialization: docSpecialization,
           qualification: found?.qualification || null,
           yearsOfExperience: found?.yearsOfExperience || null,
           imageUrl: docPhoto,
           photoUrl: docPhoto,
           treatments: docTreatments,
-          bio:
-            found?.bio ||
-            found?.bioHtml ||
-            found?.about ||
-            `${docName} is a compassionate healthcare provider at Texas Primary & Pediatric Care, dedicated to delivering patient-centered, high-quality medical care. ${docName} works closely with individuals and families to support long-term wellness, preventive health, and personalized care plans.`,
+          bio: parseEditorJs(found?.bio, defaultBio),
         };
 
         if (isMounted) {
@@ -170,14 +163,13 @@ export default function DoctorDetailPage() {
           setTreatments(docTreatments);
         }
       } catch (err) {
-        console.error("Failed to load doctor details & treatments:", err);
+        console.error("Failed to load doctor details:", err);
         if (isMounted) {
-          const fallbackName = formatDoctorNameFromId(doctorId);
+          const fallbackName = formatDoctorNameFromId(doctorParam);
           setDoctor({
-            id: doctorId,
+            id: doctorParam,
             name: fallbackName,
-            specialization: "Primary Care & Pediatrics",
-            qualification: null,
+            specialization: "Healthcare Provider",
             imageUrl: FALLBACK_DOCTOR_AVATAR,
             photoUrl: FALLBACK_DOCTOR_AVATAR,
             bio: `${fallbackName} is committed to delivering comprehensive, personalized healthcare for patients and families across our community.`,
@@ -190,69 +182,50 @@ export default function DoctorDetailPage() {
       }
     }
 
-    if (doctorId) {
+    if (doctorParam) {
       fetchDoctorAndTreatments();
     }
 
-    // The isMounted guards below were dead: nothing ever set this to
-    // false, so state could still be set after unmount.
+    // These isMounted guards were read but never cleared, so
+    // state could still be set after unmount.
     return () => {
       isMounted = false;
     };
-  }, [doctorId]);
+  }, [doctorParam]);
 
   useGSAP(
     () => {
-      // Header Animation
       gsap.fromTo(
         ".doctor-detail-header",
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
 
-      // Body Image & Bio Animation
       gsap.fromTo(
         ".doctor-detail-body",
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: "power2.out", clearProps: "all" }
       );
 
-      // Treatments Grid Animation
-      gsap.fromTo(
-        ".doctor-treatment-card",
-        { y: 20, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          stagger: 0.08,
-          ease: "power2.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: ".doctor-treatments-section",
-            start: "top 85%",
-            once: true,
-          },
-        }
-      );
-
-      // Bottom CTA Section ScrollTrigger
-      gsap.fromTo(
-        ".doctor-cta-block",
-        { y: 30, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.7,
-          ease: "power2.out",
-          clearProps: "all",
-          scrollTrigger: {
-            trigger: ".doctor-cta-section",
-            start: "top 85%",
-            once: true,
-          },
-        }
-      );
+      if (treatments.length > 0) {
+        gsap.fromTo(
+          ".doctor-treatment-card",
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.08,
+            ease: "power2.out",
+            clearProps: "all",
+            scrollTrigger: {
+              trigger: ".doctor-treatments-section",
+              start: "top 85%",
+              once: true,
+            },
+          }
+        );
+      }
     },
     { scope: containerRef, dependencies: [loading, doctor?.id, treatments.length] }
   );
@@ -270,9 +243,9 @@ export default function DoctorDetailPage() {
   }
 
   const currentDoctor = doctor || {
-    id: doctorId,
-    name: formatDoctorNameFromId(doctorId),
-    specialization: "Primary Care & Pediatrics",
+    id: doctorParam,
+    name: formatDoctorNameFromId(doctorParam),
+    specialization: "Healthcare Provider",
     qualification: null,
     imageUrl: FALLBACK_DOCTOR_AVATAR,
     photoUrl: FALLBACK_DOCTOR_AVATAR,
@@ -339,16 +312,19 @@ export default function DoctorDetailPage() {
           <img
             src={currentDoctor.imageUrl || currentDoctor.photoUrl || FALLBACK_DOCTOR_AVATAR}
             alt={currentDoctor.name}
+            crossOrigin="anonymous"
             className="w-full h-full object-cover object-top"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = FALLBACK_DOCTOR_AVATAR;
+              const target = e.currentTarget as HTMLImageElement;
+              target.onerror = null;
+              target.src = FALLBACK_DOCTOR_AVATAR;
             }}
           />
         </div>
 
         {/* Overview / Bio Section */}
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             About {displayName}
           </h2>
           <div
@@ -357,78 +333,7 @@ export default function DoctorDetailPage() {
           />
         </div>
 
-        {/* Treatments & Specialized Procedures Section */}
-        <div className="doctor-treatments-section pt-6 border-t border-slate-100 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div>
-             
-              <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
-                Treatments & Procedures
-              </h2>
-            </div>
       
-          </div>
-
-          {treatments.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-              {treatments.map((treatment) => (
-                <div
-                  key={treatment.id}
-                  className="doctor-treatment-card group relative bg-white border border-slate-200/90 hover:border-brand-mid rounded-xl p-5 transition-all duration-300 hover:shadow-md flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-lg bg-surface-2 text-brand group-hover:bg-brand group-hover:text-white flex items-center justify-center transition-colors duration-200">
-                        <Stethoscope size={20} />
-                      </div>
-                      {treatment.durationMinutes && (
-                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 font-medium bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
-                          <Clock size={12} />
-                          {treatment.durationMinutes} mins
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      {treatment.category && (
-                        <span className="text-[11px] font-semibold tracking-wider text-brand-mid uppercase block mb-1">
-                          {treatment.category}
-                        </span>
-                      )}
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-brand transition-colors leading-snug">
-                        {treatment.name}
-                      </h3>
-                      {treatment.description && (
-                        <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
-                          {treatment.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                 
-                    <Link
-                      href={`/booking?dentist=${encodeURIComponent(currentDoctor.name)}&service=${encodeURIComponent(treatment.name)}`}
-                      className="inline-flex items-center gap-1 text-brand group-hover:text-brand-dark transition-colors"
-                    >
-                      <span>Book Treatment</span>
-                      <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-slate-50 border border-slate-200/70 rounded-xl p-8 text-center space-y-3">
-              <Stethoscope className="mx-auto text-slate-400" size={32} />
-              <p className="text-sm font-medium text-slate-700">
-                {displayName} provides comprehensive primary care, pediatric health consultations, and preventive treatments.
-              </p>
-              
-            </div>
-          )}
-        </div>
       </section>
 
       {/* Bottom CTA Section */}

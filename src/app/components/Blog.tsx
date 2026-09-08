@@ -1,59 +1,132 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
-import BgMotif from './BgMotif';
+import { ArrowUpRight, Calendar, User } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
+import { getPublicBlogPosts, type BlogPost } from '../lib/api';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-interface BlogPost {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  slug: string;
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=800';
+
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000';
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_IMAGE): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
 }
 
-const BLOG_POSTS: BlogPost[] = [
-  {
-    id: 'post-1',
-    title: 'Not Just For Kids: Important Vaccines Every Adult Needs',
-    description:
-      'Vaccines aren’t just for kids. Learn which essential immunizations you need as an adult to protect your health, and how our primary care team in Texas can help you stay up to date.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/important-vaccines-every-adult-needs',
-  },
-  {
-    id: 'post-2',
-    title: 'Why A Sports Physical Is Important?',
-    description:
-      'A sports physical is far more than a checklist for school athletics. From screening for hidden cardiovascular risks to evaluating joint stability, learn why this annual exam is vital.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/why-a-sports-physical-is-important',
-  },
-  {
-    id: 'post-3',
-    title:
-      'Are You Traveling This Summer? Make Sure Your Kids Are Up-To-Date On Vaccines',
-    description:
-      'Planning a summer getaway? Whether traveling internationally or crossing state lines, ensuring your children are up to date on immunizations is your best defense.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=600',
-    slug: '/blog/summer-travel-kids-vaccines-up-to-date',
-  },
-];
+/**
+ * Extracts and formats the excerpt from the CMS Meta tab (post.excerpt)
+ * or falls back to extracting the first paragraph from the article content.
+ */
+function parseExcerpt(excerpt?: string | null, content?: string | null, maxLength: number = 145): string {
+  // 1. If explicit excerpt is saved in CMS Meta tab, use it
+  if (excerpt && typeof excerpt === 'string' && excerpt.trim()) {
+    const clean = excerpt
+      .replace(/<[^>]*>/g, '') // Strip HTML tags if any
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .trim();
+    if (clean.length > maxLength) {
+      return clean.slice(0, maxLength).trim() + '...';
+    }
+    return clean;
+  }
+
+  // 2. If Meta excerpt was not provided, extract the first paragraph from Editor.js content
+  if (content) {
+    try {
+      const parsed = typeof content === 'string' ? JSON.parse(content) : content;
+      if (Array.isArray(parsed?.blocks)) {
+        // Prioritize paragraph blocks over headers
+        const pBlock = parsed.blocks.find(
+          (b: any) => b.type === 'paragraph' && typeof b.data?.text === 'string' && b.data.text.trim()
+        );
+        const targetBlock = pBlock || parsed.blocks[0];
+
+        if (targetBlock?.data?.text) {
+          const text = targetBlock.data.text
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .trim();
+          if (text) {
+            return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
+          }
+        }
+      }
+    } catch {
+      // Content is raw text / HTML string
+      const text = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      if (text) {
+        return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
+      }
+    }
+  }
+
+  // 3. Fallback if post is empty
+  return 'Read our latest medical insights, health advice, and clinical news from Texas Primary & Pediatric Care.';
+}
+
+function formatDate(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  try {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return null;
+  }
+}
 
 export default function BlogSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch published blog posts from CMS
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPosts() {
+      try {
+        setLoading(true);
+        const data = await getPublicBlogPosts();
+        if (isMounted) {
+          // Filter to published posts if status is present
+          const published = Array.isArray(data)
+            ? data.filter((p: any) => !p.status || p.status === 'published')
+            : [];
+          setPosts(published);
+        }
+      } catch (err) {
+        console.error('Failed to load blog posts from CMS:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadPosts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // GSAP Animations
   useGSAP(
     () => {
       const tl = gsap.timeline({
@@ -68,29 +141,30 @@ export default function BlogSection() {
         '.blog-header',
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
-      ).fromTo(
-        '.blog-card',
-        { y: 35, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power2.out',
-          clearProps: 'all',
-        },
-        '-=0.3'
       );
+
+      if (!loading && posts.length > 0) {
+        tl.fromTo(
+          '.blog-card',
+          { y: 35, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power2.out',
+            clearProps: 'all',
+          },
+          '-=0.3'
+        );
+      }
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [loading, posts.length] }
   );
 
   return (
-    <section ref={sectionRef} className="relative pt-20 pb-6 bg-white overflow-hidden font-sans">
-      <BgMotif variant="cross" side="left" position="top" opacity={0.045} />
-      <BgMotif variant="stethoscope" side="right" position="bottom" opacity={0.04} />
-
-      <div className="relative z-10 max-w-[1240px] mx-auto px-6 space-y-12">
+    <section ref={sectionRef} className="py-24 bg-surface-2 font-sans">
+      <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
         {/* Header */}
         <div className="blog-header text-center space-y-3 max-w-2xl mx-auto">
@@ -104,50 +178,130 @@ export default function BlogSection() {
         </div>
 
         {/* 3-Column Cards Grid */}
-        <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-          {BLOG_POSTS.map((post) => (
-            <article
-              key={post.id}
-              className="blog-card reveal-card group relative flex flex-col"
+        {loading ? (
+          <div className="text-center py-16 text-slate-500 text-sm">
+            Loading latest articles...
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-16 text-slate-500 text-sm bg-white/70 rounded-2xl p-8 max-w-md mx-auto">
+            No published articles at this time. Check back soon!
+          </div>
+        ) : (
+          <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            {posts.slice(0, 3).map((post) => {
+              const rawCover = post.coverImage || (post as any).cover_image || (post as any).imageUrl;
+              const cover = resolveImageUrl(rawCover, FALLBACK_IMAGE);
+              const authorPhoto = resolveImageUrl(post.authorImage || (post as any).author_image, '');
+              
+              // Reads post.excerpt (set in the CMS Meta tab)
+              const excerpt = parseExcerpt(post.excerpt || (post as any).meta?.excerpt, post.content, 140);
+              const postDate = formatDate(post.publishedAt || post.createdAt);
+              const postUrl = `/blog/${post.slug}`;
+
+              return (
+                <article
+                  key={post.id}
+                  className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+                >
+                  <div>
+                    {/* Cover Image */}
+                    <Link
+                      href={postUrl}
+                      className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
+                    >
+                      <img
+                        src={cover}
+                        alt={post.title}
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = FALLBACK_IMAGE;
+                        }}
+                      />
+                    </Link>
+
+                    {/* Content & Excerpt */}
+                    <div className="p-7 space-y-3">
+                      <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors line-clamp-2">
+                        <Link href={postUrl}>{post.title}</Link>
+                      </h3>
+
+                      {/* Excerpt from the CMS Meta tab */}
+                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
+                        {excerpt}
+                      </p>
+
+                      {/* Author & Date Bar */}
+                      {(post.authorName || postDate) && (
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-400">
+                          {/* Author */}
+                          <div className="flex items-center gap-2">
+                            {authorPhoto ? (
+                              <img
+                                src={authorPhoto}
+                                alt={post.authorName || 'Author'}
+                                crossOrigin="anonymous"
+                                className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-200"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <User size={14} className="text-slate-400" />
+                            )}
+                            <span className="font-medium text-slate-700">
+                              {post.authorName || 'Medical Staff'}
+                            </span>
+                          </div>
+
+                          {/* Published Date */}
+                          {postDate && (
+                            <div className="flex items-center gap-1">
+                              <Calendar size={13} />
+                              <span>{postDate}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Footer Link */}
+                  <div className="px-7 pb-7 pt-0">
+                    <Link
+                      href={postUrl}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand group-hover:text-slate-900 transition-colors"
+                    >
+                      Read Article
+                      <ArrowUpRight
+                        size={15}
+                        className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                      />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {/* View All Articles CTA */}
+        {!loading && posts.length > 0 && (
+          <div className="text-center pt-2">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200/80 text-sm font-semibold text-slate-800 hover:text-brand hover:border-brand shadow-xs hover:shadow-md transition-all group"
             >
-              {/* Image — shrinks on hover, pulling the title upward */}
-              <Link
-                href={post.slug}
-                className="reveal-media relative block w-full h-[240px] shrink-0 overflow-hidden rounded-2xl bg-slate-100 transition-all duration-500 ease-in-out"
-              >
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
-
-                {/* Arrow badge, revealed on hover */}
-                <span className="reveal-arrow absolute bottom-3 right-4 grid place-items-center w-10 h-10 rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
-                  <ArrowUpRight size={18} />
-                </span>
-              </Link>
-
-              {/* Content */}
-              <div className="reveal-content pt-5">
-                <Link href={post.slug}>
-                  <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors duration-300 line-clamp-3">
-                    {post.title}
-                  </h3>
-                </Link>
-
-                {/* Description — expands on hover via a collapsing grid
-                    row, so it adapts to any title/description length.
-                    On touch devices it simply stays visible. */}
-                <div className="reveal-body">
-                  <p className="reveal-body-inner text-sm text-slate-500 leading-relaxed line-clamp-4 font-normal">
-                    {post.description}
-                  </p>
-                </div>
-              </div>
-
-            </article>
-          ))}
-        </div>
+              <span>Explore All Health Articles</span>
+              <ArrowUpRight
+                size={16}
+                className="text-brand group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+              />
+            </Link>
+          </div>
+        )}
 
       </div>
     </section>

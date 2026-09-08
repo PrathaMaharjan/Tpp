@@ -5,8 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import CtaSection from "../components/CtaSection";
-import { getPublicServices, slugify } from "../lib/api";
+import { getPublicServices, slugify, type Service } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -18,13 +17,46 @@ if (typeof window !== "undefined") {
 interface ServiceItem {
   id: string;
   name: string;
+  slug: string;
   category: string;
   description?: string | null;
   imageUrl?: string | null;
 }
 
 const FALLBACK_TREATMENT_IMG =
-  "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600";
+  "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800";
+
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_TREATMENT_IMG): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
+// Parses preview snippet from Editor.js JSON or plain text
+function parsePreviewText(desc?: string | null): string {
+  if (!desc) return "Comprehensive clinical care tailored to your health and wellness.";
+  try {
+    const parsed = JSON.parse(desc);
+    if (Array.isArray(parsed?.blocks)) {
+      const texts: string[] = [];
+      for (const b of parsed.blocks) {
+        if (typeof b.data?.text === "string" && b.data.text.trim()) {
+          texts.push(b.data.text.replace(/<[^>]*>/g, ""));
+        }
+      }
+      if (texts.length > 0) return texts.join(" ");
+    }
+  } catch {
+    // Already plain text or HTML
+  }
+  return desc.replace(/<[^>]*>/g, "");
+}
 
 export default function ServicesPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,17 +64,29 @@ export default function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
 
-  // Fetch treatments dynamically from DMS
+  // Fetch treatments dynamically from CMS
   useEffect(() => {
     let isMounted = true;
 
     async function loadTreatments() {
       try {
         setLoading(true);
-        const res = await getPublicServices();
-        const list: ServiceItem[] = res?.data?.data?.treatments || [];
+        const res: any = await getPublicServices();
+
+        // Support both direct array and nested response structures
+        const rawList: any[] = Array.isArray(res)
+          ? res
+          : res?.data?.data?.treatments || res?.data?.treatments || res?.data || [];
 
         if (isMounted) {
+          const list: ServiceItem[] = rawList.map((item) => ({
+            id: item.id,
+            name: item.title || item.name || "Specialized Procedure",
+            slug: item.slug || slugify(item.title || item.name || item.id),
+            category: item.category?.trim() || "Specialized Care",
+            description: parsePreviewText(item.description),
+            imageUrl: resolveImageUrl(item.imageUrl || (item as any).image_url),
+          }));
           setServices(list);
         }
       } catch (err) {
@@ -62,7 +106,7 @@ export default function ServicesPage() {
   const categories = useMemo(() => {
     const set = new Set<string>();
     services.forEach((s) => {
-      if (s.category) set.add(s.category);
+      if (s.category?.trim()) set.add(s.category.trim());
     });
     const unique = Array.from(set);
     return unique.length > 0 ? ["All", ...unique] : ["All"];
@@ -77,14 +121,12 @@ export default function ServicesPage() {
 
   useGSAP(
     () => {
-      // Header Animation
       gsap.fromTo(
         ".services-page-header",
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
 
-      // Services Cards Entrance on separate wrappers
       if (!loading && displayedServices.length > 0) {
         gsap.fromTo(
           ".service-card-wrapper",
@@ -109,7 +151,7 @@ export default function ServicesPage() {
 
       {/* Header Section */}
       <div className="relative bg-surface-2">
-        <div className="pt-50 pb-28">
+        <div className="pt-40 pb-28">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Clinical Specialties
@@ -118,37 +160,39 @@ export default function ServicesPage() {
               Our Services &amp; Treatments
             </h1>
             <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-              Comprehensive primary and pediatric healthcare services tailored to every stage of life.
+              Comprehensive healthcare services and specialized medical procedures tailored to your family&apos;s needs.
             </p>
           </div>
 
           {/* Category Tabs */}
-          <div
-            className="relative z-10 mt-10 border-b border-slate-300/50 overflow-x-auto max-w-[1400px] mx-auto px-6 md:px-10"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <div className="flex justify-center gap-8 min-w-max mx-auto">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`relative pb-4 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                    activeCategory === cat
-                      ? "text-slate-900 font-semibold"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  {cat}
-                  {activeCategory === cat && (
-                    <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-mid" />
-                  )}
-                </button>
-              ))}
+          {categories.length > 1 && (
+            <div
+              className="relative z-10 mt-10 border-b border-slate-300/50 overflow-x-auto max-w-[1400px] mx-auto px-6 md:px-10"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              <div className="flex justify-center gap-8 min-w-max mx-auto">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`relative pb-4 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                      activeCategory.toLowerCase() === cat.toLowerCase()
+                        ? "text-slate-900 font-semibold"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {cat}
+                    {activeCategory.toLowerCase() === cat.toLowerCase() && (
+                      <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-mid" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Top Section Wave Divider */}
+        {/* Top Wave Divider */}
         <div className="absolute bottom-0 left-0 w-full translate-y-[1px] leading-none overflow-hidden pointer-events-none z-0">
           <svg
             viewBox="0 0 1440 120"
@@ -168,7 +212,7 @@ export default function ServicesPage() {
         {/* Services Grid */}
         {loading ? (
           <div className="text-center py-20 text-slate-400 text-sm">
-            Loading treatments from DMS...
+            Loading treatments...
           </div>
         ) : displayedServices.length === 0 ? (
           <div className="text-center py-20 text-slate-400 text-sm">
@@ -182,32 +226,32 @@ export default function ServicesPage() {
               return (
                 <div key={service.id} className="service-card-wrapper">
                   <Link
-                    href={`/services/${slugify(service.name) || service.id}`}
+                    href={`/services/${service.slug || service.id}`}
                     className="group flex flex-col justify-between h-full rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:border-brand-mid/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer shadow-xs"
                   >
                     <div>
-                      {/* Image with Fallback and Sleek Hover Overlay - Full Width */}
+                      {/* Image with Fallback and Hover Overlay */}
                       <div className="w-full aspect-[4/3] overflow-hidden bg-slate-50 relative">
                         <img
                           src={photo}
                           alt={service.name}
+                          crossOrigin="anonymous"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = FALLBACK_TREATMENT_IMG;
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = FALLBACK_TREATMENT_IMG;
                           }}
                         />
 
-                        {/* Sleek Details Overlay on Hover */}
+                        {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/65 to-transparent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 flex flex-col justify-end">
                           <span className="text-[0.6rem] font-bold uppercase tracking-wider text-brand-soft mb-1">
                             About Treatment
                           </span>
-                          <div
-                            className="text-xs text-white/95 leading-relaxed line-clamp-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 [&_*]:!text-white/95 [&_*]:font-normal [&_p]:inline [&_strong]:!font-semibold [&_h2]:hidden [&_h3]:hidden"
-                            dangerouslySetInnerHTML={{
-                              __html: service.description || "Comprehensive clinical care tailored to your health and wellness.",
-                            }}
-                          />
+                          <p className="text-xs text-white/95 leading-relaxed line-clamp-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 font-normal">
+                            {service.description}
+                          </p>
                         </div>
                       </div>
 
@@ -236,17 +280,6 @@ export default function ServicesPage() {
           </div>
         )}
       </section>
-
-      {/* Bottom CTA Section */}
-      <div className="max-w-[1400px] mx-auto px-6 pb-4">
-        <CtaSection
-          eyebrow="Not Sure Where To Start?"
-          title="Not Sure Which Treatment Is Right For You?"
-          description="Schedule a consultation and our team will help you find the right care plan for your needs."
-          primary={{ label: 'Book Appointment', href: '/booking' }}
-          secondary={{ label: 'Contact Us', href: '/contact' }}
-        />
-      </div>
 
       <Footer />
     </main>

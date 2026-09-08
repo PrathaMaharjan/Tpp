@@ -3,44 +3,50 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import BgMotif from "./BgMotif";
+import { getPublicDoctors, slugify, type Doctor } from "../lib/api";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-interface Doctor {
-  id: string;
-  name: string;
-  specialization?: string | null;
-  qualification?: string | null;
-  imageUrl?: string | null;
-  photoUrl?: string | null;
-}
-
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=800";
 
-export default function DoctorsCarousel({ locationId }: { locationId?: string }) {
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_AVATAR): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
+export default function DoctorsCarousel() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch doctors dynamically from DMS
+  // Fetch active doctors from your CMS
   useEffect(() => {
     let isMounted = true;
 
     async function loadDoctors() {
       try {
         setLoading(true);
-        const res = await getPublicDoctors({ locationId });
-        const docList: Doctor[] = res?.data?.data?.doctors || [];
+        const res: any = await getPublicDoctors();
+
+        // Safe unpack for direct array or object wrappers
+        const docList: Doctor[] = Array.isArray(res)
+          ? res
+          : res?.data?.data?.doctors || res?.data?.doctors || [];
 
         if (isMounted) {
           setDoctors(docList);
@@ -56,7 +62,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
     return () => {
       isMounted = false;
     };
-  }, [locationId]);
+  }, []);
 
   useGSAP(
     () => {
@@ -99,7 +105,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
     { scope: sectionRef, dependencies: [loading, doctors.length] }
   );
 
-  // Repeat for continuous scroll if items exist
+  // Repeat for continuous smooth scroll
   const displayList = doctors.length > 0 ? [...doctors, ...doctors, ...doctors] : [];
 
   useEffect(() => {
@@ -147,11 +153,8 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
   };
 
   return (
-    <section ref={sectionRef} className="py-24 bg-surface overflow-hidden relative font-sans">
-      <BgMotif variant="cross" side="left" position="top" opacity={0.04} />
-      <BgMotif variant="family" side="right" position="bottom" opacity={0.045} />
-
-      <div className="relative z-10 pb-4">
+    <section ref={sectionRef} className="py-24 bg-slate-50 overflow-hidden relative font-sans">
+      <div className="relative z-10 max-w-[1400px] mx-auto pb-4">
 
         {/* Header */}
         <div className="doctors-header px-6 text-center space-y-3 mb-16 max-w-2xl mx-auto">
@@ -165,12 +168,12 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
         </div>
 
         {/* Carousel Outer Wrapper */}
-        <div className="doctors-carousel-wrapper relative">
+        <div className="doctors-carousel-wrapper relative px-4 md:px-12">
 
           {/* Left Arrow Button */}
           <button
             onClick={() => handleScroll("left")}
-            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             aria-label="Previous Doctor"
           >
             <ChevronLeft size={24} />
@@ -179,7 +182,7 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
           {/* Right Arrow Button */}
           <button
             onClick={() => handleScroll("right")}
-            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
             aria-label="Next Doctor"
           >
             <ChevronRight size={24} />
@@ -190,7 +193,9 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
             ref={scrollRef}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="flex gap-6 overflow-x-auto scroll-smooth py-6 px-6 md:px-24 no-scrollbar"
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+            className="flex gap-6 overflow-x-auto scroll-smooth py-6 px-4 no-scrollbar"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {loading ? (
@@ -203,33 +208,39 @@ export default function DoctorsCarousel({ locationId }: { locationId?: string })
               </div>
             ) : (
               displayList.map((doc, idx) => {
-                const photo = doc.imageUrl || doc.photoUrl || FALLBACK_AVATAR;
-                const specialization = doc.specialization || doc.qualification || "Primary Care & Pediatrics";
+                const photo = resolveImageUrl(doc.imageUrl || (doc as any).image_url, FALLBACK_AVATAR);
+                const specialization = doc.specialty || (doc as any).specialization || "Specialist Provider";
+                // Generates the correct target slug matching your /providers/[slug] route
+                const targetSlug = doc.slug || slugify(doc.name) || doc.id;
 
                 return (
                   <Link
-                    href={`/providers/${slugify(doc.name) || doc.id}`}
                     key={`${doc.id}-${idx}`}
-                    className="group relative w-[280px] md:w-[300px] h-[400px] shrink-0 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block cursor-pointer"
+                    href={`/providers/${targetSlug}`}
+                    onPointerDown={() => setIsPaused(true)}
+                    className="group relative w-[280px] md:w-[300px] h-[400px] shrink-0 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 block cursor-pointer z-10"
                   >
-                    {/* Full-bleed image */}
+                    {/* Doctor Photo */}
                     <img
                       src={photo}
                       alt={doc.name}
-                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
+                      crossOrigin="anonymous"
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110 pointer-events-none"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = FALLBACK_AVATAR;
                       }}
                     />
 
                     {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
 
                     {/* Accent line that grows on hover */}
                     <div className="absolute bottom-[76px] left-6 h-0.5 w-8 bg-brand-mid rounded-full transition-all duration-500 group-hover:w-14" />
 
                     {/* Name & specialization */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 space-y-1">
+                    <div className="absolute bottom-0 left-0 right-0 p-6 space-y-1 pointer-events-none">
                       <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm group-hover:text-brand-soft transition-colors">
                         {doc.name}
                       </h3>

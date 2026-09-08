@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Calendar, Tag } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
-import CtaSection from "../../components/CtaSection";
 import { getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -18,15 +19,28 @@ if (typeof window !== "undefined") {
 interface ServiceItem {
   id: string;
   name: string;
-  category?: string;
+  slug?: string;
+  category?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  price?: string | null;
 }
 
 const FALLBACK_TREATMENT_IMG =
   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=1200";
 
-// Helper to format clean title from any ID or slug
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+
+function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_TREATMENT_IMG): string {
+  if (!url || !url.trim()) return fallback;
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  const cleanBase = CMS_URL.replace(/\/$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 function formatServiceNameFromId(id: string) {
   if (!id) return "Healthcare Treatment";
   return decodeURIComponent(id)
@@ -34,10 +48,14 @@ function formatServiceNameFromId(id: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+import { parseEditorJs } from "../../lib/editorParser";
+
 export default function ServiceDetailPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const params = useParams();
-  const serviceId = (params?.id as string) || "";
+
+  // Support both [slug] and [id] parameter naming
+  const serviceParam = (params?.id as string) || (params?.slug as string) || "";
 
   const [service, setService] = useState<ServiceItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,33 +66,45 @@ export default function ServiceDetailPage() {
     async function fetchServiceDetails() {
       try {
         setLoading(true);
-        const res = await getPublicServices();
-        const list: ServiceItem[] = res?.data?.data?.treatments || [];
-        const decodedParam = decodeURIComponent(serviceId).toLowerCase().trim();
+        const res: any = await getPublicServices();
+
+        const list: any[] = Array.isArray(res)
+          ? res
+          : res?.data?.data?.treatments || res?.data?.treatments || res?.data || [];
+
+        const decodedParam = decodeURIComponent(serviceParam).toLowerCase().trim();
         const targetSlug = slugify(decodedParam);
 
+        // Match service by Slug, ID, or Title
         const found = list.find((s) => {
-          const nameSlug = slugify(s.name);
+          const sSlug = s.slug?.toLowerCase();
+          const sTitle = (s.title || s.name || "").toLowerCase();
+          const sTitleSlug = slugify(sTitle);
+          const sId = String(s.id || "").toLowerCase();
+
           return (
-            String(s.id).toLowerCase() === decodedParam ||
-            nameSlug === targetSlug ||
-            nameSlug === decodedParam ||
-            s.name.toLowerCase() === decodedParam ||
-            s.name.toLowerCase().replace(/\s+/g, "-") === decodedParam
+            sSlug === decodedParam ||
+            sSlug === targetSlug ||
+            sId === decodedParam ||
+            sTitleSlug === targetSlug ||
+            sTitleSlug === decodedParam ||
+            sTitle === decodedParam
           );
         });
 
-        const serviceName = found ? found.name : formatServiceNameFromId(serviceId);
-        const serviceCategory = found?.category || "Clinical Care";
+        const serviceName = found ? found.title || found.name : formatServiceNameFromId(serviceParam);
+        const serviceCategory = found?.category || "Specialized Care";
+        const rawPhoto = found?.imageUrl || (found as any)?.image_url;
+        const defaultDesc = `Comprehensive and individualized ${serviceName.toLowerCase()} provided by our medical team to support your health and wellbeing.`;
 
         const serviceData: ServiceItem = {
-          id: found?.id || serviceId,
+          id: found?.id || serviceParam,
           name: serviceName,
+          slug: found?.slug,
           category: serviceCategory,
-          description:
-            found?.description ||
-            `Comprehensive and individualized ${serviceName.toLowerCase()} provided by our board-certified medical team to support your health and wellbeing.`,
-          imageUrl: found?.imageUrl || FALLBACK_TREATMENT_IMG,
+          description: parseEditorJs(found?.description, defaultDesc),
+          imageUrl: resolveImageUrl(rawPhoto, FALLBACK_TREATMENT_IMG),
+          price: found?.price || null,
         };
 
         if (isMounted) {
@@ -83,12 +113,12 @@ export default function ServiceDetailPage() {
       } catch (err) {
         console.error("Failed to load service details:", err);
         if (isMounted) {
-          const fallbackName = formatServiceNameFromId(serviceId);
+          const fallbackName = formatServiceNameFromId(serviceParam);
           setService({
-            id: serviceId,
+            id: serviceParam,
             name: fallbackName,
-            category: "General Practice",
-            description: `Expert ${fallbackName.toLowerCase()} provided by our medical team to ensure the highest standard of patient care.`,
+            category: "Specialized Care",
+            description: `Expert ${fallbackName.toLowerCase()} provided by our team to ensure the highest standard of patient care.`,
             imageUrl: FALLBACK_TREATMENT_IMG,
           });
         }
@@ -97,36 +127,33 @@ export default function ServiceDetailPage() {
       }
     }
 
-    if (serviceId) {
+    if (serviceParam) {
       fetchServiceDetails();
     }
 
-    // The isMounted guards below were dead: nothing ever set this to
-    // false, so state could still be set after unmount.
+    // These isMounted guards were read but never cleared, so
+    // state could still be set after unmount.
     return () => {
       isMounted = false;
     };
-  }, [serviceId]);
+  }, [serviceParam]);
 
   useGSAP(
     () => {
-      // Header Animation
       gsap.fromTo(
         ".service-detail-header",
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
 
-      // Image & Content Animation
       gsap.fromTo(
         ".service-detail-body",
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: "power2.out", clearProps: "all" }
       );
 
-      // Bottom CTA Section ScrollTrigger
       gsap.fromTo(
-        ".service-cta-section",
+        ".service-cta-block",
         { y: 30, opacity: 0 },
         {
           y: 0,
@@ -158,9 +185,9 @@ export default function ServiceDetailPage() {
   }
 
   const currentService = service || {
-    id: serviceId,
-    name: formatServiceNameFromId(serviceId),
-    category: "Clinical Care",
+    id: serviceParam,
+    name: formatServiceNameFromId(serviceParam),
+    category: "Specialized Care",
     description: "Comprehensive medical and clinical care delivered by dedicated healthcare providers.",
     imageUrl: FALLBACK_TREATMENT_IMG,
   };
@@ -169,7 +196,7 @@ export default function ServiceDetailPage() {
     <main ref={containerRef} className="min-h-screen bg-white font-sans text-slate-900">
       <Header />
 
-      {/* Hero / Page Header */}
+      {/* Hero Header */}
       <section className="relative bg-surface-2 pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
           <Breadcrumbs
@@ -183,7 +210,8 @@ export default function ServiceDetailPage() {
 
           <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+                <Tag size={13} />
                 {currentService.category}
               </span>
             )}
@@ -209,21 +237,24 @@ export default function ServiceDetailPage() {
         </div>
       </section>
 
-      {/* Main Content Area - Image & Description */}
+      {/* Main Content Area */}
       <section className="service-detail-body py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-8">
         {/* Treatment Image */}
         <div className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm relative">
           <img
             src={currentService.imageUrl || FALLBACK_TREATMENT_IMG}
             alt={currentService.name}
+            crossOrigin="anonymous"
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = FALLBACK_TREATMENT_IMG;
+              const target = e.currentTarget as HTMLImageElement;
+              target.onerror = null;
+              target.src = FALLBACK_TREATMENT_IMG;
             }}
           />
         </div>
 
-        {/* Description */}
+        {/* Description & Clinical Content */}
         <div className="pt-2">
           <div
             className="text-slate-700 text-base sm:text-lg leading-relaxed space-y-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-bold [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-3 [&_li]:my-1"
@@ -233,18 +264,24 @@ export default function ServiceDetailPage() {
       </section>
 
       {/* Bottom CTA Section */}
-      <div className="service-cta-section max-w-[1400px] mx-auto px-6 pb-4">
-        <CtaSection
-          eyebrow="Ready When You Are"
-          title={`Book an Appointment for ${currentService.name}`}
-          description="Our team will confirm your visit and answer any questions about what to expect."
-          primary={{
-            label: "Book Appointment",
-            href: `/booking?service=${encodeURIComponent(currentService.name)}`,
-          }}
-          secondary={{ label: "Contact Us", href: "/contact" }}
-        />
-      </div>
+      <section className="service-cta-section bg-surface-2 py-20 mt-12">
+        <div className="service-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            Book an Appointment for {currentService.name}
+          </h2>
+          <p className="text-slate-600 text-base leading-relaxed">
+            Schedule an in-person consultation with our healthcare team today.
+          </p>
+
+          <Link
+            href={`/booking?service=${encodeURIComponent(currentService.name)}`}
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200 mt-2"
+          >
+            <Calendar size={16} />
+            <span>Book Appointment</span>
+          </Link>
+        </div>
+      </section>
 
       <Footer />
     </main>
