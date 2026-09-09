@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CtaSection from '../components/CtaSection';
+import AnimatedStat from '../components/AnimatedStat';
 import { Stethoscope, HeartPulse, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { parseEditorJs } from '../lib/editorParser';
 
@@ -206,23 +207,23 @@ export default function AboutPage() {
             alt=""
             width={162}
             height={179}
-            className="absolute left-1/2 top-[21%] w-[16px] translate-x-[76px] opacity-70 md:w-[19px] md:translate-x-[92px]"
+            className="absolute left-1/2 top-[21%] w-[19px] translate-x-[46px] opacity-70 md:w-[23px] md:translate-x-[55px]"
           />
           <Image
             src="/images/shapes/shape-4.webp"
             alt=""
             width={278}
             height={333}
-            className="absolute left-1/2 top-[19%] w-[35px] translate-x-[120px] opacity-70 md:w-[45px] md:translate-x-[150px]"
+            className="absolute left-1/2 top-[19%] w-[30px] translate-x-[102px] opacity-70 md:w-[38px] md:translate-x-[128px]"
           />
         </div>
 
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-black sm:text-5xl lg:text-[56px]">
+            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {pageTitle}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-black/80 sm:text-base">
+            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">
               {pageSubtitle}
             </p>
           </div>
@@ -401,15 +402,15 @@ export default function AboutPage() {
 
       {/* ── Stats from the CMS ── */}
       {stats.length > 0 && (
-        <section className="mx-auto max-w-[1240px] px-6 py-20 md:py-24">
+        <section className="mx-auto max-w-[1240px] px-6 pt-20 pb-10 md:pt-24 md:pb-12">
           <div className="grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-4xl font-bold tracking-tight text-brand md:text-[44px]">
-                  {stat.value}
-                </p>
-                <p className="mt-2 text-sm text-slate-600">{stat.label}</p>
-              </div>
+            {stats.map((stat, i) => (
+              <AnimatedStat
+                key={stat.label}
+                value={stat.value}
+                label={stat.label}
+                index={i}
+              />
             ))}
           </div>
         </section>

@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Select from '../components/Select';
 import CtaSection from '../components/CtaSection';
+import { CardGridSkeleton } from '../components/Skeleton';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
 import {
   resolveImageUrl,
@@ -182,11 +183,7 @@ export default function BlogListingPage() {
       <section className="pt-8 pb-16 md:pt-10 md:pb-20 max-w-[1240px] mx-auto px-6 w-full grow bg-white">
         {loading ? (
           /* Loading Skeletons */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-pulse">
-            <div className="h-80 bg-slate-200/60 rounded-2xl" />
-            <div className="h-80 bg-slate-200/60 rounded-2xl" />
-            <div className="h-80 bg-slate-200/60 rounded-2xl" />
-          </div>
+          <CardGridSkeleton count={3} />
         ) : filteredPosts.length === 0 ? (
           /* Empty State */
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/70 p-8 max-w-lg mx-auto shadow-xs">

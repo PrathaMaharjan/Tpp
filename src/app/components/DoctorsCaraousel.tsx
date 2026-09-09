@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { getPublicDoctors, slugify, type Doctor } from "../lib/api";
+import { DoctorCardSkeleton } from "./Skeleton";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -199,8 +200,10 @@ export default function DoctorsCarousel() {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {loading ? (
-              <div className="w-full py-16 flex justify-center text-slate-400 text-sm">
-                Loading doctors...
+              <div className="flex gap-6 py-6 px-4" aria-label="Loading">
+                {[0, 1, 2].map((i) => (
+                  <DoctorCardSkeleton key={i} index={i} />
+                ))}
               </div>
             ) : displayList.length === 0 ? (
               <div className="w-full py-16 flex justify-center text-slate-400 text-sm">

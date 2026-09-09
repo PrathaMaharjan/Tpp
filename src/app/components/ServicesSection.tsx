@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { getPublicServices, slugify } from "../lib/api";
+import { CardSkeleton } from "./Skeleton";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -282,8 +283,12 @@ export default function ServicesSection() {
 
         {/* Carousel Wrapper */}
         {loading ? (
-          <div className="text-center py-16 text-slate-400 text-sm">
-            Loading treatments...
+          <div className="flex gap-6 overflow-hidden py-6 px-4" aria-label="Loading">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="w-[320px] shrink-0">
+                <CardSkeleton index={i} />
+              </div>
+            ))}
           </div>
         ) : filteredServices.length === 0 ? (
           <div className="text-center py-16 text-slate-400 text-sm bg-white rounded-2xl border border-slate-200/60 p-8 max-w-md mx-auto">

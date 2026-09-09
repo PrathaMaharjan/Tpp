@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { getPublicServices, slugify } from "../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -211,9 +212,7 @@ export default function ServicesPage() {
       <section className="pb-24 max-w-[1400px] mx-auto px-6 md:px-10">
         {/* Services Grid */}
         {loading ? (
-          <div className="text-center py-20 text-slate-400 text-sm">
-            Loading treatments...
-          </div>
+          <CardGridSkeleton count={3} className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" />
         ) : displayedServices.length === 0 ? (
           <div className="text-center py-20 text-slate-400 text-sm">
             No treatments found for this category.

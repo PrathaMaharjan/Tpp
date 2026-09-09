@@ -10,6 +10,7 @@ import {
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import { DetailSkeleton } from "../../components/Skeleton";
 import { getPublicDoctors, getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -231,9 +232,7 @@ export default function DoctorDetailPage() {
     return (
       <main className="min-h-screen bg-white font-sans text-slate-900">
         <Header />
-        <div className="pt-48 pb-32 text-center text-slate-400 text-sm font-medium">
-          Loading provider profile...
-        </div>
+        <DetailSkeleton />
         <Footer />
       </main>
     );

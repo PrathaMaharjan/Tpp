@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
+import { CardGridSkeleton } from './Skeleton';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -179,9 +180,7 @@ export default function BlogSection() {
 
         {/* 3-Column Cards Grid */}
         {loading ? (
-          <div className="text-center py-16 text-slate-500 text-sm">
-            Loading latest articles...
-          </div>
+          <CardGridSkeleton count={3} className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch" />
         ) : posts.length === 0 ? (
           <div className="text-center py-16 text-slate-500 text-sm bg-white/70 rounded-2xl p-8 max-w-md mx-auto">
             No published articles at this time. Check back soon!

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { ProviderSkeleton } from "../components/Skeleton";
 import { ArrowRight } from "lucide-react";
 import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
@@ -137,8 +138,10 @@ export default function ProvidersPage() {
 
           {/* Provider Cards Grid */}
           {loading ? (
-            <div className="text-center py-20 text-slate-400 text-sm">
-              Loading healthcare providers...
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" aria-label="Loading">
+              {[0, 1, 2].map((i) => (
+                <ProviderSkeleton key={i} index={i} />
+              ))}
             </div>
           ) : providers.length === 0 ? (
             <div className="text-center py-20 text-slate-400 text-sm">

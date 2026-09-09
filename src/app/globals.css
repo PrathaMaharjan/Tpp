@@ -272,3 +272,36 @@ body {
   text-underline-offset: 3px;
 }
 
+/* ---------------------------------------------------------------
+   Skeleton shimmer.
+   A soft brand-tinted sweep that reads as "loading" without the
+   harsh blink of animate-pulse. Stagger via inline animation-delay
+   so sibling blocks cascade instead of flashing in unison.
+   --------------------------------------------------------------- */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #e4eef2 25%,
+    #f6fbfc 42%,
+    #dcebf0 55%,
+    #e4eef2 70%
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
+
