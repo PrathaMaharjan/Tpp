@@ -16,19 +16,7 @@ import {
   parseExcerpt,
   FALLBACK_BLOG_IMAGE,
 } from '../../lib/blogUtils';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  Clock,
-  User,
-  Copy,
-  Check,
-  BookOpen,
-  ArrowUpRight,
-  CalendarPlus,
-  Phone,
-} from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, Copy, Check, BookOpen, ArrowUpRight, CalendarPlus, Phone, Share2 } from 'lucide-react';
 
 export default function BlogPostDetailPage() {
   const params = useParams();
@@ -121,33 +109,6 @@ export default function BlogPostDetailPage() {
     <main className="min-h-screen bg-white font-sans flex flex-col">
       <Header />
 
-      {/* Top Banner / Breadcrumbs Wrapper */}
-      <div className="pt-28 md:pt-36 bg-surface border-b border-slate-200/60 pb-8">
-        <div className="max-w-4xl mx-auto px-6">
-          {/* Breadcrumbs */}
-          {/* Uses the shared component so the trail also emits
-              BreadcrumbList structured data. */}
-          <Breadcrumbs
-            className="mb-6"
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Blog', href: '/blog' },
-              ...(post ? [{ label: post.title }] : []),
-            ]}
-          />
-
-          {/* Back Button */}
-          <Link
-            href="/blog"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-brand transition-colors mb-4"
-          >
-            <ArrowLeft size={14} />
-            Back to All Articles
-          </Link>
-        </div>
-      </div>
-
-      {/* Loading Skeleton */}
       {loading ? (
         <div className="max-w-3xl mx-auto px-6 py-16 w-full space-y-8 animate-pulse">
           <div className="h-8 bg-slate-200 rounded-lg w-3/4" />
@@ -179,106 +140,115 @@ export default function BlogPostDetailPage() {
         </div>
       ) : (
         /* Article Body */
-        <div className="max-w-[1240px] mx-auto px-6 py-10 md:py-14 w-full">
+        <div className="max-w-[1240px] mx-auto px-6 pt-32 md:pt-40 pb-10 md:pb-14 w-full">
           <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
             {/* Sticky table of contents */}
-            <aside className="hidden lg:block lg:order-2 lg:w-[280px] lg:shrink-0 lg:sticky lg:top-28">
+            <aside className="hidden lg:block lg:order-2 lg:w-[280px] lg:shrink-0 lg:sticky lg:top-28 lg:space-y-4">
               <TableOfContents contentRef={contentRef} contentKey={contentHtml} />
+
+              {/* Share sits under the TOC: it is a secondary action, and
+                  keeping it in the rail means it stays reachable while
+                  reading rather than only at the top of the article. */}
+              <div className="rounded-2xl border border-hairline bg-white p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">
+                    Share this article
+                  </p>
+                  <Share2 size={14} className="text-slate-400" />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleShare('twitter')}
+                    title="Share on X (Twitter)"
+                    aria-label="Share on X"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-slate-200/80 text-slate-600 transition-colors duration-300 hover:border-brand hover:text-brand"
+                  >
+                    <span className="text-xs font-bold">𝕏</span>
+                  </button>
+                  <button
+                    onClick={() => handleShare('facebook')}
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-slate-200/80 text-slate-600 transition-colors duration-300 hover:border-brand hover:text-brand"
+                  >
+                    <span className="text-xs font-bold">f</span>
+                  </button>
+                  <button
+                    onClick={() => handleShare('linkedin')}
+                    title="Share on LinkedIn"
+                    aria-label="Share on LinkedIn"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-slate-200/80 text-slate-600 transition-colors duration-300 hover:border-brand hover:text-brand"
+                  >
+                    <span className="text-xs font-bold">in</span>
+                  </button>
+                  <button
+                    onClick={handleCopyLink}
+                    title="Copy link"
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors duration-300 hover:border-brand hover:text-brand"
+                  >
+                    {copied ? (
+                      <>
+                        <Check size={12} className="text-emerald-500" />
+                        <span className="text-emerald-600">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </aside>
 
             <article className="min-w-0 flex-1 lg:order-1">
           {/* Article Header */}
-          <header className="space-y-6">
-            <div className="flex items-center gap-2.5">
-              <span className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand bg-surface-2 rounded-full">
-                Health &amp; Wellness
-              </span>
-              <span className="text-slate-300">•</span>
-              <span className="flex items-center gap-1 text-xs text-slate-500">
-                <Clock size={13} className="text-brand" />
-                {calculateReadTime(post.content)}
-              </span>
-            </div>
+          {/* Breadcrumb + back, inside the content column */}
+          <Breadcrumbs
+            className="mb-5"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Blog', href: '/blog' },
+              ...(post ? [{ label: post.title }] : []),
+            ]}
+          />
 
+          <header className="space-y-5">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18]">
               {post.title}
             </h1>
 
-            {/* Author & Meta Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-100">
-              <div className="flex items-center gap-3">
-                {post.authorImage ? (
-                  <img
-                    src={resolveImageUrl(post.authorImage)}
-                    alt={post.authorName || 'Author'}
-                    crossOrigin="anonymous"
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-brand-mid/25"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <User size={20} />
-                  </div>
-                )}
-                <div>
-                  <div className="font-bold text-slate-900 text-sm">
-                    {post.authorName || 'Medical Staff Contributor'}
-                  </div>
-                  <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={12} />
-                      {formatBlogDate(post.publishedAt || post.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Meta line: category, date, read time */}
+            <p className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+              <span className="font-medium text-slate-700">Blog</span>
+              <span className="text-slate-300">•</span>
+              <span>{formatBlogDate(post.publishedAt || post.createdAt)}</span>
+              <span className="text-slate-300">•</span>
+              <span>{calculateReadTime(post.content)}</span>
+            </p>
 
-              {/* Share actions */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium mr-1 hidden sm:inline">
-                  Share:
-                </span>
-                <button
-                  onClick={() => handleShare('twitter')}
-                  title="Share on X (Twitter)"
-                  className="w-8 h-8 rounded-full border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand hover:border-brand transition-colors"
-                >
-                  <span className="text-xs font-bold">𝕏</span>
-                </button>
-                <button
-                  onClick={() => handleShare('facebook')}
-                  title="Share on Facebook"
-                  className="w-8 h-8 rounded-full border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand hover:border-brand transition-colors"
-                >
-                  <span className="text-xs font-bold">f</span>
-                </button>
-                <button
-                  onClick={() => handleShare('linkedin')}
-                  title="Share on LinkedIn"
-                  className="w-8 h-8 rounded-full border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-brand hover:border-brand transition-colors"
-                >
-                  <span className="text-xs font-bold">in</span>
-                </button>
-                <button
-                  onClick={handleCopyLink}
-                  title="Copy link"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200/80 text-xs font-semibold text-slate-600 hover:text-brand hover:border-brand transition-colors"
-                >
-                  {copied ? (
-                    <>
-                      <Check size={12} className="text-emerald-500" />
-                      <span className="text-emerald-600">Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={12} />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* Author byline */}
+            <div className="flex items-center gap-3 pt-1">
+              {post.authorImage ? (
+                <img
+                  src={resolveImageUrl(post.authorImage)}
+                  alt={post.authorName || 'Author'}
+                  crossOrigin="anonymous"
+                  className="h-10 w-10 rounded-full object-cover ring-2 ring-brand-mid/25"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-400">
+                  <User size={18} />
+                </div>
+              )}
+              <span className="text-sm font-semibold text-slate-800">
+                By {post.authorName || 'Medical Staff Contributor'}
+              </span>
             </div>
           </header>
 

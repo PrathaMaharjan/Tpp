@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import Select from '../components/Select';
 import CtaSection from '../components/CtaSection';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
 import {
@@ -25,6 +26,7 @@ export default function BlogListingPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
 
   useEffect(() => {
     let isMounted = true;
@@ -51,6 +53,28 @@ export default function BlogListingPage() {
   }, []);
 
   // Filter posts by search query
+  // The CMS type does not declare categories, but list responses can
+  // carry them. Read defensively and hide the filter when absent.
+  const categoryOptions = useMemo(() => {
+    const names = new Set<string>();
+    posts.forEach((p) => {
+      const raw = (p as { categories?: unknown }).categories;
+      if (Array.isArray(raw)) {
+        raw.forEach((c) => {
+          const name =
+            typeof c === 'string'
+              ? c
+              : (c as { name?: string } | null)?.name;
+          if (name) names.add(name);
+        });
+      }
+    });
+    return [
+      { value: 'all', label: 'All Categories' },
+      ...[...names].sort().map((n) => ({ value: n, label: n })),
+    ];
+  }, [posts]);
+
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
       const q = searchQuery.toLowerCase().trim();
@@ -58,9 +82,19 @@ export default function BlogListingPage() {
       const excerptMatch = post.excerpt?.toLowerCase().includes(q) ?? false;
       const authorMatch = post.authorName?.toLowerCase().includes(q) ?? false;
 
-      return !q || titleMatch || excerptMatch || authorMatch;
+      const searchOk = !q || titleMatch || excerptMatch || authorMatch;
+
+      if (activeCategory === 'all') return searchOk;
+
+      const raw = (post as { categories?: unknown }).categories;
+      const names = Array.isArray(raw)
+        ? raw.map((c) =>
+            typeof c === 'string' ? c : (c as { name?: string } | null)?.name
+          )
+        : [];
+      return searchOk && names.includes(activeCategory);
     });
-  }, [posts, searchQuery]);
+  }, [posts, searchQuery, activeCategory]);
 
   return (
     <main className="min-h-screen bg-white font-sans flex flex-col">
@@ -69,7 +103,7 @@ export default function BlogListingPage() {
       {/* Hero Header Section */}
       <section className="relative bg-white overflow-hidden">
         <div className="pt-32 pb-20 md:pt-40 md:pb-24">
-          <div className="max-w-4xl mx-auto px-6 space-y-4 text-center">
+          <div className="max-w-[1240px] mx-auto px-6 space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Health Insights &amp; Clinical Updates
             </span>
@@ -78,29 +112,51 @@ export default function BlogListingPage() {
               Texas Primary &amp; Pediatric Care Blog
             </h1>
 
-            <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
               Trusted medical advice, pediatric guidance, and preventive wellness insights written by our physicians and healthcare providers.
             </p>
 
-            {/* Interactive Search Bar */}
-            <div className="pt-4 max-w-xl mx-auto">
-              <div className="relative flex items-center shadow-md rounded-2xl bg-white border border-slate-200/80 p-1.5 focus-within:ring-2 focus-within:ring-brand/30 focus-within:border-brand transition-all">
-                <Search size={18} className="text-slate-400 ml-3 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search articles, symptoms, or health topics..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+            {/* Search + category filter, on an offset-shadow bar */}
+            <div className="pt-6 text-left">
+              <div className="relative">
+                {/* Offset brand slab behind the bar */}
+                <div
+                  aria-hidden
+                  className="absolute left-2.5 top-2.5 -z-10 h-full w-full rounded-xl bg-brand-mid"
                 />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="mr-2 text-xs font-semibold px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
+
+                <div className="relative z-10 flex flex-col gap-3 rounded-xl border border-hairline bg-white p-3 sm:h-[70px] sm:flex-row sm:items-center sm:gap-4 sm:py-0 sm:pl-5 sm:pr-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Search size={18} className="shrink-0 text-brand" />
+                    <input
+                      type="text"
+                      placeholder="Articles, keywords, health topics..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-transparent py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        aria-label="Clear search"
+                        className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 transition-colors duration-300 hover:bg-slate-200"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+
+                  {categoryOptions.length > 1 && (
+                    <div className="w-full shrink-0 sm:w-[210px]">
+                      <Select
+                        value={activeCategory}
+                        onChange={setActiveCategory}
+                        aria-label="Filter by category"
+                        options={categoryOptions}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -155,11 +211,17 @@ export default function BlogListingPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-              <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                Health Articles
-              </h3>
-              <span className="text-xs text-slate-500">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-1">
+                <p className="text-base text-slate-600">
+                  Explore insights and stay ahead of your family&apos;s health
+                </p>
+                <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+                  <span className="text-brand">Health Library:</span> Guidance,
+                  Prevention &amp; Care
+                </h2>
+              </div>
+              <span className="shrink-0 text-xs text-slate-500">
                 Showing {filteredPosts.length} article{filteredPosts.length > 1 ? 's' : ''}
               </span>
             </div>
@@ -175,13 +237,13 @@ export default function BlogListingPage() {
                 return (
                   <article
                     key={post.id}
-                    className="group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/70 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+                    className="reveal-card group flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1"
                   >
                     <div>
                       {/* Card Thumbnail */}
                       <Link
                         href={postUrl}
-                        className="block relative overflow-hidden aspect-[16/10] bg-white"
+                        className="block relative overflow-hidden aspect-[16/10] rounded-2xl bg-white"
                       >
                         <img
                           src={cover}
@@ -194,10 +256,15 @@ export default function BlogListingPage() {
                             target.src = FALLBACK_BLOG_IMAGE;
                           }}
                         />
+
+                        {/* Arrow badge, revealed on hover */}
+                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
+                          <ArrowUpRight size={18} />
+                        </span>
                       </Link>
 
                       {/* Card Body */}
-                      <div className="p-6 space-y-3 bg-white">
+                      <div className="pt-5 space-y-3">
                         <div className="flex items-center gap-1 text-[11px] text-slate-400">
                           <Calendar size={12} />
                           <span>{postDate}</span>
