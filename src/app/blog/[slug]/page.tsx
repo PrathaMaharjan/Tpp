@@ -368,7 +368,7 @@ export default function BlogPostDetailPage() {
                           src={cover}
                           alt={rPost.title}
                           crossOrigin="anonymous"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[620ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             target.onerror = null;
@@ -376,7 +376,7 @@ export default function BlogPostDetailPage() {
                           }}
                         />
 
-                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
+                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white text-brand shadow-md">
                           <ArrowUpRight size={16} />
                         </span>
                       </Link>

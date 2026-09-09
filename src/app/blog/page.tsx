@@ -249,7 +249,7 @@ export default function BlogListingPage() {
                           src={cover}
                           alt={post.title}
                           crossOrigin="anonymous"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                          className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[620ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             target.onerror = null;
@@ -258,7 +258,7 @@ export default function BlogListingPage() {
                         />
 
                         {/* Arrow badge, revealed on hover */}
-                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
+                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-brand shadow-md">
                           <ArrowUpRight size={18} />
                         </span>
                       </Link>

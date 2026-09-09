@@ -9,22 +9,37 @@
    values (e.g. h-[190px]) in v4.
    --------------------------------------------------------------- */
 @media (hover: hover) and (pointer: fine) {
+  /* One shared easing and duration so the image, arrow and description
+     move as a single gesture rather than three separate ones. */
+  .reveal-card .reveal-media,
+  .reveal-card .reveal-arrow,
+  .reveal-card .reveal-body {
+    transition-duration: 620ms;
+    /* Gentle overshoot-free ease-out: fast start, long settle. */
+    transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
   .reveal-card .reveal-media {
-    height: 240px;
+    height: 260px;
+    transition-property: height;
+    will-change: height;
   }
 
   .reveal-card:hover .reveal-media {
-    height: 190px;
+    height: 212px;
   }
 
   .reveal-card .reveal-arrow {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(8px) scale(0.92);
+    transition-property: opacity, transform;
   }
 
   .reveal-card:hover .reveal-arrow {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    /* Trails the image slightly so the two read as cause and effect. */
+    transition-delay: 60ms;
   }
 
   /* The description lives in a grid row that animates from 0fr to 1fr.
@@ -35,10 +50,7 @@
     display: grid;
     grid-template-rows: 0fr;
     opacity: 0;
-    transition:
-      grid-template-rows 500ms cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
-      margin-top 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: grid-template-rows, opacity, margin-top;
   }
 
   .reveal-card:hover .reveal-body {
@@ -69,11 +81,11 @@
   }
 
   .reveal-card.reveal-card-sm .reveal-media {
-    height: 190px;
+    height: 200px;
   }
 
   .reveal-card.reveal-card-sm:hover .reveal-media {
-    height: 150px;
+    height: 164px;
   }
 }
 
