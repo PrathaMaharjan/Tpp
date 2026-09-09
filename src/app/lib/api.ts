@@ -88,18 +88,68 @@ export async function getDoctorBySlug(slug: string): Promise<Doctor | null> {
 
 // ── Blog Posts API ───────────────────────────────────────────────
 
-export async function getPublicBlogPosts(): Promise<BlogPost[]> {
+export interface BlogListParams {
+  search?: string;
+  category?: string;
+  page?: number;
+  size?: number;
+  signal?: AbortSignal;
+}
+
+export interface BlogCategoryOption {
+  value: string;
+  label: string;
+}
+
+export async function getPublicBlogPosts(params: BlogListParams = {}): Promise<BlogPost[]> {
   try {
-    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/blog-posts`, {
+    const qs = new URLSearchParams();
+    if (params.search?.trim()) qs.set('search', params.search.trim());
+    if (params.category && params.category !== 'all') qs.set('category', params.category);
+    if (params.page) qs.set('page', String(params.page));
+    if (params.size) qs.set('size', String(params.size));
+    const suffix = qs.size ? `?${qs.toString()}` : '';
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/blog-posts${suffix}`, {
       next: { revalidate: 60 },
+      signal: params.signal,
     });
     if (!res.ok) return [];
     const posts = unwrapList<BlogPost>(await res.json());
     // Some CMS list responses omit `status`; only exclude posts that are
     // explicitly not published rather than requiring the field.
-    return posts.filter((p) => !p.status || p.status === "published");
+    return posts.filter((p) => !p.status || p.status === 'published');
   } catch (error) {
-    console.error("Error in getPublicBlogPosts:", error);
+    if (error instanceof DOMException && error.name === 'AbortError') return [];
+    console.error('Error in getPublicBlogPosts:', error);
+    return [];
+  }
+}
+
+/**
+ * Category tabs for the blog filter. Values are CMS slugs (what the
+ * `?category=` server filter matches); labels are display names.
+ */
+export async function getPublicBlogCategories(): Promise<BlogCategoryOption[]> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/${SITE_SLUG}/blog-categories`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return [];
+    const rows = unwrapList<Record<string, unknown>>(await res.json());
+    const seen = new Set<string>();
+    const out: BlogCategoryOption[] = [];
+    for (const r of rows) {
+      const name = typeof r.name === 'string' ? r.name : null;
+      const slug = typeof r.slug === 'string' && r.slug ? r.slug : null;
+      const id = r.id !== undefined && r.id !== null ? String(r.id) : null;
+      const value = slug ?? id ?? name;
+      if (!value || !name || seen.has(value)) continue;
+      seen.add(value);
+      out.push({ value, label: name });
+    }
+    return out.sort((a, b) => a.label.localeCompare(b.label));
+  } catch (error) {
+    console.error('Error in getPublicBlogCategories:', error);
     return [];
   }
 }

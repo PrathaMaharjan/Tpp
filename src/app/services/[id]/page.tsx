@@ -8,6 +8,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { DetailSkeleton } from "../../components/Skeleton";
+import HeroTitle from "../../components/HeroTitle";
 import { getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -196,7 +197,7 @@ export default function ServiceDetailPage() {
       <Header />
 
       {/* Hero Header */}
-      <section className="relative bg-brand-dark pt-40 pb-[92px]">
+      <section className="relative bg-brand-mid pt-40 pb-[121px]">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
           <Breadcrumbs
             className="service-detail-header mb-2"
@@ -210,13 +211,13 @@ export default function ServiceDetailPage() {
 
           <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-white">
                 <Tag size={13} />
                 {currentService.category}
               </span>
             )}
             <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              {currentService.name}
+              <HeroTitle text={currentService.name} />
             </h1>
           </div>
         </div>

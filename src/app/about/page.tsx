@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CtaSection from '../components/CtaSection';
 import AnimatedStat from '../components/AnimatedStat';
+import HeroTitle from '../components/HeroTitle';
 import { Stethoscope, HeartPulse, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { parseEditorJs } from '../lib/editorParser';
 
@@ -221,7 +222,7 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="font-display mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[56px]">
-              {pageTitle}
+              <HeroTitle text={pageTitle} />
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">
               {pageSubtitle}

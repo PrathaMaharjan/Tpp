@@ -111,7 +111,7 @@ export default function Hero() {
       {/* Main Content Area */}
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 md:px-10 pt-36 pb-20">
         <div className="max-w-2xl space-y-6">
-          <h1 className="hero-headline text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
+          <h1 className="hero-headline font-display text-4xl md:text-6xl font-bold tracking-tight leading-tight text-white">
             Texas Primary & <br />
             <span className="text-brand-soft">Pediatric Care</span>
           </h1>

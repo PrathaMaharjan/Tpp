@@ -74,7 +74,7 @@ export default function MissionSection() {
               Our Mission
             </span>
 
-            <h2 className="mission-text-item text-3xl md:text-4xl lg:text-[2.75rem] font-semibold text-slate-900 leading-[1.2] tracking-tight">
+            <h2 className="mission-text-item font-display text-3xl md:text-4xl lg:text-[2.75rem] font-semibold text-slate-900 leading-[1.2] tracking-tight">
               Personalized, high-quality care dedicated to your health
             </h2>
 

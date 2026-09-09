@@ -151,16 +151,16 @@ export default function ServicesPage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-brand-dark">
-        <div className="pt-40 pb-[129px]">
+      <div className="relative bg-brand-mid">
+        <div className="pt-40 pb-[170px]">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
               Clinical Specialties
             </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              Our Services &amp; Treatments
+              Our Services &amp; <span className="text-brand-deep">Treatments</span>
             </h1>
-            <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-white/90 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Comprehensive healthcare services and specialized medical procedures tailored to your family&apos;s needs.
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function ServicesPage() {
           {/* Category Tabs */}
           {categories.length > 1 && (
             <div
-              className="relative z-10 mt-10 border-b border-white/20 overflow-x-auto max-w-[1400px] mx-auto px-6 md:px-10"
+              className="relative z-10 mt-10 border-b border-white/25 overflow-x-auto max-w-[1400px] mx-auto px-6 md:px-10"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               <div className="flex justify-center gap-8 min-w-max mx-auto">
@@ -179,12 +179,12 @@ export default function ServicesPage() {
                     className={`relative pb-4 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
                       activeCategory.toLowerCase() === cat.toLowerCase()
                         ? "text-white font-semibold"
-                        : "text-white/60 hover:text-white"
+                        : "text-white/70 hover:text-white"
                     }`}
                   >
                     {cat}
                     {activeCategory.toLowerCase() === cat.toLowerCase() && (
-                      <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-soft" />
+                      <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-white" />
                     )}
                   </button>
                 ))}

@@ -246,7 +246,7 @@ export default function ServicesSection() {
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-100/90">
               Our Specialties &amp; Treatments
             </span>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight">
               Comprehensive Care You Can Trust
             </h2>
             <div className="w-12 h-0.5 bg-white/80 rounded-full mt-2" />
@@ -258,25 +258,36 @@ export default function ServicesSection() {
         </div>
 
         {/* Category Filter Tabs */}
+        {/* Pill filters, matching the reference's rounded-full style but
+            tuned for the teal band: solid white when active, translucent
+            with a light border otherwise. */}
         {categories.length > 1 && (
-          <div className="services-tabs flex justify-center px-6">
-            <div className="relative flex items-center gap-6 sm:gap-8 border-b border-white/20 overflow-x-auto pb-1 no-scrollbar">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`relative shrink-0 pb-3 text-sm tracking-wide whitespace-nowrap transition-colors duration-300 cursor-pointer ${
-                    activeCategory.toLowerCase() === cat.toLowerCase()
-                      ? "text-white font-semibold"
-                      : "text-white/70 hover:text-white font-medium"
-                  }`}
-                >
-                  {cat}
-                  {activeCategory.toLowerCase() === cat.toLowerCase() && (
-                    <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-white rounded-full" />
-                  )}
-                </button>
-              ))}
+          <div className="services-tabs px-6">
+            <div
+              role="tablist"
+              aria-label="Filter services by category"
+              className="mx-auto flex max-w-full items-center justify-start gap-2.5 overflow-x-auto pb-2 no-scrollbar sm:justify-center"
+            >
+              {categories.map((cat) => {
+                const isActive =
+                  activeCategory.toLowerCase() === cat.toLowerCase();
+
+                return (
+                  <button
+                    key={cat}
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-4 py-2 text-sm capitalize transition duration-300 ${
+                      isActive
+                        ? "border-white bg-white font-semibold text-brand-dark shadow-sm"
+                        : "border-white/35 bg-white/10 font-medium text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/20"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

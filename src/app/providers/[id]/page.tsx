@@ -11,6 +11,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
 import { DetailSkeleton } from "../../components/Skeleton";
+import HeroTitle from "../../components/HeroTitle";
 import { getPublicDoctors, getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -258,7 +259,7 @@ export default function DoctorDetailPage() {
       <Header />
 
       {/* Hero / Page Header */}
-      <section className="relative bg-brand-dark pt-40 pb-[92px]">
+      <section className="relative bg-brand-mid pt-40 pb-[121px]">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
           <Breadcrumbs
             className="doctor-detail-header mb-2"
@@ -271,15 +272,15 @@ export default function DoctorDetailPage() {
           />
 
           <div className="doctor-detail-header space-y-2 max-w-3xl">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
               {currentDoctor.specialization || "Healthcare Provider"}
             </span>
             <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              {currentDoctor.name}
+              <HeroTitle text={currentDoctor.name} />
             </h1>
             {currentDoctor.qualification && (
-              <p className="text-sm font-medium text-white/80 flex items-center gap-2">
-                <Award size={16} className="text-brand-soft" />
+              <p className="text-sm font-medium text-white/90 flex items-center gap-2">
+                <Award size={16} className="text-white" />
                 <span>{currentDoctor.qualification}</span>
               </p>
             )}

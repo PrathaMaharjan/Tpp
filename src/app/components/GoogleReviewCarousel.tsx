@@ -205,7 +205,7 @@ export default function GoogleReviewsSection() {
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
             Patient Stories
           </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Trusted by Families Across the Community
           </h2>
           <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />

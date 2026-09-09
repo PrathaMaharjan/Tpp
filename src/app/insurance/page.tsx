@@ -102,16 +102,16 @@ export default function InsurancePage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-brand-dark">
-        <div className="pt-50 pb-[92px]">
+      <div className="relative bg-brand-mid">
+        <div className="pt-50 pb-[121px]">
           <div className="insurance-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
               Coverage &amp; Networks
             </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              Insurance Plans
+              Insurance <span className="text-brand-deep">Plans</span>
             </h1>
-            <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-white/90 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               We accept most major insurance networks to keep your care accessible and seamless.
             </p>
           </div>
