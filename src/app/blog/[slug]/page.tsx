@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import TableOfContents from '../../components/TableOfContents';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import { getBlogPostBySlug, getPublicBlogPosts, type BlogPost } from '../../lib/api';
 import {
   resolveImageUrl,
@@ -22,7 +24,6 @@ import {
   User,
   Copy,
   Check,
-  ChevronRight,
   BookOpen,
   ArrowUpRight,
   CalendarPlus,
@@ -36,6 +37,7 @@ export default function BlogPostDetailPage() {
 
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -123,23 +125,16 @@ export default function BlogPostDetailPage() {
       <div className="pt-28 md:pt-36 bg-surface border-b border-slate-200/60 pb-8">
         <div className="max-w-4xl mx-auto px-6">
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6 overflow-x-auto whitespace-nowrap">
-            <Link href="/" className="hover:text-brand transition-colors">
-              Home
-            </Link>
-            <ChevronRight size={13} className="text-slate-400 shrink-0" />
-            <Link href="/blog" className="hover:text-brand transition-colors">
-              Blog
-            </Link>
-            {post && (
-              <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
-                <span className="text-slate-800 font-medium truncate max-w-[280px]">
-                  {post.title}
-                </span>
-              </>
-            )}
-          </nav>
+          {/* Uses the shared component so the trail also emits
+              BreadcrumbList structured data. */}
+          <Breadcrumbs
+            className="mb-6"
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Blog', href: '/blog' },
+              ...(post ? [{ label: post.title }] : []),
+            ]}
+          />
 
           {/* Back Button */}
           <Link
@@ -184,9 +179,16 @@ export default function BlogPostDetailPage() {
         </div>
       ) : (
         /* Article Body */
-        <article className="max-w-4xl mx-auto px-6 py-10 md:py-14 w-full">
+        <div className="max-w-[1240px] mx-auto px-6 py-10 md:py-14 w-full">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
+            {/* Sticky table of contents */}
+            <aside className="hidden lg:block lg:order-2 lg:w-[280px] lg:shrink-0 lg:sticky lg:top-28">
+              <TableOfContents contentRef={contentRef} contentKey={contentHtml} />
+            </aside>
+
+            <article className="min-w-0 flex-1 lg:order-1">
           {/* Article Header */}
-          <header className="space-y-6 max-w-3xl mx-auto">
+          <header className="space-y-6">
             <div className="flex items-center gap-2.5">
               <span className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-brand bg-surface-2 rounded-full">
                 Health &amp; Wellness
@@ -296,7 +298,17 @@ export default function BlogPostDetailPage() {
           </div>
 
           {/* Article Main Text / Rich Content */}
-          <div className="max-w-3xl mx-auto pt-2">
+          {/* Mobile TOC — inline, above the content */}
+          <details className="lg:hidden mt-8 rounded-2xl border border-hairline bg-white">
+            <summary className="cursor-pointer list-none px-5 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-brand">
+              On this page
+            </summary>
+            <div className="px-2 pb-2">
+              <TableOfContents contentRef={contentRef} contentKey={contentHtml} />
+            </div>
+          </details>
+
+          <div className="pt-2" ref={contentRef}>
             {contentHtml ? (
               <div
                 className="article-content leading-relaxed text-slate-700 font-normal"
@@ -338,7 +350,9 @@ export default function BlogPostDetailPage() {
               </div>
             </div>
           </div>
-        </article>
+            </article>
+          </div>
+        </div>
       )}
 
       {/* Related / More Articles Section */}

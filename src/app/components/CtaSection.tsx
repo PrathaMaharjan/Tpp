@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUpRight, MessageSquare } from 'lucide-react';
+import { ArrowUpRight, MessageSquare, Phone } from 'lucide-react';
 
 interface CtaSectionProps {
   eyebrow?: string;
@@ -50,15 +50,28 @@ export default function CtaSection({
                 <ArrowUpRight size={18} />
               </Link>
 
-              {secondary && (
-                <Link
-                  href={secondary.href}
-                  className="inline-flex items-center justify-center gap-2 border border-brand/30 bg-white/70 hover:bg-white text-brand text-sm md:text-base font-semibold py-[14px] px-[20px] rounded-lg transition duration-300 hover:-translate-y-0.5"
-                >
-                  <MessageSquare size={17} />
-                  <span>{secondary.label}</span>
-                </Link>
-              )}
+              {secondary &&
+                (() => {
+                  // tel:/mailto: must be a plain anchor — next/link is for
+                  // in-app routes — and the icon should match the action.
+                  const isTel = secondary.href.startsWith('tel:');
+                  const isExternal = isTel || secondary.href.startsWith('mailto:');
+                  const Icon = isTel ? Phone : MessageSquare;
+                  const cls =
+                    'inline-flex items-center justify-center gap-2 border border-brand/30 bg-white/70 hover:bg-white text-brand text-sm md:text-base font-semibold py-[14px] px-[20px] rounded-lg transition duration-300 hover:-translate-y-0.5';
+
+                  return isExternal ? (
+                    <a href={secondary.href} className={cls}>
+                      <Icon size={17} />
+                      <span>{secondary.label}</span>
+                    </a>
+                  ) : (
+                    <Link href={secondary.href} className={cls}>
+                      <Icon size={17} />
+                      <span>{secondary.label}</span>
+                    </Link>
+                  );
+                })()}
             </div>
           </div>
 

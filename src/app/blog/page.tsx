@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CtaSection from '../components/CtaSection';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
 import {
   resolveImageUrl,
@@ -18,7 +19,6 @@ import {
   ArrowUpRight,
   BookOpen,
   RefreshCw,
-  HeartPulse,
 } from 'lucide-react';
 
 export default function BlogListingPage() {
@@ -257,33 +257,14 @@ export default function BlogListingPage() {
       </section>
 
       {/* Practice Consultation & Booking Call to Action */}
-      <section className="bg-gradient-to-r from-brand via-brand to-brand-mid text-white py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center mx-auto text-white">
-            <HeartPulse size={26} />
-          </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-            Have Questions About Your Family&apos;s Health?
-          </h2>
-          <p className="text-white/90 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Our experienced team of physicians and healthcare specialists are here to provide compassionate, personalized primary and pediatric care.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/booking"
-              className="w-full sm:w-auto px-6 py-3.5 bg-white text-brand rounded-xl font-bold text-sm shadow-md hover:bg-slate-50 transition-all hover:scale-[1.02] active:scale-[0.99]"
-            >
-              Book an Appointment
-            </Link>
-            <a
-              href="tel:4694420202"
-              className="w-full sm:w-auto px-6 py-3.5 bg-white/15 hover:bg-white/25 border border-white/30 text-white rounded-xl font-bold text-sm backdrop-blur-sm transition-all text-center"
-            >
-              Call 469-442-0202
-            </a>
-          </div>
-        </div>
-      </section>
+      <div className="max-w-[1400px] mx-auto px-6 pb-4">
+        <CtaSection
+          title="Have Questions About Your Family's Health?"
+          description="Our experienced team of physicians and healthcare specialists are here to provide compassionate, personalized primary and pediatric care."
+          primary={{ label: 'Book an Appointment', href: '/booking' }}
+          secondary={{ label: 'Call 469-442-0202', href: 'tel:4694420202' }}
+        />
+      </div>
 
       <Footer />
     </main>

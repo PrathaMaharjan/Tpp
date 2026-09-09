@@ -1,6 +1,21 @@
 const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
 const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG || "tpp";
 
+
+/**
+ * The CMS is inconsistent about envelopes: /doctors and /treatments
+ * return a bare array, while /blog-posts and /blog-categories return
+ * `{ data: [...] }`. Accept either rather than silently returning [].
+ */
+function unwrapList<T>(payload: unknown): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === 'object') {
+    const inner = (payload as { data?: unknown }).data;
+    if (Array.isArray(inner)) return inner as T[];
+  }
+  return [];
+}
+
 // ── Types ────────────────────────────────────────────────────────
 
 export interface Doctor {
@@ -50,8 +65,8 @@ export async function getPublicDoctors(): Promise<Doctor[]> {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data: Doctor[] = await res.json();
-    return Array.isArray(data) ? data.filter((d) => d.isActive !== false) : [];
+    const docs = unwrapList<Doctor>(await res.json());
+    return docs.filter((d) => d.isActive !== false);
   } catch (error) {
     console.error("Error in getPublicDoctors:", error);
     return [];
@@ -79,8 +94,10 @@ export async function getPublicBlogPosts(): Promise<BlogPost[]> {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data: BlogPost[] = await res.json();
-    return Array.isArray(data) ? data.filter((p) => p.status === "published") : [];
+    const posts = unwrapList<BlogPost>(await res.json());
+    // Some CMS list responses omit `status`; only exclude posts that are
+    // explicitly not published rather than requiring the field.
+    return posts.filter((p) => !p.status || p.status === "published");
   } catch (error) {
     console.error("Error in getPublicBlogPosts:", error);
     return [];
@@ -108,8 +125,7 @@ export async function getPublicServices(): Promise<Service[]> {
       next: { revalidate: 60 },
     });
     if (!res.ok) return [];
-    const data = await res.json();
-    if (!Array.isArray(data)) return [];
+    const data = unwrapList<Service>(await res.json());
 
     return data
       .filter((item) => item.isActive !== false)
