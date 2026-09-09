@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Star, ArrowRight, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -25,6 +25,12 @@ interface Review {
 // `writereview` opens the review composer directly.
 const GOOGLE_REVIEW_URL = 'https://maps.google.com/?cid=9990946045983830915';
 
+/**
+ * Curated fallback. Used until GOOGLE_PLACES_API_KEY and the clinic
+ * Place IDs are set, and whenever the API returns nothing. Places caps
+ * at 5 reviews per place with no rating filter, so this list is also
+ * larger than the live feed can be.
+ */
 const staticReviews: Review[] = [
   {
     id: '1',
@@ -105,6 +111,33 @@ export default function GoogleReviewsSection() {
       });
     }
   };
+
+  const [reviews, setReviews] = useState<Review[]>(staticReviews);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLiveReviews() {
+      try {
+        const res = await fetch('/api/reviews');
+        if (!res.ok) return;
+        const json = await res.json();
+        // Only swap in live data when there is actually some: an empty
+        // list means unconfigured or filtered out, and the curated
+        // reviews are better than an empty carousel.
+        if (active && Array.isArray(json.reviews) && json.reviews.length > 0) {
+          setReviews(json.reviews);
+        }
+      } catch {
+        // Keep the curated reviews.
+      }
+    }
+
+    loadLiveReviews();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useGSAP(
     () => {
@@ -205,7 +238,7 @@ export default function GoogleReviewsSection() {
             className="flex gap-8 overflow-x-auto scroll-smooth py-4 no-scrollbar px-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {staticReviews.map((review) => (
+            {reviews.map((review) => (
               <Link
                 key={review.id}
                 href={review.link}

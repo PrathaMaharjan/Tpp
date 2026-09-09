@@ -10,6 +10,8 @@ export interface Crumb {
 interface BreadcrumbsProps {
   items: Crumb[];
   className?: string;
+  /** 'dark' renders light text for use on dark hero bands. */
+  tone?: 'light' | 'dark';
 }
 
 /**
@@ -18,8 +20,9 @@ interface BreadcrumbsProps {
  * The trailing item is rendered as plain text (with aria-current) since
  * linking to the page you're already on is a needless tab stop.
  */
-export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
+export default function Breadcrumbs({ items, className = '', tone = 'light' }: BreadcrumbsProps) {
   if (items.length === 0) return null;
+  const dark = tone === 'dark';
 
   // Relative paths: the project has no canonical site URL configured
   // (no metadataBase / NEXT_PUBLIC_SITE_URL), and a wrong absolute URL
@@ -48,7 +51,7 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
                 {i > 0 && (
                   <ChevronRight
                     size={13}
-                    className="shrink-0 text-slate-400"
+                    className={`shrink-0 ${dark ? 'text-white/40' : 'text-slate-400'}`}
                     aria-hidden
                   />
                 )}
@@ -56,14 +59,14 @@ export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps)
                 {isLast || !item.href ? (
                   <span
                     aria-current="page"
-                    className="font-semibold text-slate-700 line-clamp-1"
+                    className={`font-semibold line-clamp-1 ${dark ? 'text-white' : 'text-slate-700'}`}
                   >
                     {item.label}
                   </span>
                 ) : (
                   <Link
                     href={item.href}
-                    className="flex items-center gap-1 text-slate-500 hover:text-brand transition-colors duration-300"
+                    className={`flex items-center gap-1 transition-colors duration-300 ${dark ? 'text-white/65 hover:text-white' : 'text-slate-500 hover:text-brand'}`}
                   >
                     {i === 0 && <Home size={13} className="shrink-0" aria-hidden />}
                     <span>{item.label}</span>

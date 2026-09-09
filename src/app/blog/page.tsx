@@ -110,7 +110,7 @@ export default function BlogListingPage() {
             </span>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-              Texas Primary &amp; Pediatric Care Blog
+              Our <span className="text-brand">Blog</span>
             </h1>
 
             <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">

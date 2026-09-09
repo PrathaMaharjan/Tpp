@@ -147,7 +147,7 @@ export default function AboutPage() {
   const storyHtml = useMemo(() => parseEditorJs(aboutData?.story), [aboutData?.story]);
 
   // CMS values with copy that stands on its own when a field is blank.
-  const pageTitle = aboutData?.title || 'About Texas Primary & Pediatric Care';
+  const pageTitle = aboutData?.title || 'About Us';
   const pageSubtitle =
     aboutData?.subtitle ||
     'Personalized primary and pediatric care for families across North Texas, at both our Irving and Celina clinics.';
