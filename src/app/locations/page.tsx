@@ -97,16 +97,16 @@ export default function LocationsPage() {
         <Header />
 
         {/* Styled Header Title */}
-        <div className="relative bg-surface-2">
+        <div className="relative bg-brand-dark">
           <div className="pt-50 pb-20">
             <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
                 Clinic Directory
               </span>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
                 Our Locations
               </h1>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+              <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
                 Providing personalized healthcare across North Texas. View clinic details, hours, and directions below.
               </p>
             </div>

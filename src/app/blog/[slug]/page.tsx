@@ -208,7 +208,7 @@ export default function BlogPostDetailPage() {
           />
 
           <header className="space-y-5">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18]">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18]">
               {post.title}
             </h1>
 

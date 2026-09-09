@@ -101,16 +101,16 @@ function BookingForm() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-surface-2">
+      <div className="relative bg-brand-dark">
         <div className="pt-36 pb-20 md:pt-40 md:pb-24">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand bg-white/80 backdrop-blur rounded-full border border-brand-mid/20 shadow-xs">
               Schedule An Appointment
             </span>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Let&apos;s Get Your Visit Scheduled
             </h1>
-            <p className="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
+            <p className="text-white/85 text-sm max-w-md mx-auto leading-relaxed">
               Select your preferred clinic location, provider, and service, and our team will confirm your visit.
             </p>
           </div>

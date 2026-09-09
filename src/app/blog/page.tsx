@@ -102,18 +102,18 @@ export default function BlogListingPage() {
       <Header />
 
       {/* Hero Header Section */}
-      <section className="relative bg-white overflow-hidden">
+      <section className="relative bg-brand-dark overflow-hidden">
         <div className="pt-32 pb-8 md:pt-40 md:pb-10">
           <div className="max-w-[1240px] mx-auto px-6 space-y-4">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               Health Insights &amp; Clinical Updates
             </span>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-              Our <span className="text-brand">Blog</span>
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">
+              Our <span className="text-brand-soft">Blog</span>
             </h1>
 
-            <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+            <p className="text-white/85 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
               Trusted medical advice, pediatric guidance, and preventive wellness insights written by our physicians and healthcare providers.
             </p>
 

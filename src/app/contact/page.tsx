@@ -77,16 +77,16 @@ export default function ContactPage() {
       <Header />
 
       {/* Hero Header Section */}
-      <div className="relative bg-surface-2">
+      <div className="relative bg-brand-dark">
         <div className="pt-36 pb-20 md:pt-40 md:pb-24">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand bg-white/80 backdrop-blur rounded-full border border-brand-mid/20 shadow-xs">
               Get In Touch
             </span>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Contact Texas Primary &amp; Pediatric Care
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Get in touch with our team for questions, clinic inquiries, or general healthcare assistance.
             </p>
           </div>

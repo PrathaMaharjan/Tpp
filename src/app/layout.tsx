@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import ClinicJsonLd from "./components/ClinicJsonLd";
 import SocialWidget from "./components/SocialWidget";
@@ -12,6 +13,19 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/** Nohemi — display face for hero headings, shared with skillshikshya site. */
+const nohemi = localFont({
+  src: [
+    { path: "./fonts/Nohemi-Regular.ttf", weight: "400" },
+    { path: "./fonts/Nohemi-Medium.ttf", weight: "500" },
+    { path: "./fonts/Nohemi-SemiBold.ttf", weight: "600" },
+    { path: "./fonts/Nohemi-Bold.ttf", weight: "700" },
+    { path: "./fonts/Nohemi-ExtraBold.ttf", weight: "800" },
+  ],
+  variable: "--font-nohemi",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -45,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${nohemi.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ClinicJsonLd />

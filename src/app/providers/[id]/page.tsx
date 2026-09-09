@@ -258,10 +258,11 @@ export default function DoctorDetailPage() {
       <Header />
 
       {/* Hero / Page Header */}
-      <section className="relative bg-surface-2 pt-40 pb-20">
+      <section className="relative bg-brand-dark pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
           <Breadcrumbs
             className="doctor-detail-header mb-2"
+            tone="dark"
             items={[
               { label: 'Home', href: '/' },
               { label: 'Providers', href: '/providers' },
@@ -270,15 +271,15 @@ export default function DoctorDetailPage() {
           />
 
           <div className="doctor-detail-header space-y-2 max-w-3xl">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               {currentDoctor.specialization || "Healthcare Provider"}
             </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
               {currentDoctor.name}
             </h1>
             {currentDoctor.qualification && (
-              <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                <Award size={16} className="text-brand" />
+              <p className="text-sm font-medium text-white/80 flex items-center gap-2">
+                <Award size={16} className="text-brand-soft" />
                 <span>{currentDoctor.qualification}</span>
               </p>
             )}

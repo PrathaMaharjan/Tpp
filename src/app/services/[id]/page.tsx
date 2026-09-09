@@ -196,10 +196,11 @@ export default function ServiceDetailPage() {
       <Header />
 
       {/* Hero Header */}
-      <section className="relative bg-surface-2 pt-40 pb-20">
+      <section className="relative bg-brand-dark pt-40 pb-20">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
           <Breadcrumbs
             className="service-detail-header mb-2"
+            tone="dark"
             items={[
               { label: 'Home', href: '/' },
               { label: 'Services', href: '/services' },
@@ -209,12 +210,12 @@ export default function ServiceDetailPage() {
 
           <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
                 <Tag size={13} />
                 {currentService.category}
               </span>
             )}
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
               {currentService.name}
             </h1>
           </div>

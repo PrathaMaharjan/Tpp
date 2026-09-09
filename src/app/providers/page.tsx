@@ -102,16 +102,16 @@ export default function ProvidersPage() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-surface-2">
+      <div className="relative bg-brand-dark">
         <div className="pt-40 pb-20">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               Medical Team
             </span>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Meet Our Providers
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Meet our board-certified healthcare professionals dedicated to your family&apos;s health and wellness.
             </p>
           </div>
