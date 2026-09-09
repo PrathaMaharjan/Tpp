@@ -65,7 +65,7 @@ const footerLegal = [
 
 export default function Footer() {
   return (
-    <footer className="pt-16 lg:pt-0 pb-3 lg:pb-6 m-2 lg:mx-4 rounded-[20px] bg-brand-deep">
+    <footer className="w-full pt-16 lg:pt-0 pb-6 lg:pb-8 bg-brand-deep">
       <div className="relative w-full px-6 lg:px-24 xl:px-26 2xl:max-w-[1480px] 2xl:mx-auto lg:pt-[59px] overflow-hidden text-white">
         {/* Decorative faded brand watermark, bottom-right */}
         <div
