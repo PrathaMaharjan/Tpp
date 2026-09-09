@@ -103,7 +103,7 @@ export default function BlogListingPage() {
 
       {/* Hero Header Section */}
       <section className="relative bg-brand-dark overflow-hidden">
-        <div className="pt-32 pb-8 md:pt-40 md:pb-10">
+        <div className="pt-32 pb-[37px] md:pt-40 md:pb-[46px]">
           <div className="max-w-[1240px] mx-auto px-6 space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               Health Insights &amp; Clinical Updates

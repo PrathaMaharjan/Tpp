@@ -98,7 +98,7 @@ export default function LocationsPage() {
 
         {/* Styled Header Title */}
         <div className="relative bg-brand-dark">
-          <div className="pt-50 pb-20">
+          <div className="pt-50 pb-[92px]">
             <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
               <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
                 Clinic Directory

@@ -258,7 +258,7 @@ export default function DoctorDetailPage() {
       <Header />
 
       {/* Hero / Page Header */}
-      <section className="relative bg-brand-dark pt-40 pb-20">
+      <section className="relative bg-brand-dark pt-40 pb-[92px]">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
           <Breadcrumbs
             className="doctor-detail-header mb-2"

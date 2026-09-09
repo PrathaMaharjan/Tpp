@@ -14,14 +14,24 @@ if (!KEY) {
 }
 
 const CLINICS = [
-  { env: 'GOOGLE_PLACE_ID_IRVING', q: 'Texas Primary & Pediatric Care, 7429 Las Colinas Blvd Ste 101, Irving, TX 75063' },
-  { env: 'GOOGLE_PLACE_ID_CELINA', q: 'Texas Primary & Pediatric Care, 3925 S Preston Rd Ste 100, Celina, TX 75009' },
+  {
+    env: 'GOOGLE_PLACE_ID_IRVING',
+    q: 'Texas Primary & Pediatric Care, 7429 Las Colinas Blvd Ste 101, Irving, TX 75063',
+    // Feature ID from the Maps URL (the !16s parameter). Google accepts
+    // this form directly, so it is tried first as it cannot mismatch.
+    featureId: '/g/11fnyphrq8',
+  },
+  {
+    env: 'GOOGLE_PLACE_ID_CELINA',
+    q: 'Texas Primary & Pediatric Care, 3925 S Preston Rd Ste 100, Celina, TX 75009',
+    featureId: null,
+  },
 ];
 
 (async () => {
   for (const c of CLINICS) {
     const url = new URL('https://maps.googleapis.com/maps/api/place/findplacefromtext/json');
-    url.searchParams.set('input', c.q);
+    url.searchParams.set('input', c.featureId ?? c.q);
     url.searchParams.set('inputtype', 'textquery');
     url.searchParams.set('fields', 'place_id,name,formatted_address');
     url.searchParams.set('key', KEY);

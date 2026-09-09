@@ -152,7 +152,7 @@ export default function ServicesPage() {
 
       {/* Header Section */}
       <div className="relative bg-brand-dark">
-        <div className="pt-40 pb-28">
+        <div className="pt-40 pb-[129px]">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               Clinical Specialties

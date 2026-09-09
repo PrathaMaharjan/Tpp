@@ -103,7 +103,7 @@ export default function ProvidersPage() {
 
       {/* Styled Header Title */}
       <div className="relative bg-brand-dark">
-        <div className="pt-40 pb-20">
+        <div className="pt-40 pb-[92px]">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               Medical Team
