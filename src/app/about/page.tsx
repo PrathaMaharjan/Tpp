@@ -127,13 +127,13 @@ export default function AboutPage() {
             photos straddle the tint/white boundary, as in the reference. */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[calc(100%-110px)] bg-surface-2 md:h-[calc(100%-140px)]"
+          className="absolute inset-x-0 top-0 h-[calc(100%-110px)] bg-brand-dark md:h-[calc(100%-140px)]"
         />
 
         {/* Decorative shapes, as in the reference */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-110px)] overflow-hidden opacity-[0.18] md:h-[calc(100%-140px)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-110px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-140px)]"
         >
           <Image
             src="/images/shapes/shape-1.webp"
@@ -161,14 +161,14 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             {pageBadge && (
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
                 {pageBadge}
               </span>
             )}
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-[56px]">
+            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {pageTitle}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-slate-600 sm:text-base">
+            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">
               {pageSubtitle}
             </p>
           </div>
