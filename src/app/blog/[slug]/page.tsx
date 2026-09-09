@@ -357,12 +357,12 @@ export default function BlogPostDetailPage() {
                 return (
                   <article
                     key={rPost.id}
-                    className="group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/70 overflow-hidden shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                    className="reveal-card reveal-card-sm group flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1"
                   >
                     <div>
                       <Link
                         href={postUrl}
-                        className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
+                        className="reveal-media block relative overflow-hidden rounded-2xl bg-slate-100"
                       >
                         <img
                           src={cover}
@@ -375,22 +375,28 @@ export default function BlogPostDetailPage() {
                             target.src = FALLBACK_BLOG_IMAGE;
                           }}
                         />
+
+                        <span className="reveal-arrow absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white text-brand shadow-md transition-all duration-500 ease-in-out">
+                          <ArrowUpRight size={16} />
+                        </span>
                       </Link>
 
-                      <div className="p-6 space-y-2">
+                      <div className="pt-4 space-y-2">
                         <span className="text-[11px] text-slate-400 font-medium">
                           {postDate}
                         </span>
                         <h3 className="text-base font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors line-clamp-2">
                           <Link href={postUrl}>{rPost.title}</Link>
                         </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                          {excerpt}
-                        </p>
+                        <div className="reveal-body">
+                          <p className="reveal-body-inner text-xs text-slate-500 line-clamp-3 leading-relaxed">
+                            {excerpt}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="px-6 pb-6 pt-0">
+                    <div className="pt-3">
                       <Link
                         href={postUrl}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-brand group-hover:text-slate-900 transition-colors"

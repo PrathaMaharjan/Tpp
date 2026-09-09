@@ -102,7 +102,7 @@ export default function BlogListingPage() {
 
       {/* Hero Header Section */}
       <section className="relative bg-white overflow-hidden">
-        <div className="pt-32 pb-20 md:pt-40 md:pb-24">
+        <div className="pt-32 pb-8 md:pt-40 md:pb-10">
           <div className="max-w-[1240px] mx-auto px-6 space-y-4">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
               Health Insights &amp; Clinical Updates
@@ -179,7 +179,7 @@ export default function BlogListingPage() {
       </section>
 
       {/* Main Content Area */}
-      <section className="py-12 md:py-16 max-w-[1240px] mx-auto px-6 w-full grow bg-white">
+      <section className="pt-8 pb-16 md:pt-10 md:pb-20 max-w-[1240px] mx-auto px-6 w-full grow bg-white">
         {loading ? (
           /* Loading Skeletons */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-pulse">
@@ -243,7 +243,7 @@ export default function BlogListingPage() {
                       {/* Card Thumbnail */}
                       <Link
                         href={postUrl}
-                        className="block relative overflow-hidden aspect-[16/10] rounded-2xl bg-white"
+                        className="reveal-media block relative overflow-hidden rounded-2xl bg-white"
                       >
                         <img
                           src={cover}
@@ -274,9 +274,11 @@ export default function BlogListingPage() {
                           <Link href={postUrl}>{post.title}</Link>
                         </h3>
 
-                        <p className="text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
-                          {excerpt}
-                        </p>
+                        <div className="reveal-body">
+                          <p className="reveal-body-inner text-sm text-slate-500 leading-relaxed line-clamp-3 font-normal">
+                            {excerpt}
+                          </p>
+                        </div>
 
                         {/* Author Row */}
                         <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">

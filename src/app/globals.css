@@ -61,6 +61,20 @@
   .reveal-card {
     min-height: 430px;
   }
+
+  /* Related-post cards are smaller (shorter image, tighter type), so
+     the listing card's floor would leave dead space beneath them. */
+  .reveal-card.reveal-card-sm {
+    min-height: 340px;
+  }
+
+  .reveal-card.reveal-card-sm .reveal-media {
+    height: 190px;
+  }
+
+  .reveal-card.reveal-card-sm:hover .reveal-media {
+    height: 150px;
+  }
 }
 
 
