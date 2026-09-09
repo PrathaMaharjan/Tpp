@@ -26,7 +26,6 @@ interface AboutData {
   story?: string | null;
   mission?: string | null;
   vision?: string | null;
-  bannerImage?: string | null;
   secondaryImage?: string | null;
   stats?: StatItem[] | null;
   features?: FeatureItem[] | null;
@@ -45,7 +44,6 @@ const STRIP_PHOTOS = [
 ];
 
 /** Full-size local art used unless the CMS supplies something bigger. */
-const LOCAL_BANNER = '/images/about/istockphoto-1903424167-2048x2048.jpg';
 const LOCAL_SECONDARY = '/images/about/istockphoto-1633320190-2048x2048.jpg';
 
 /** Static because the CMS `features` array is empty. */
@@ -158,13 +156,10 @@ export default function AboutPage() {
   // upscaled ~5x in these slots. Probe the real pixel size and only use
   // a CMS image once it is big enough, so the page looks right today and
   // starts using CMS art automatically when full-size files are uploaded.
-  const bannerFromCms = resolveImageUrl(aboutData?.bannerImage);
   const secondaryFromCms = resolveImageUrl(aboutData?.secondaryImage);
 
-  const bannerOk = useImageAtLeast(bannerFromCms, 1200);
   const secondaryOk = useImageAtLeast(secondaryFromCms, 700);
 
-  const bannerImgUrl = bannerOk ? bannerFromCms : LOCAL_BANNER;
   const secondaryImgUrl = secondaryOk ? secondaryFromCms : LOCAL_SECONDARY;
   const stats = aboutData?.stats?.length ? aboutData.stats : [];
   const features = aboutData?.features?.length ? aboutData.features : [];
@@ -179,7 +174,7 @@ export default function AboutPage() {
             photos straddle the tint/white boundary, as in the reference. */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[calc(100%-106px)] bg-brand-dark md:h-[calc(100%-125px)]"
+          className="absolute inset-x-0 top-0 h-[calc(100%-122px)] bg-brand-mid md:h-[calc(100%-144px)]"
         >
           {/* Curved edge instead of a straight cut, matching the wave
               divider used on the other page heroes. Sits at the band's
@@ -200,45 +195,40 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Decorative shapes, as in the reference */}
+        {/* Decorative marks, positioned as in the reference: a sparkle
+            just above the heading and a circle cluster to its right.
+            Nothing on the left, matching the reference. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-106px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-125px)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-122px)] overflow-hidden md:h-[calc(100%-144px)]"
         >
-          <Image
-            src="/images/shapes/shape-1.webp"
-            alt=""
-            width={400}
-            height={296}
-            className="absolute left-[8%] top-[18%] hidden w-[150px] md:block lg:w-[190px]"
-          />
           <Image
             src="/images/shapes/shape-3.webp"
             alt=""
             width={162}
             height={179}
-            className="absolute right-[12%] top-[14%] hidden w-[44px] md:block"
+            className="absolute left-1/2 top-[14%] w-[26px] -translate-x-[190px] opacity-70 md:w-[32px] md:-translate-x-[230px]"
           />
           <Image
-            src="/images/shapes/shape-2.webp"
+            src="/images/shapes/shape-4.webp"
             alt=""
-            width={150}
-            height={162}
-            className="absolute right-[7%] top-[38%] hidden w-[34px] lg:block"
+            width={278}
+            height={333}
+            className="absolute left-1/2 top-[11%] w-[62px] translate-x-[120px] opacity-70 md:w-[78px] md:translate-x-[150px]"
           />
         </div>
 
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             {pageBadge && (
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-900/70">
                 {pageBadge}
               </span>
             )}
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[56px]">
+            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-[56px]">
               {pageTitle}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">
+            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-slate-700 sm:text-base">
               {pageSubtitle}
             </p>
           </div>
@@ -251,8 +241,8 @@ export default function AboutPage() {
                 className="relative overflow-hidden rounded-2xl bg-white shadow-xl"
               >
                 {/* Fixed height so the band's cut-off lands exactly halfway
-                    down the strip on every breakpoint. */}
-                <div className="relative h-[252px] md:h-[320px]">
+                    down the strip on every breakpoint (+15% hero height). */}
+                <div className="relative h-[290px] md:h-[368px]">
                   <Image
                     src={src}
                     alt="Our team caring for patients"
@@ -430,19 +420,6 @@ export default function AboutPage() {
           </div>
         </section>
       )}
-
-      {/* ── Facility banner ── */}
-      <section className="mx-auto max-w-[1240px] px-6 pb-20 md:pb-28">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-[24px] bg-slate-100 md:aspect-[21/9]">
-            <Image
-              src={bannerImgUrl}
-              alt="Our clinic"
-              fill
-              sizes="(min-width: 1240px) 1240px, 100vw"
-              className="object-cover"
-            />
-        </div>
-      </section>
 
       <div className="mx-auto max-w-[1400px] px-6 pb-4">
         <CtaSection
