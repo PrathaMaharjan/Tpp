@@ -44,6 +44,10 @@ const STRIP_PHOTOS = [
   '/images/about/istockphoto-1388254153-612x612.jpg',
 ];
 
+/** Full-size local art used unless the CMS supplies something bigger. */
+const LOCAL_BANNER = '/images/about/istockphoto-1903424167-2048x2048.jpg';
+const LOCAL_SECONDARY = '/images/about/istockphoto-1633320190-2048x2048.jpg';
+
 /** Static because the CMS `features` array is empty. */
 const PILLARS: { icon: typeof Stethoscope; title: string; description: string }[] = [
   {
@@ -72,6 +76,44 @@ function resolveImageUrl(url?: string | null, fallback: string = ''): string {
   const cleanBase = CMS_URL.replace(/\/$/, '');
   const cleanPath = url.startsWith('/') ? url : `/${url}`;
   return `${cleanBase}${cleanPath}`;
+}
+
+/**
+ * True once the image at `src` is confirmed to be at least `minWidth`
+ * pixels wide. Returns false while loading and for images that turn out
+ * to be too small, so callers can fall back to local art.
+ */
+function useImageAtLeast(src: string, minWidth: number): boolean {
+  const [ok, setOk] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    if (!src) {
+      // Deferred so the effect never sets state synchronously.
+      const id = setTimeout(() => {
+        if (active) setOk(false);
+      }, 0);
+      return () => {
+        active = false;
+        clearTimeout(id);
+      };
+    }
+
+    const img = new window.Image();
+    img.onload = () => {
+      if (active) setOk(img.naturalWidth >= minWidth);
+    };
+    img.onerror = () => {
+      if (active) setOk(false);
+    };
+    img.src = src;
+    return () => {
+      active = false;
+    };
+  }, [src, minWidth]);
+
+  return ok;
 }
 
 export default function AboutPage() {
@@ -112,8 +154,18 @@ export default function AboutPage() {
     aboutData?.subtitle ||
     'Personalized primary and pediatric care for families across North Texas, at both our Irving and Celina clinics.';
 
-  const bannerImgUrl = resolveImageUrl(aboutData?.bannerImage, STRIP_PHOTOS[0]);
-  const secondaryImgUrl = resolveImageUrl(aboutData?.secondaryImage, STRIP_PHOTOS[2]);
+  // CMS uploads are currently 231x200 thumbnails, which would be
+  // upscaled ~5x in these slots. Probe the real pixel size and only use
+  // a CMS image once it is big enough, so the page looks right today and
+  // starts using CMS art automatically when full-size files are uploaded.
+  const bannerFromCms = resolveImageUrl(aboutData?.bannerImage);
+  const secondaryFromCms = resolveImageUrl(aboutData?.secondaryImage);
+
+  const bannerOk = useImageAtLeast(bannerFromCms, 1200);
+  const secondaryOk = useImageAtLeast(secondaryFromCms, 700);
+
+  const bannerImgUrl = bannerOk ? bannerFromCms : LOCAL_BANNER;
+  const secondaryImgUrl = secondaryOk ? secondaryFromCms : LOCAL_SECONDARY;
   const stats = aboutData?.stats?.length ? aboutData.stats : [];
   const features = aboutData?.features?.length ? aboutData.features : [];
 
@@ -362,8 +414,7 @@ export default function AboutPage() {
       )}
 
       {/* ── Facility banner ── */}
-      {bannerImgUrl && (
-        <section className="mx-auto max-w-[1240px] px-6 pb-20 md:pb-28">
+      <section className="mx-auto max-w-[1240px] px-6 pb-20 md:pb-28">
           <div className="relative aspect-[16/9] overflow-hidden rounded-[24px] bg-slate-100 md:aspect-[21/9]">
             <Image
               src={bannerImgUrl}
@@ -372,9 +423,8 @@ export default function AboutPage() {
               sizes="(min-width: 1240px) 1240px, 100vw"
               className="object-cover"
             />
-          </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <div className="mx-auto max-w-[1400px] px-6 pb-4">
         <CtaSection
