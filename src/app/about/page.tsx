@@ -122,18 +122,18 @@ export default function AboutPage() {
       <Header />
 
       {/* ── Hero: tinted band, decorative marks, photo strip breaking out ── */}
-      <section className="relative pt-24 md:pt-28">
+      <section className="relative pt-28 md:pt-32">
         {/* Tinted band. Height stops partway down the photo strip so the
             photos straddle the tint/white boundary, as in the reference. */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[calc(100%-110px)] bg-brand-dark md:h-[calc(100%-140px)]"
+          className="absolute inset-x-0 top-0 h-[calc(100%-126px)] bg-brand-dark md:h-[calc(100%-160px)]"
         />
 
         {/* Decorative shapes, as in the reference */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-110px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-140px)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-126px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-160px)]"
         >
           <Image
             src="/images/shapes/shape-1.webp"
@@ -174,7 +174,7 @@ export default function AboutPage() {
           </div>
 
           {/* Photo strip: sits half on the tint, half on white */}
-          <div className="mt-10 grid grid-cols-2 gap-4 md:mt-14 md:grid-cols-4 md:gap-5">
+          <div className="mt-12 grid grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-5">
             {STRIP_PHOTOS.map((src) => (
               <div
                 key={src}
@@ -182,7 +182,7 @@ export default function AboutPage() {
               >
                 {/* Fixed height so the band's cut-off lands exactly halfway
                     down the strip on every breakpoint. */}
-                <div className="relative h-[220px] md:h-[280px]">
+                <div className="relative h-[252px] md:h-[320px]">
                   <Image
                     src={src}
                     alt="Our team caring for patients"
