@@ -207,14 +207,14 @@ export default function AboutPage() {
             alt=""
             width={162}
             height={179}
-            className="absolute left-1/2 top-[14%] w-[26px] -translate-x-[190px] opacity-70 md:w-[32px] md:-translate-x-[230px]"
+            className="absolute left-1/2 top-[14%] w-[26px] -translate-x-[152px] opacity-70 md:w-[32px] md:-translate-x-[184px]"
           />
           <Image
             src="/images/shapes/shape-4.webp"
             alt=""
             width={278}
             height={333}
-            className="absolute left-1/2 top-[11%] w-[62px] translate-x-[120px] opacity-70 md:w-[78px] md:translate-x-[150px]"
+            className="absolute left-1/2 top-[16%] w-[43px] translate-x-[120px] opacity-70 md:w-[55px] md:translate-x-[150px]"
           />
         </div>
 
