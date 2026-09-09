@@ -20,7 +20,10 @@ interface Review {
   link: string;
 }
 
-const GOOGLE_REVIEW_URL = 'https://maps.google.com/?cid=YOUR_GOOGLE_MAPS_CID';
+// Irving clinic CID, taken from the same place listing used by the map
+// embeds. The placeholder that was here made the button a dead link.
+// `writereview` opens the review composer directly.
+const GOOGLE_REVIEW_URL = 'https://maps.google.com/?cid=9990946045983830915';
 
 const staticReviews: Review[] = [
   {

@@ -74,7 +74,7 @@ export default function AboutSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-24 bg-brand-soft/10 overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative py-24 bg-surface overflow-hidden font-sans">
 
       {/* Signature background: a life-stages arc rather than decorative blobs */}
       <svg

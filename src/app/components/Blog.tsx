@@ -163,7 +163,7 @@ export default function BlogSection() {
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-surface-2 font-sans">
+    <section ref={sectionRef} className="py-24 bg-white font-sans">
       <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
         {/* Header */}
@@ -201,37 +201,43 @@ export default function BlogSection() {
               return (
                 <article
                   key={post.id}
-                  className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+                  className="blog-card reveal-card group flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1"
                 >
                   <div>
                     {/* Cover Image */}
                     <Link
                       href={postUrl}
-                      className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
+                      className="reveal-media block relative overflow-hidden rounded-2xl bg-slate-100"
                     >
                       <img
                         src={cover}
                         alt={post.title}
                         crossOrigin="anonymous"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[620ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
                         onError={(e) => {
                           const target = e.currentTarget as HTMLImageElement;
                           target.onerror = null;
                           target.src = FALLBACK_IMAGE;
                         }}
                       />
+
+                      <span className="reveal-arrow absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-brand shadow-md">
+                        <ArrowUpRight size={18} />
+                      </span>
                     </Link>
 
                     {/* Content & Excerpt */}
-                    <div className="p-7 space-y-3">
+                    <div className="pt-5 space-y-3">
                       <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors line-clamp-2">
                         <Link href={postUrl}>{post.title}</Link>
                       </h3>
 
                       {/* Excerpt from the CMS Meta tab */}
-                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
-                        {excerpt}
-                      </p>
+                      <div className="reveal-body">
+                        <p className="reveal-body-inner text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
+                          {excerpt}
+                        </p>
+                      </div>
 
                       {/* Author & Date Bar */}
                       {(post.authorName || postDate) && (

@@ -153,7 +153,7 @@ export default function DoctorsCarousel() {
   };
 
   return (
-    <section ref={sectionRef} className="py-24 bg-slate-50 overflow-hidden relative font-sans">
+    <section ref={sectionRef} className="py-24 bg-surface overflow-hidden relative font-sans">
       <div className="relative z-10 max-w-[1400px] mx-auto pb-4">
 
         {/* Header */}

@@ -224,7 +224,7 @@ export default function ServicesSection() {
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-surface relative overflow-hidden font-sans">
+    <section ref={sectionRef} className="py-24 bg-white relative overflow-hidden font-sans">
       {/* SVG Background Wave */}
       <div className="absolute top-0 right-0 w-full h-[600px] pointer-events-none z-0">
         <svg
