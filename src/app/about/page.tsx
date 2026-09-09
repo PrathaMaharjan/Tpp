@@ -207,7 +207,7 @@ export default function AboutPage() {
             alt=""
             width={162}
             height={179}
-            className="absolute left-1/2 top-[14%] w-[26px] -translate-x-[152px] opacity-70 md:w-[32px] md:-translate-x-[184px]"
+            className="absolute left-1/2 top-[14%] w-[26px] -translate-x-[76px] opacity-70 md:w-[32px] md:-translate-x-[92px]"
           />
           <Image
             src="/images/shapes/shape-4.webp"
@@ -221,14 +221,14 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             {pageBadge && (
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-900/70">
+              <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
                 {pageBadge}
               </span>
             )}
-            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-[56px]">
+            <h1 className="mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {pageTitle}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-slate-700 sm:text-base">
+            <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">
               {pageSubtitle}
             </p>
           </div>

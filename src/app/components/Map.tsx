@@ -85,7 +85,7 @@ export default function LocationsSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-20 bg-surface overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative pt-20 pb-10 bg-surface overflow-hidden font-sans">
       <BgMotif variant="family" side="right" position="center" opacity={0.05} />
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 space-y-10">
