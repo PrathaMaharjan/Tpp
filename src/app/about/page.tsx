@@ -179,13 +179,31 @@ export default function AboutPage() {
             photos straddle the tint/white boundary, as in the reference. */}
         <div
           aria-hidden
-          className="absolute inset-x-0 top-0 h-[calc(100%-126px)] bg-brand-dark md:h-[calc(100%-160px)]"
-        />
+          className="absolute inset-x-0 top-0 h-[calc(100%-106px)] bg-brand-dark md:h-[calc(100%-125px)]"
+        >
+          {/* Curved edge instead of a straight cut, matching the wave
+              divider used on the other page heroes. Sits at the band's
+              own bottom edge, which is mid-strip rather than the end of
+              the section. */}
+          <div className="absolute bottom-0 left-0 w-full translate-y-[1px] overflow-hidden leading-none">
+            <svg
+              viewBox="0 0 1440 120"
+              className="h-[40px] w-full md:h-[70px]"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0,35 C320,110 720,-15 1080,75 C1260,115 1380,45 1440,30 L1440,120 L0,120 Z"
+                fill="white"
+              />
+            </svg>
+          </div>
+        </div>
 
         {/* Decorative shapes, as in the reference */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-126px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-160px)]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-106px)] overflow-hidden opacity-[0.28] invert md:h-[calc(100%-125px)]"
         >
           <Image
             src="/images/shapes/shape-1.webp"
