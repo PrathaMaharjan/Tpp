@@ -122,11 +122,18 @@ export default function AboutPage() {
       <Header />
 
       {/* ── Hero: tinted band, decorative marks, photo strip breaking out ── */}
-      <section className="relative bg-surface-2 pt-32 pb-0 md:pt-40">
+      <section className="relative pt-24 md:pt-28">
+        {/* Tinted band. Height stops partway down the photo strip so the
+            photos straddle the tint/white boundary, as in the reference. */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-[calc(100%-110px)] bg-surface-2 md:h-[calc(100%-140px)]"
+        />
+
         {/* Decorative shapes, as in the reference */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.18]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-110px)] overflow-hidden opacity-[0.18] md:h-[calc(100%-140px)]"
         >
           <Image
             src="/images/shapes/shape-1.webp"
@@ -166,16 +173,16 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* Photo strip, offset heights, breaking past the band's edge */}
-          <div className="mt-14 grid grid-cols-2 gap-4 pb-16 md:mt-20 md:grid-cols-4 md:gap-5">
-            {STRIP_PHOTOS.map((src, i) => (
+          {/* Photo strip: sits half on the tint, half on white */}
+          <div className="mt-10 grid grid-cols-2 gap-4 md:mt-14 md:grid-cols-4 md:gap-5">
+            {STRIP_PHOTOS.map((src) => (
               <div
                 key={src}
-                className={`relative overflow-hidden rounded-2xl bg-white shadow-lg ${
-                  i % 2 === 1 ? 'md:mt-10' : ''
-                }`}
+                className="relative overflow-hidden rounded-2xl bg-white shadow-xl"
               >
-                <div className="relative aspect-[3/4] md:aspect-[4/5]">
+                {/* Fixed height so the band's cut-off lands exactly halfway
+                    down the strip on every breakpoint. */}
+                <div className="relative h-[220px] md:h-[280px]">
                   <Image
                     src={src}
                     alt="Our team caring for patients"
