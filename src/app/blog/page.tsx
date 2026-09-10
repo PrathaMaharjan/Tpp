@@ -296,7 +296,7 @@ export default function BlogListingPage() {
                 <p className="text-base text-slate-600">
                   Explore insights and stay ahead of your family&apos;s health
                 </p>
-                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
+                <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
                   <span className="text-brand">Health Library:</span> Guidance,
                   Prevention &amp; Care
                 </h2>

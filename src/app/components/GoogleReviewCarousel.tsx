@@ -169,33 +169,48 @@ export default function GoogleReviewsSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-24 bg-white overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative pt-24 pb-12 bg-white overflow-hidden font-sans">
 
       <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10">
 
         {/* Header: left-aligned two-tone heading, arrows on the right */}
         <div className="reviews-header mb-10 flex items-end justify-between gap-6 md:mb-12">
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
-              Trusted by Families Across Texas
-            </span>
             <h2 className="font-display text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl lg:text-[44px]">
               Our <span className="text-brand-soft">Reviews</span>
             </h2>
+            <p className="text-sm text-slate-500 sm:text-base">
+              Trusted by Families Across Texas
+            </p>
+            <Link
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:text-brand hover:shadow-md"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+                <path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.09 3.57-5.16 3.57-8.81z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.44 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.29v3.1A12 12 0 0 0 12 24z" />
+                <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28v-3.1H1.29a12 12 0 0 0 0 10.76l3.98-3.1z" />
+                <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44A11.98 11.98 0 0 0 12 0 12 12 0 0 0 1.29 6.62l3.98 3.1C6.22 6.88 8.87 4.77 12 4.77z" />
+              </svg>
+              Leave us a review
+              <ArrowRight size={16} />
+            </Link>
           </div>
 
           <div className="hidden shrink-0 items-center gap-3 sm:flex">
             <button
               onClick={() => scroll('left')}
               aria-label="Previous reviews"
-              className="grid h-12 w-12 place-items-center rounded-full bg-brand-deep text-white transition duration-300 hover:bg-brand-deeper active:scale-95"
+              className="grid h-12 w-12 place-items-center rounded-full border border-brand-deep/30 bg-transparent text-brand-deep transition duration-300 hover:border-brand hover:bg-brand hover:text-white active:scale-95"
             >
               <ArrowLeft size={20} />
             </button>
             <button
               onClick={() => scroll('right')}
               aria-label="Next reviews"
-              className="grid h-12 w-12 place-items-center rounded-full bg-brand-deep text-white transition duration-300 hover:bg-brand-deeper active:scale-95"
+              className="grid h-12 w-12 place-items-center rounded-full border border-brand-deep/30 bg-transparent text-brand-deep transition duration-300 hover:border-brand hover:bg-brand hover:text-white active:scale-95"
             >
               <ArrowRight size={20} />
             </button>
@@ -283,31 +298,6 @@ export default function GoogleReviewsSection() {
               <ArrowRight size={18} />
             </button>
           </div>
-        </div>
-
-        <div className="mt-12" />
-
-        {/* Bottom CTA Link */}
-        <div className="text-center">
-          <Link
-            href={GOOGLE_REVIEW_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2.5 rounded-full border border-hairline bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-md transition duration-300 hover:-translate-y-0.5 hover:border-brand/40 hover:text-brand"
-          >
-            {/* Google mark — makes the destination obvious at a glance */}
-            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden className="shrink-0">
-              <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.2-2.2H12v4.1h6.6c-.1 1.1-.8 2.8-2.4 3.9l-.1.1 3.5 2.7.2.1c2.3-2 3.7-5.1 3.7-8.7Z" />
-              <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-2.9l-3.7-2.9c-1 .7-2.3 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5l-.1.1-3.6 2.8-.1.1C3.4 21.3 7.4 24 12 24Z" />
-              <path fill="#FBBC05" d="M5.3 14.4c-.3-.7-.4-1.5-.4-2.4s.1-1.7.4-2.4V9.5L1.6 6.7l-.1.1C.6 8.4 0 10.2 0 12s.5 3.6 1.5 5.2l3.8-2.8Z" />
-              <path fill="#EA4335" d="M12 4.7c2.2 0 3.7.9 4.6 1.8l3.3-3.3C17.9 1.2 15.2 0 12 0 7.4 0 3.4 2.7 1.5 6.7l3.8 2.9C6.2 6.8 8.9 4.7 12 4.7Z" />
-            </svg>
-            <span>Leave us a review</span>
-            <ArrowRight
-              size={15}
-              className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
-            />
-          </Link>
         </div>
 
       </div>

@@ -94,7 +94,7 @@ export default function MissionSection() {
                 src="/hero-2.webp"
                 alt="Our Mission"
                 fill
-                className="object-cover object-center hover:scale-105 transition-transform duration-700 ease-out"
+                className="object-cover object-center"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />

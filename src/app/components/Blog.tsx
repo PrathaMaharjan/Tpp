@@ -164,7 +164,7 @@ export default function BlogSection() {
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-white font-sans">
+    <section ref={sectionRef} className="pt-12 pb-24 bg-white font-sans">
       <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
         {/* Header: heading left, "view all" right, so the CTA sits with
