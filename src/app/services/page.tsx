@@ -154,10 +154,10 @@ export default function ServicesPage() {
       <div className="relative bg-brand-mid">
         <div className="pt-40 pb-[170px]">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
-              Our Services &amp; <span className="text-brand-deep">Treatments</span>
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-brand-deep">
+              Our Services &amp; <span className="text-white">Treatments</span>
             </h1>
-            <p className="text-white/90 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-brand-deep text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Comprehensive healthcare services and specialized medical procedures tailored to your family&apos;s needs.
             </p>
           </div>

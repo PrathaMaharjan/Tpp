@@ -177,7 +177,7 @@ export default function BlogListingPage() {
                 where there is no room beside the text and the search bar. */}
             <div
               aria-hidden
-              className="pointer-events-none absolute right-6 top-0 z-0 hidden w-[600px] select-none opacity-90 lg:block xl:w-[720px]"
+              className="pointer-events-none absolute right-6 -top-[88px] z-0 hidden w-[600px] select-none opacity-90 lg:block xl:-top-[106px] xl:w-[720px]"
             >
               <Image
                 src="/images/hero-images/blog-hero.webp"
@@ -189,11 +189,11 @@ export default function BlogListingPage() {
               />
             </div>
 
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">
-              Our <span className="text-brand-deep">Blog</span>
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-brand-deep">
+              Our <span className="text-white">Blog</span>
             </h1>
 
-            <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl lg:max-w-[52%]">
+            <p className="text-brand-deep text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl lg:max-w-[52%]">
               Trusted medical advice, pediatric guidance, and preventive wellness insights written by our physicians and healthcare providers.
             </p>
 
@@ -206,7 +206,7 @@ export default function BlogListingPage() {
                   className="absolute left-2.5 top-2.5 -z-10 h-full w-full rounded-xl bg-brand-mid"
                 />
 
-                <div className="relative z-10 flex flex-col gap-3 rounded-xl border border-hairline bg-white p-3 sm:h-[70px] sm:flex-row sm:items-center sm:gap-4 sm:py-0 sm:pl-5 sm:pr-3">
+                <div className="relative z-10 flex flex-col gap-2 rounded-xl border border-hairline bg-white p-2 sm:h-[56px] sm:flex-row sm:items-center sm:gap-4 sm:py-0 sm:pl-4 sm:pr-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <Search size={18} className="shrink-0 text-brand" />
                     <input
@@ -214,7 +214,7 @@ export default function BlogListingPage() {
                       placeholder="Articles, keywords, health topics..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-transparent py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+                      className="w-full bg-transparent py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
                     />
                     {searchQuery && (
                       <button
