@@ -167,15 +167,31 @@ export default function BlogSection() {
     <section ref={sectionRef} className="py-24 bg-white font-sans">
       <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
-        {/* Header */}
-        <div className="blog-header text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
-            Insights &amp; Articles
-          </span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
-            Latest Health News
-          </h2>
-          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
+        {/* Header: heading left, "view all" right, so the CTA sits with
+            the section title instead of orphaned under the grid. */}
+        <div className="blog-header flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+              Insights &amp; Articles
+            </span>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
+              Latest Health News
+            </h2>
+            <div className="h-0.5 w-12 rounded-full bg-brand-mid" />
+          </div>
+
+          {!loading && posts.length > 0 && (
+            <Link
+              href="/blog"
+              className="group inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-slate-200/80 bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-xs transition-all hover:border-brand hover:text-brand hover:shadow-md sm:self-auto"
+            >
+              <span>Explore All Articles</span>
+              <ArrowUpRight
+                size={16}
+                className="text-brand transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </Link>
+          )}
         </div>
 
         {/* 3-Column Cards Grid */}
@@ -289,22 +305,6 @@ export default function BlogSection() {
                 </article>
               );
             })}
-          </div>
-        )}
-
-        {/* View All Articles CTA */}
-        {!loading && posts.length > 0 && (
-          <div className="text-center pt-2">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200/80 text-sm font-semibold text-slate-800 hover:text-brand hover:border-brand shadow-xs hover:shadow-md transition-all group"
-            >
-              <span>Explore All Health Articles</span>
-              <ArrowUpRight
-                size={16}
-                className="text-brand group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-              />
-            </Link>
           </div>
         )}
 

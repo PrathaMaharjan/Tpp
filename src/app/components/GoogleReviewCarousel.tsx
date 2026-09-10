@@ -177,10 +177,10 @@ export default function GoogleReviewsSection() {
         <div className="reviews-header mb-10 flex items-end justify-between gap-6 md:mb-12">
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
-              Our Reviews
+              Trusted by Families Across Texas
             </span>
             <h2 className="font-display text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl lg:text-[44px]">
-              Trusted by <span className="text-slate-400">Families</span> Across Texas
+              Our <span className="text-brand-soft">Reviews</span>
             </h2>
           </div>
 
@@ -243,7 +243,7 @@ export default function GoogleReviewsSection() {
                 </span>
 
                 {/* Review body, the card's focal point */}
-                <p className="font-display text-[22px] font-semibold leading-[1.25] tracking-tight text-slate-900 md:text-[24px]">
+                <p className="text-[17px] font-normal leading-[1.6] text-black md:text-[18px]">
                   {review.text.length > 110
                     ? `${review.text.slice(0, 110).trimEnd()}…`
                     : review.text}
