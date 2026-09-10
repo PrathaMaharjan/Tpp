@@ -64,6 +64,7 @@ export default function ServicesSection() {
   const [dbCategories, setDbCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
+  const hasAnimatedRef = useRef(false);
 
   // 1. Fetch treatments and dynamic categories from CMS
   useEffect(() => {
@@ -153,6 +154,31 @@ export default function ServicesSection() {
   }, [services, activeCategory]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const updateArrows = () => {
+    const el = scrollRef.current;
+    if (!el) {
+      setCanScrollLeft(false);
+      setCanScrollRight(false);
+      return;
+    }
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  };
+
+  // Reset to the start and refresh arrow state when the list changes.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ left: 0 });
+    // Measure after layout so scrollWidth is final.
+    const id = requestAnimationFrame(updateArrows);
+    window.addEventListener("resize", updateArrows);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("resize", updateArrows);
+    };
+  }, [filteredServices.length, loading]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -166,6 +192,12 @@ export default function ServicesSection() {
 
   useGSAP(
     () => {
+      // Guards against replaying the entrance reveal on every tab switch:
+      // filteredServices.length changes when the category filter changes,
+      // which would otherwise re-run this effect and reset opacity to 0.
+      if (hasAnimatedRef.current || loading || filteredServices.length === 0) return;
+      hasAnimatedRef.current = true;
+
       gsap.fromTo(
         ".services-header",
         { y: 30, opacity: 0 },
@@ -183,24 +215,22 @@ export default function ServicesSection() {
         }
       );
 
-      if (!loading && filteredServices.length > 0) {
-        gsap.fromTo(
-          ".services-carousel-wrapper",
-          { y: 35, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: "power2.out",
-            clearProps: "all",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top 88%",
-              once: true,
-            },
-          }
-        );
-      }
+      gsap.fromTo(
+        ".services-carousel-wrapper",
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          clearProps: "all",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 88%",
+            once: true,
+          },
+        }
+      );
 
       if (categories.length > 1) {
         gsap.fromTo(
@@ -240,21 +270,34 @@ export default function ServicesSection() {
       </div>
 
       <div className="relative z-10 max-w-[1400px] mx-auto space-y-12">
-        {/* Header */}
-        <div className="services-header px-6 md:px-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-100/90">
+        {/* Header: title + description left, CTA right */}
+        <div className="services-header px-6 md:px-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-3 max-w-2xl">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-deep">
               Our Specialties &amp; Treatments
             </span>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white tracking-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-200 tracking-tight">
               Comprehensive Care You Can Trust
             </h2>
-            <div className="w-12 h-0.5 bg-white/80 rounded-full mt-2" />
+            <p className="text-sm text-white/85 leading-relaxed font-normal">
+              We provide a wide range of specialized healthcare and clinical procedures, covering all your family&apos;s needs.
+            </p>
           </div>
 
-          <p className="text-sm text-white/85 leading-relaxed max-w-sm md:text-right font-normal">
-            We provide a wide range of specialized healthcare and clinical procedures, covering all your family&apos;s needs.
-          </p>
+          {!loading && filteredServices.length > 0 && (
+            <Link
+              href="/services"
+              className="group relative inline-flex shrink-0 items-center gap-4 self-start overflow-hidden rounded-full bg-white pl-6 pr-2 py-2 text-sm font-semibold text-slate-900 shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand/30 active:scale-[0.99] sm:self-auto"
+            >
+              <span className="absolute inset-0 h-full w-full origin-left scale-x-0 rounded-full bg-gradient-to-r from-brand via-brand-mid to-brand-soft transition-transform duration-300 ease-out group-hover:scale-x-100" />
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
+                Explore All Services
+              </span>
+              <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white transition-colors duration-300 group-hover:bg-white/20">
+                <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          )}
         </div>
 
         {/* Category Filter Tabs */}
@@ -310,8 +353,9 @@ export default function ServicesSection() {
             {/* Left Arrow */}
             <button
               onClick={() => scroll("left")}
+              disabled={!canScrollLeft}
               aria-label="Previous Treatment"
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
             >
               <ChevronLeft size={24} />
             </button>
@@ -319,8 +363,9 @@ export default function ServicesSection() {
             {/* Right Arrow */}
             <button
               onClick={() => scroll("right")}
+              disabled={!canScrollRight}
               aria-label="Next Treatment"
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md hover:shadow-lg text-slate-700 hover:text-brand hover:border-brand/40 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
             >
               <ChevronRight size={24} />
             </button>
@@ -328,6 +373,7 @@ export default function ServicesSection() {
             {/* Carousel Container */}
             <div
               ref={scrollRef}
+              onScroll={updateArrows}
               className="flex gap-6 overflow-x-auto scroll-smooth py-6 px-4 no-scrollbar"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
@@ -356,7 +402,7 @@ export default function ServicesSection() {
 
                     {/* Top Category Badge */}
                     <div className="relative z-10">
-                      <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 shadow-sm text-[0.65rem] font-bold uppercase tracking-[0.18em] transition-all duration-300 group-hover:bg-brand group-hover:border-brand">
+                      <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20 shadow-sm text-[0.65rem] font-bold uppercase tracking-[0.18em] transition-all duration-300 group-hover:bg-brand/80 group-hover:border-brand/80">
                         {service.category}
                       </span>
                     </div>
@@ -372,7 +418,7 @@ export default function ServicesSection() {
                     </div>
 
                     {/* Bottom Action Indicator */}
-                    <div className="absolute bottom-6 right-6 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white group-hover:bg-brand group-hover:border-brand flex items-center justify-center transition-all duration-300 shadow-sm group-hover:scale-105">
+                    <div className="absolute bottom-6 right-6 z-10 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white group-hover:bg-brand/80 group-hover:border-brand/80 flex items-center justify-center transition-all duration-300 shadow-sm group-hover:scale-105">
                       <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </div>
                   </Link>
@@ -382,18 +428,6 @@ export default function ServicesSection() {
           </div>
         )}
 
-        {/* Bottom CTA Link */}
-        {!loading && filteredServices.length > 0 && (
-          <div className="text-center pt-2">
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-mid transition-colors group"
-            >
-              <span>Explore All Services</span>
-              <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        )}
       </div>
     </section>
   );

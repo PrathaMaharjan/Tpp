@@ -171,7 +171,7 @@ export default function BlogListingPage() {
 
       {/* Hero Header Section */}
       <section className="relative bg-brand-mid">
-        <div className="pt-32 pb-[49px] md:pt-40 md:pb-[61px]">
+        <div className="pt-40 pb-[61px] md:pt-50 md:pb-[76px]">
           <div className="relative max-w-[1240px] mx-auto px-6 space-y-4">
             {/* Blog illustration, right of the hero copy. Hidden below lg
                 where there is no room beside the text and the search bar. */}
@@ -190,7 +190,7 @@ export default function BlogListingPage() {
             </div>
 
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-brand-deep">
-              Our <span className="text-white">Blog</span>
+              Our <span className="text-slate-200">Blog</span>
             </h1>
 
             <p className="text-brand-deep text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl lg:max-w-[52%]">

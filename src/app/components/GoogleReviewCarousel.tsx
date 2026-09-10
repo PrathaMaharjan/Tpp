@@ -217,11 +217,13 @@ export default function GoogleReviewsSection() {
           </div>
         </div>
 
-        {/* Cards */}
-        <div className="reviews-carousel">
-          <div
-            ref={scrollContainerRef}
-            className="no-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2"
+      </div>
+
+      {/* Cards: full-bleed track, edge to edge */}
+      <div className="reviews-carousel relative z-10">
+        <div
+          ref={scrollContainerRef}
+          className="no-scrollbar flex gap-6 overflow-x-auto scroll-smooth px-6 pb-2 md:px-10"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {reviews.map((review) => (
@@ -250,12 +252,14 @@ export default function GoogleReviewsSection() {
                 </div>
 
                 {/* Quote mark */}
-                <span
+                <svg
                   aria-hidden
-                  className="mb-3 block font-display text-4xl leading-none text-brand-soft"
+                  viewBox="0 0 24 24"
+                  className="mb-3 block h-7 w-7 text-brand-soft"
+                  fill="currentColor"
                 >
-                  &ldquo;
-                </span>
+                  <path d="M9.6 5C6 7 3.7 10 3.7 14.1c0 3.2 2 5.9 4.8 5.9 2.4 0 4.3-1.9 4.3-4.3 0-2.3-1.7-4.1-4-4.1-.4 0-.9.1-1 .1.3-2 2-4.3 3.9-5.5L9.6 5Zm11 0c-3.6 2-5.9 5-5.9 9.1 0 3.2 2 5.9 4.8 5.9 2.4 0 4.3-1.9 4.3-4.3 0-2.3-1.7-4.1-4-4.1-.4 0-.9.1-1 .1.3-2 2-4.3 3.9-5.5L20.6 5Z" />
+                </svg>
 
                 {/* Review body, the card's focal point */}
                 <p className="text-[17px] font-normal leading-[1.6] text-black md:text-[18px]">
@@ -299,8 +303,6 @@ export default function GoogleReviewsSection() {
             </button>
           </div>
         </div>
-
-      </div>
     </section>
   );
 }

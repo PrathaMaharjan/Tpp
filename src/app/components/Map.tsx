@@ -98,7 +98,6 @@ export default function LocationsSection() {
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Choose Your Preferred Location
           </h2>
-          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
         </div>
 
         <div className="locations-body max-w-4xl mx-auto space-y-8">

@@ -222,7 +222,7 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="font-display mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-brand-deep sm:text-5xl lg:text-[56px]">
-              <HeroTitle text={pageTitle} accentClassName="text-white" />
+              <HeroTitle text={pageTitle} accentClassName="text-slate-200" />
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-brand-deep sm:text-base">
               {pageSubtitle}

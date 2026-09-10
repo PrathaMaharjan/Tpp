@@ -197,7 +197,7 @@ export default function ServiceDetailPage() {
       <Header />
 
       {/* Hero Header */}
-      <section className="relative bg-brand-mid pt-40 pb-[121px]">
+      <section className="relative bg-brand-mid pt-50 pb-[151px]">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
           <Breadcrumbs
             className="service-detail-header mb-2"

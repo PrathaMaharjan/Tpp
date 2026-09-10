@@ -102,7 +102,7 @@ function BookingForm() {
 
       {/* Styled Header Title */}
       <div className="relative bg-brand-mid">
-        <div className="pt-36 pb-[121px] md:pt-40 md:pb-[145px]">
+        <div className="pt-45 pb-[151px] md:pt-50 md:pb-[181px]">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Let&apos;s Get Your Visit <span className="text-brand-deep">Scheduled</span>
