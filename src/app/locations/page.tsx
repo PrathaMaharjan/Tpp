@@ -100,9 +100,6 @@ export default function LocationsPage() {
         <div className="relative bg-brand-mid">
           <div className="pt-50 pb-[121px]">
             <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
-                Clinic Directory
-              </span>
               <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
                 Our <span className="text-brand-deep">Locations</span>
               </h1>

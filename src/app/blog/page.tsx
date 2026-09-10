@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Select from '../components/Select';
@@ -169,14 +170,30 @@ export default function BlogListingPage() {
       <Header />
 
       {/* Hero Header Section */}
-      <section className="relative bg-brand-mid overflow-hidden">
+      <section className="relative bg-brand-mid">
         <div className="pt-32 pb-[49px] md:pt-40 md:pb-[61px]">
-          <div className="max-w-[1240px] mx-auto px-6 space-y-4">
+          <div className="relative max-w-[1240px] mx-auto px-6 space-y-4">
+            {/* Blog illustration, right of the hero copy. Hidden below lg
+                where there is no room beside the text and the search bar. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute right-6 top-0 z-0 hidden w-[600px] select-none opacity-90 lg:block xl:w-[720px]"
+            >
+              <Image
+                src="/images/hero-images/blog-hero.webp"
+                alt=""
+                width={900}
+                height={441}
+                className="h-auto w-full"
+                priority
+              />
+            </div>
+
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">
               Our <span className="text-brand-deep">Blog</span>
             </h1>
 
-            <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl">
+            <p className="text-white/90 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl lg:max-w-[52%]">
               Trusted medical advice, pediatric guidance, and preventive wellness insights written by our physicians and healthcare providers.
             </p>
 

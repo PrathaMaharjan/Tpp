@@ -104,9 +104,6 @@ function BookingForm() {
       <div className="relative bg-brand-mid">
         <div className="pt-36 pb-[121px] md:pt-40 md:pb-[145px]">
           <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand bg-white/80 backdrop-blur rounded-full border border-brand-mid/20 shadow-xs">
-              Schedule An Appointment
-            </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Let&apos;s Get Your Visit <span className="text-brand-deep">Scheduled</span>
             </h1>

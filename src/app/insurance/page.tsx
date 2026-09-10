@@ -105,9 +105,6 @@ export default function InsurancePage() {
       <div className="relative bg-brand-mid">
         <div className="pt-50 pb-[121px]">
           <div className="insurance-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-white">
-              Coverage &amp; Networks
-            </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
               Insurance <span className="text-brand-deep">Plans</span>
             </h1>
