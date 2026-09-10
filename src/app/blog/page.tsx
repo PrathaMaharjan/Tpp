@@ -260,7 +260,7 @@ export default function BlogListingPage() {
       </section>
 
       {/* Main Content Area */}
-      <section className="pt-8 pb-16 md:pt-10 md:pb-20 max-w-[1240px] mx-auto px-6 w-full grow bg-white">
+      <section className="pt-8 pb-4 md:pt-10 md:pb-6 max-w-[1240px] mx-auto px-6 w-full grow bg-white">
         {loading ? (
           /* Loading Skeletons */
           <CardGridSkeleton count={3} />
@@ -296,7 +296,7 @@ export default function BlogListingPage() {
                 <p className="text-base text-slate-600">
                   Explore insights and stay ahead of your family&apos;s health
                 </p>
-                <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900">
+                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
                   <span className="text-brand">Health Library:</span> Guidance,
                   Prevention &amp; Care
                 </h2>

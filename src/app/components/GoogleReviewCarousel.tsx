@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Star, ArrowRight, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -164,25 +164,6 @@ export default function GoogleReviewsSection() {
         duration: 1,
         ease: 'power3.out',
       });
-
-      // Ambient Floating Bubbles
-      gsap.to('.review-bubble-1', {
-        y: -15,
-        x: 10,
-        duration: 4.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      gsap.to('.review-bubble-2', {
-        y: 20,
-        x: -12,
-        duration: 5.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
     },
     { scope: sectionRef }
   );
@@ -190,52 +171,42 @@ export default function GoogleReviewsSection() {
   return (
     <section ref={sectionRef} className="relative py-24 bg-white overflow-hidden font-sans">
 
-      {/* Fully Contained Opaque Circles Background */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="review-bubble-1 absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-brand-soft/20 rounded-full border border-brand-mid/20" />
-        <div className="review-bubble-2 absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-brand-mid/15 rounded-full border border-brand/20" />
-        <div className="absolute top-1/3 right-24 w-16 h-16 bg-brand/15 rounded-full border border-brand/20 hidden sm:block" />
-        <div className="absolute bottom-1/3 left-20 w-12 h-12 bg-brand-soft/30 rounded-full hidden sm:block" />
-      </div>
+      <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10">
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-10 space-y-16">
+        {/* Header: left-aligned two-tone heading, arrows on the right */}
+        <div className="reviews-header mb-10 flex items-end justify-between gap-6 md:mb-12">
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">
+              Our Reviews
+            </span>
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl lg:text-[44px]">
+              Trusted by <span className="text-slate-400">Families</span> Across Texas
+            </h2>
+          </div>
 
-        {/* Header */}
-        <div className="reviews-header text-center space-y-3 w-full mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
-            Patient Stories
-          </span>
-          <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
-            Trusted by Families Across the Community
-          </h2>
-          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
+          <div className="hidden shrink-0 items-center gap-3 sm:flex">
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Previous reviews"
+              className="grid h-12 w-12 place-items-center rounded-full bg-brand-deep text-white transition duration-300 hover:bg-brand-deeper active:scale-95"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Next reviews"
+              className="grid h-12 w-12 place-items-center rounded-full bg-brand-deep text-white transition duration-300 hover:bg-brand-deeper active:scale-95"
+            >
+              <ArrowRight size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* Carousel Container with Side Navigation Arrows */}
-        <div className="reviews-carousel relative group/carousel">
-
-          {/* Left Side Arrow Button */}
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-brand hover:border-brand/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          {/* Right Side Arrow Button */}
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white border border-slate-200/80 shadow-md flex items-center justify-center text-slate-700 hover:text-brand hover:border-brand/40 hover:scale-110 transition-all active:scale-95 cursor-pointer"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={24} />
-          </button>
-
-          {/* Horizontally Scrollable Reviews Wrapper */}
+        {/* Cards */}
+        <div className="reviews-carousel">
           <div
             ref={scrollContainerRef}
-            className="flex gap-8 overflow-x-auto scroll-smooth py-4 no-scrollbar px-2"
+            className="no-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {reviews.map((review) => (
@@ -244,41 +215,77 @@ export default function GoogleReviewsSection() {
                 href={review.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-surface rounded-2xl border border-hairline p-8 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between items-center text-center space-y-6 shrink-0 w-[320px] md:w-[380px]"
+                className="group flex w-[300px] shrink-0 flex-col rounded-[20px] bg-surface p-7 transition duration-300 hover:-translate-y-1 hover:shadow-xl md:w-[340px]"
               >
-                <div className="flex flex-col items-center space-y-4 w-full">
-                  {/* Initials Circle */}
-                  <div className="w-14 h-14 rounded-full bg-brand-soft/15 border border-brand/20 flex items-center justify-center text-brand font-bold text-base tracking-wide group-hover:bg-brand group-hover:text-white transition-colors duration-300 shadow-sm">
+                {/* Top row: avatar left, rating pill right */}
+                <div className="mb-7 flex items-start justify-between gap-3">
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white text-sm font-bold tracking-wide text-brand shadow-sm">
                     {review.initials}
                   </div>
 
-                  {/* Reviewer Name */}
-                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand transition-colors">
-                    {review.name}
-                  </h3>
-
-                  {/* Stars */}
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-2 shadow-sm">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
+                      <Star
+                        key={i}
+                        size={12}
+                        className="fill-amber-400 text-amber-400"
+                      />
                     ))}
                   </div>
-
-                  {/* Review Body */}
-                  <p className="text-slate-600 text-sm leading-relaxed font-normal max-w-sm">
-                    &ldquo;{review.text}&rdquo;
-                  </p>
                 </div>
 
-                {/* Card Footer Link */}
-                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-brand group-hover:text-brand-mid transition-colors pt-4 border-t border-slate-100 w-full">
-                  <span>Read review on Google</span>
-                  <ExternalLink size={13} className="transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                {/* Quote mark */}
+                <span
+                  aria-hidden
+                  className="mb-3 block font-display text-4xl leading-none text-brand-soft"
+                >
+                  &ldquo;
+                </span>
+
+                {/* Review body, the card's focal point */}
+                <p className="font-display text-[22px] font-semibold leading-[1.25] tracking-tight text-slate-900 md:text-[24px]">
+                  {review.text.length > 110
+                    ? `${review.text.slice(0, 110).trimEnd()}…`
+                    : review.text}
+                </p>
+
+                {/* Footer: name and source */}
+                <div className="mt-auto border-t border-slate-200/70 pt-5">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {review.name}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                    Verified Google review
+                    <ExternalLink
+                      size={11}
+                      className="shrink-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    />
+                  </p>
                 </div>
               </Link>
             ))}
           </div>
+
+          {/* Mobile arrows, below the cards where the header has no room */}
+          <div className="mt-6 flex items-center justify-center gap-3 sm:hidden">
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Previous reviews"
+              className="grid h-11 w-11 place-items-center rounded-full bg-brand-deep text-white active:scale-95"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Next reviews"
+              className="grid h-11 w-11 place-items-center rounded-full bg-brand-deep text-white active:scale-95"
+            >
+              <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
+
+        <div className="mt-12" />
 
         {/* Bottom CTA Link */}
         <div className="text-center">

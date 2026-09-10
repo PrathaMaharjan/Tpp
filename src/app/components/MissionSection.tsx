@@ -85,10 +85,11 @@ export default function MissionSection() {
 
           {/* Right Column: Local Image */}
           <div ref={imageColRef} className="lg:col-span-6 relative">
-            {/* Background decorative highlight behind image */}
-            <div className="absolute -top-6 -right-6 w-full h-full bg-brand-mid/15 rounded-3xl -z-10 hidden sm:block" />
+            {/* Decorative corner accents behind image */}
+            <div aria-hidden className="absolute inset-0 translate-x-3 -translate-y-3 rounded-3xl bg-brand rotate-2" />
+            <div aria-hidden className="absolute inset-0 -translate-x-3 translate-y-3 rounded-3xl bg-brand-soft -rotate-2" />
 
-            <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-xl border border-slate-200/60 bg-white">
+            <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-xl bg-white">
               <Image
                 src="/hero-2.webp"
                 alt="Our Mission"
