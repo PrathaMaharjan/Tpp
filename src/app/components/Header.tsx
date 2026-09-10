@@ -201,13 +201,15 @@ export default function Header() {
             <span>Call Us</span>
           </Link>
 
-          <Link
-            href="/booking"
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-xs font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200"
-          >
-            <Calendar size={14} />
-            <span>Book Appointment</span>
-          </Link>
+<a
+  href="https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-xs font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200"
+>
+  <Calendar size={14} />
+  <span>Book Appointment</span>
+</a>
         </div>
 
         {/* Mobile/tablet controls */}
