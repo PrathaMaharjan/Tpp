@@ -36,7 +36,7 @@ export default function Contact() {
           eyebrow="Ready When You Are"
           title="Accepting New Patients at Both Texas Locations"
           description="Book online in under a minute, or send us a message and our team will help you find a time that works."
-          primary={{ label: 'Book Appointment', href: '/booking' }}
+          primary={{ label: 'Book Appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' }}
           secondary={{ label: 'Contact Us', href: '/contact' }}
         />
       </div>

@@ -266,7 +266,7 @@ export default function Header() {
           })}
 
           <Link
-            href="/booking"
+            href="https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"
             className="mt-3 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl active:scale-[0.99] transition-transform duration-200"
           >
             <Calendar size={16} />

@@ -296,7 +296,7 @@ export default function BlogPostDetailPage() {
               </p>
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
-                  href="/booking"
+                  href="https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1 "
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-dark transition-colors shadow-xs"
                 >
                   <CalendarPlus size={15} />

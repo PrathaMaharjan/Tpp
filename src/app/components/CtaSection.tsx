@@ -16,7 +16,7 @@ export default function CtaSection({
   eyebrow,
   title,
   description,
-  primary = { label: 'Book Appointment', href: '/booking' },
+ primary = { label: 'Book Appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' },
   secondary,
 }: CtaSectionProps) {
   return (
