@@ -7,6 +7,8 @@ import { Calendar, Tag } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import { DetailSkeleton } from "../../components/Skeleton";
+import HeroTitle from "../../components/HeroTitle";
 import { getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -176,9 +178,7 @@ export default function ServiceDetailPage() {
     return (
       <main className="min-h-screen bg-white font-sans text-slate-900">
         <Header />
-        <div className="pt-48 pb-32 text-center text-slate-400 text-sm font-medium">
-          Loading treatment details...
-        </div>
+        <DetailSkeleton />
         <Footer />
       </main>
     );
@@ -197,10 +197,11 @@ export default function ServiceDetailPage() {
       <Header />
 
       {/* Hero Header */}
-      <section className="relative bg-surface-2 pt-40 pb-20">
+      <section className="relative bg-brand-mid pt-50 pb-[151px]">
         <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-4">
           <Breadcrumbs
             className="service-detail-header mb-2"
+            tone="dark"
             items={[
               { label: 'Home', href: '/' },
               { label: 'Services', href: '/services' },
@@ -210,13 +211,13 @@ export default function ServiceDetailPage() {
 
           <div className="service-detail-header space-y-2 max-w-3xl">
             {currentService.category && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.25em] text-white">
                 <Tag size={13} />
                 {currentService.category}
               </span>
             )}
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              {currentService.name}
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              <HeroTitle text={currentService.name} />
             </h1>
           </div>
         </div>

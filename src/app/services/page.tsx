@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { getPublicServices, slugify } from "../lib/api";
+import { useHeaderOffset } from "../lib/useHeaderOffset";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -63,6 +65,8 @@ export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
+  const hasAnimatedHeaderRef = useRef(false);
+  const headerOffset = useHeaderOffset();
 
   // Fetch treatments dynamically from CMS
   useEffect(() => {
@@ -121,12 +125,24 @@ export default function ServicesPage() {
 
   useGSAP(
     () => {
+      // Runs once, on first mount only, so switching category tabs never
+      // replays the page-header entrance.
+      if (hasAnimatedHeaderRef.current) return;
+      hasAnimatedHeaderRef.current = true;
+
       gsap.fromTo(
         ".services-page-header",
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
+    },
+    { scope: containerRef }
+  );
 
+  useGSAP(
+    () => {
+      // Re-runs on every tab switch: the new set of cards gets its own
+      // reveal, but this is scoped to just the grid, not the page header.
       if (!loading && displayedServices.length > 0) {
         gsap.fromTo(
           ".service-card-wrapper",
@@ -150,46 +166,16 @@ export default function ServicesPage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-surface-2">
-        <div className="pt-40 pb-28">
+      <div className="relative bg-brand-mid">
+        <div className="pt-50 pb-[138px]">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
-              Clinical Specialties
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-              Our Services &amp; Treatments
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-brand-deep">
+              Our Services &amp; <span className="text-slate-200">Treatments</span>
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-brand-deep text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Comprehensive healthcare services and specialized medical procedures tailored to your family&apos;s needs.
             </p>
           </div>
-
-          {/* Category Tabs */}
-          {categories.length > 1 && (
-            <div
-              className="relative z-10 mt-10 border-b border-slate-300/50 overflow-x-auto max-w-[1400px] mx-auto px-6 md:px-10"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              <div className="flex justify-center gap-8 min-w-max mx-auto">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`relative pb-4 text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                      activeCategory.toLowerCase() === cat.toLowerCase()
-                        ? "text-slate-900 font-semibold"
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
-                  >
-                    {cat}
-                    {activeCategory.toLowerCase() === cat.toLowerCase() && (
-                      <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-brand-mid" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Top Wave Divider */}
@@ -208,12 +194,44 @@ export default function ServicesPage() {
         </div>
       </div>
 
+      {/* Category Tabs: sticky, tracks the live header height so it docks
+          right under the nav whether the header banner/nav is showing or
+          has slid away on scroll. */}
+      {categories.length > 1 && (
+        <div
+          className="sticky z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/70 shadow-sm"
+          style={{ top: headerOffset }}
+        >
+          <div
+            className="max-w-[1400px] mx-auto px-6 md:px-10 overflow-x-auto no-scrollbar"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <div className="flex items-center justify-start sm:justify-center gap-2.5 py-3.5 min-w-max mx-auto">
+              {categories.map((cat) => {
+                const isActive = activeCategory.toLowerCase() === cat.toLowerCase();
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-4 py-2 text-sm capitalize transition-colors duration-300 ${
+                      isActive
+                        ? "border-brand bg-brand font-semibold text-white shadow-sm"
+                        : "border-slate-200 bg-white font-medium text-slate-600 hover:border-brand/40 hover:text-brand"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="pb-24 max-w-[1400px] mx-auto px-6 md:px-10">
         {/* Services Grid */}
         {loading ? (
-          <div className="text-center py-20 text-slate-400 text-sm">
-            Loading treatments...
-          </div>
+          <CardGridSkeleton count={3} className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" />
         ) : displayedServices.length === 0 ? (
           <div className="text-center py-20 text-slate-400 text-sm">
             No treatments found for this category.

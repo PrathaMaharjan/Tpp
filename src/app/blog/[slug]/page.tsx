@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import TableOfContents from '../../components/TableOfContents';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import { ArticleSkeleton } from '../../components/Skeleton';
 import { getBlogPostBySlug, getPublicBlogPosts, type BlogPost } from '../../lib/api';
 import {
   resolveImageUrl,
@@ -110,16 +111,7 @@ export default function BlogPostDetailPage() {
       <Header />
 
       {loading ? (
-        <div className="max-w-3xl mx-auto px-6 py-16 w-full space-y-8 animate-pulse">
-          <div className="h-8 bg-slate-200 rounded-lg w-3/4" />
-          <div className="h-4 bg-slate-200 rounded w-1/3" />
-          <div className="h-96 bg-slate-200 rounded-3xl" />
-          <div className="space-y-4">
-            <div className="h-4 bg-slate-200 rounded" />
-            <div className="h-4 bg-slate-200 rounded" />
-            <div className="h-4 bg-slate-200 rounded w-5/6" />
-          </div>
-        </div>
+        <ArticleSkeleton />
       ) : !post ? (
         /* Not Found State */
         <div className="max-w-md mx-auto px-6 py-28 text-center space-y-5">
@@ -216,7 +208,7 @@ export default function BlogPostDetailPage() {
           />
 
           <header className="space-y-5">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18]">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-[1.18]">
               {post.title}
             </h1>
 

@@ -31,7 +31,7 @@ export default function CtaSection({
               </span>
             )}
 
-            <h2 className="text-2xl md:text-[28px] xl:text-[32px] font-bold tracking-tight text-slate-900 leading-snug lg:w-[80%]">
+            <h2 className="font-display text-2xl md:text-[28px] xl:text-[32px] font-bold tracking-tight text-slate-900 leading-snug lg:w-[80%]">
               {title}
             </h2>
 

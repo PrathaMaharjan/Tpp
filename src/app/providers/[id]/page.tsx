@@ -3,13 +3,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import {
-  Calendar,
-  Award,
-} from "lucide-react";
+import { Award } from "lucide-react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import CtaSection from "../../components/CtaSection";
+import { DetailSkeleton } from "../../components/Skeleton";
+import HeroTitle from "../../components/HeroTitle";
 import { getPublicDoctors, getPublicServices, slugify } from "../../lib/api";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -231,9 +231,7 @@ export default function DoctorDetailPage() {
     return (
       <main className="min-h-screen bg-white font-sans text-slate-900">
         <Header />
-        <div className="pt-48 pb-32 text-center text-slate-400 text-sm font-medium">
-          Loading provider profile...
-        </div>
+        <DetailSkeleton />
         <Footer />
       </main>
     );
@@ -258,11 +256,25 @@ export default function DoctorDetailPage() {
     <main ref={containerRef} className="min-h-screen bg-white font-sans text-slate-900">
       <Header />
 
-      {/* Hero / Page Header */}
-      <section className="relative bg-surface-2 pt-40 pb-20">
-        <div className="max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
+      {/* Hero / Page Header: dual-tone diagonal split for a less flat band */}
+      <section className="relative overflow-hidden bg-brand-deep pt-40 pb-[121px]">
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-brand-deep via-brand-deep to-brand-dark"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-y-0 right-0 w-[65%] bg-gradient-to-bl from-brand-mid/70 via-brand/40 to-transparent [clip-path:polygon(30%_0,100%_0,100%_100%,0_100%)]"
+        />
+        <div
+          aria-hidden
+          className="absolute -right-24 -top-24 w-[420px] h-[420px] rounded-full bg-brand-soft/20 blur-3xl"
+        />
+
+        <div className="relative z-10 max-w-[1000px] mx-auto px-6 md:px-10 space-y-5">
           <Breadcrumbs
             className="doctor-detail-header mb-2"
+            tone="dark"
             items={[
               { label: 'Home', href: '/' },
               { label: 'Providers', href: '/providers' },
@@ -271,15 +283,15 @@ export default function DoctorDetailPage() {
           />
 
           <div className="doctor-detail-header space-y-2 max-w-3xl">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
               {currentDoctor.specialization || "Healthcare Provider"}
             </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              {currentDoctor.name}
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              <HeroTitle text={currentDoctor.name} accentClassName="text-brand-soft" />
             </h1>
             {currentDoctor.qualification && (
-              <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                <Award size={16} className="text-brand" />
+              <p className="text-sm font-medium text-white/90 flex items-center gap-2">
+                <Award size={16} className="text-brand-soft" />
                 <span>{currentDoctor.qualification}</span>
               </p>
             )}
@@ -302,56 +314,47 @@ export default function DoctorDetailPage() {
         </div>
       </section>
 
-      {/* Main Content Area */}
-      <section className="doctor-detail-body py-12 max-w-[1000px] mx-auto px-6 md:px-10 space-y-12">
-        {/* Doctor Image */}
-        <div className="w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm relative">
-          <img
-            src={currentDoctor.imageUrl || currentDoctor.photoUrl || FALLBACK_DOCTOR_AVATAR}
-            alt={currentDoctor.name}
-            crossOrigin="anonymous"
-            className="w-full h-full object-cover object-top"
-            onError={(e) => {
-              const target = e.currentTarget as HTMLImageElement;
-              target.onerror = null;
-              target.src = FALLBACK_DOCTOR_AVATAR;
-            }}
-          />
-        </div>
+      {/* Main Content Area: photo left, bio right */}
+      <section className="doctor-detail-body pt-16 pb-4 max-w-[1100px] mx-auto px-6 md:px-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-10 lg:gap-14 items-start">
+          {/* Doctor Image */}
+          <div className="w-full aspect-[4/5] lg:sticky lg:top-28 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm relative">
+            <img
+              src={currentDoctor.imageUrl || currentDoctor.photoUrl || FALLBACK_DOCTOR_AVATAR}
+              alt={currentDoctor.name}
+              crossOrigin="anonymous"
+              className="w-full h-full object-cover object-top"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                target.onerror = null;
+                target.src = FALLBACK_DOCTOR_AVATAR;
+              }}
+            />
+          </div>
 
-        {/* Overview / Bio Section */}
-        <div className="space-y-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            About {displayName}
-          </h2>
-          <div
-            className="text-slate-600 text-base leading-relaxed space-y-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-bold [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-3 [&_li]:my-1"
-            dangerouslySetInnerHTML={{ __html: currentDoctor.bio || "" }}
-          />
+          {/* Overview / Bio Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              About {displayName}
+            </h2>
+            <div
+              className="text-slate-600 text-base leading-relaxed space-y-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-slate-900 [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:font-bold [&_strong]:text-slate-900 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-3 [&_li]:my-1"
+              dangerouslySetInnerHTML={{ __html: currentDoctor.bio || "" }}
+            />
+          </div>
         </div>
-
-      
       </section>
 
       {/* Bottom CTA Section */}
-      <section className="doctor-cta-section bg-surface-2 py-20 mt-12">
-        <div className="doctor-cta-block max-w-2xl mx-auto text-center space-y-4 px-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Ready to schedule with {currentDoctor.name.split(" ")[0] || "our provider"}?
-          </h2>
-          <p className="text-slate-600 text-base leading-relaxed">
-            Schedule an in-person or follow-up consultation at our clinic today.
-          </p>
-
-          <Link
-            href={`/booking?dentist=${encodeURIComponent(currentDoctor.name)}`}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200 mt-2"
-          >
-            <Calendar size={16} />
-            <span>Book Appointment</span>
-          </Link>
-        </div>
-      </section>
+      <div className="doctor-cta-section max-w-[1400px] mx-auto px-6 pb-4">
+        <CtaSection
+          eyebrow="Book A Visit"
+          title={`Ready to schedule with ${currentDoctor.name.split(" ")[0] || "our provider"}?`}
+          description="Schedule an in-person or follow-up consultation at our clinic today."
+          primary={{ label: 'Book Appointment', href: `/booking?dentist=${encodeURIComponent(currentDoctor.name)}` }}
+          secondary={{ label: 'Call 469-442-0202', href: 'tel:4694420202' }}
+        />
+      </div>
 
       <Footer />
     </main>

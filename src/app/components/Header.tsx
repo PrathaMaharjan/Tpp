@@ -21,8 +21,7 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Locations', href: '/locations' },
-    { name: 'About Practice', href: '/about' },
+    { name: 'About Us', href: '/about' },
     { name: 'Providers', href: '/providers' },
     { name: 'Insurance', href: '/insurance' },
     { name: 'Services', href: '/services' },
@@ -175,7 +174,7 @@ export default function Header() {
                   key={link.name}
                   href={link.href}
                   className={`relative px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ease-in-out whitespace-nowrap ${isActive
-                    ? 'bg-white text-slate-900 shadow-md scale-100'
+                    ? 'bg-white text-brand shadow-md scale-100'
                     : isTransparent
                       ? 'text-white/80 hover:text-white hover:bg-white/10'
                       : 'text-slate-700 hover:text-slate-900 hover:bg-white/50'

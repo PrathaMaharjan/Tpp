@@ -85,7 +85,7 @@ export default function LocationsSection() {
   );
 
   return (
-    <section ref={sectionRef} className="relative py-20 bg-surface overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative pt-20 pb-10 bg-surface overflow-hidden font-sans">
       <BgMotif variant="family" side="right" position="center" opacity={0.05} />
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 space-y-10">
@@ -95,10 +95,9 @@ export default function LocationsSection() {
           <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-mid">
             Our Locations
           </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
             Choose Your Preferred Location
           </h2>
-          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
         </div>
 
         <div className="locations-body max-w-4xl mx-auto space-y-8">

@@ -30,7 +30,7 @@ export default function Contact() {
   );
 
   return (
-    <div ref={sectionRef} className="w-full px-6 md:px-10 pb-8">
+    <div ref={sectionRef} className="w-full bg-surface px-6 md:px-10 pt-4 pb-8">
       <div className="contact-anim max-w-[1240px] mx-auto">
         <CtaSection
           eyebrow="Ready When You Are"

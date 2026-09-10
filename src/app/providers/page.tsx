@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { ProviderSkeleton } from "../components/Skeleton";
 import { ArrowRight } from "lucide-react";
 import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
@@ -101,16 +102,13 @@ export default function ProvidersPage() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-surface-2">
-        <div className="pt-40 pb-20">
+      <div className="relative bg-brand-mid">
+        <div className="pt-50 pb-[151px]">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
-              Medical Team
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
-              Meet Our Providers
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] tracking-tight text-brand-deep">
+              Meet Our <span className="text-slate-200">Providers</span>
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-brand-deep text-[15px] sm:text-base leading-relaxed max-w-xl mx-auto">
               Meet our board-certified healthcare professionals dedicated to your family&apos;s health and wellness.
             </p>
           </div>
@@ -137,8 +135,10 @@ export default function ProvidersPage() {
 
           {/* Provider Cards Grid */}
           {loading ? (
-            <div className="text-center py-20 text-slate-400 text-sm">
-              Loading healthcare providers...
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" aria-label="Loading">
+              {[0, 1, 2].map((i) => (
+                <ProviderSkeleton key={i} index={i} />
+              ))}
             </div>
           ) : providers.length === 0 ? (
             <div className="text-center py-20 text-slate-400 text-sm">
@@ -158,55 +158,53 @@ export default function ProvidersPage() {
 
                 return (
                   <div key={provider.id} className="provider-card-wrapper">
-                    <div className="group relative h-full bg-white border border-slate-200/90 rounded-2xl p-6 text-center flex flex-col items-center justify-between transition-all duration-300 hover:border-brand-mid/50 hover:shadow-xl hover:-translate-y-1 overflow-hidden shadow-xs">
-                      {/* Subtle Teal Line on Hover */}
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-brand-mid transition-colors duration-300" />
-
+                    <div className="group relative h-full overflow-hidden rounded-2xl bg-slate-900 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                      {/* Whole-card link to the profile; Book Visit sits above it */}
                       <Link
                         href={`/providers/${profileSlug}`}
-                        className="flex flex-col items-center space-y-4 w-full pt-2 cursor-pointer focus:outline-none"
+                        aria-label={`View ${provider.name}'s profile`}
+                        className="absolute inset-0 z-10 focus:outline-none"
                       >
-                        {/* Avatar Container */}
-                        <div className="relative w-32 h-32 rounded-full p-1 bg-brand-mid/10 group-hover:bg-brand-mid/30 transition-all duration-300">
-                          <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
-                            <img
-                              src={photo}
-                              alt={provider.name}
-                              crossOrigin="anonymous"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              onError={(e) => {
-                                const target = e.currentTarget as HTMLImageElement;
-                                target.onerror = null;
-                                target.src = FALLBACK_DOCTOR_AVATAR;
-                              }}
-                            />
-                          </div>
+                        <span className="sr-only">View {provider.name}&apos;s profile</span>
+                      </Link>
+
+                      {/* Photo */}
+                      <div className="relative aspect-[3/4] w-full overflow-hidden">
+                        <img
+                          src={photo}
+                          alt={provider.name}
+                          crossOrigin="anonymous"
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = FALLBACK_DOCTOR_AVATAR;
+                          }}
+                        />
+                        {/* Dark gradient so the overlaid text stays legible */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+
+                        {/* Arrow chip: signals the card is clickable */}
+                        <div className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition-colors duration-300 group-hover:bg-brand">
+                          <ArrowRight size={18} />
                         </div>
 
-                        {/* Provider Info */}
-                        <div className="space-y-1.5 px-2">
-                          <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-brand transition-colors">
+                        {/* Name + specialty */}
+                        <div className="absolute inset-x-0 bottom-0 p-5">
+                          <h3 className="text-lg font-bold leading-snug text-white">
                             {provider.name}
                           </h3>
-                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-white/70">
                             {specialization}
                           </p>
                         </div>
-                      </Link>
+                      </div>
 
-                      {/* Card Actions */}
-                      <div className="w-full pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <Link
-                          href={`/providers/${profileSlug}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-brand transition-colors"
-                        >
-                          <span>View Profile</span>
-                          <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
-                        </Link>
-
+                      {/* Book action: always visible on touch, reveals on hover on desktop */}
+                      <div className="absolute bottom-5 right-5 z-20 transition-all duration-300 lg:translate-y-2 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
                         <Link
                           href={`/booking?dentist=${encodeURIComponent(provider.name)}`}
-                          className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-surface-2 text-brand hover:bg-brand hover:text-white transition-all"
+                          className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 transition-colors hover:bg-brand hover:text-white"
                         >
                           <span>Book Visit</span>
                         </Link>

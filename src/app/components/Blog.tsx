@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
+import { CardGridSkeleton } from './Skeleton';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -163,25 +164,39 @@ export default function BlogSection() {
   );
 
   return (
-    <section ref={sectionRef} className="py-24 bg-surface-2 font-sans">
+    <section ref={sectionRef} className="pt-12 pb-24 bg-white font-sans">
       <div className="max-w-[1240px] mx-auto px-6 space-y-16">
         
-        {/* Header */}
-        <div className="blog-header text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
-            Insights &amp; Articles
-          </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
-            Latest Health News
-          </h2>
-          <div className="w-12 h-0.5 bg-brand-mid mx-auto rounded-full mt-2" />
+        {/* Header: heading left, "view all" right, so the CTA sits with
+            the section title instead of orphaned under the grid. */}
+        <div className="blog-header flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand">
+              Insights &amp; Articles
+            </span>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 tracking-tight">
+              Latest Health News
+            </h2>
+            <div className="h-0.5 w-12 rounded-full bg-brand-mid" />
+          </div>
+
+          {!loading && posts.length > 0 && (
+            <Link
+              href="/blog"
+              className="group inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-slate-200/80 bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-xs transition-all hover:border-brand hover:text-brand hover:shadow-md sm:self-auto"
+            >
+              <span>Explore All Articles</span>
+              <ArrowUpRight
+                size={16}
+                className="text-brand transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </Link>
+          )}
         </div>
 
         {/* 3-Column Cards Grid */}
         {loading ? (
-          <div className="text-center py-16 text-slate-500 text-sm">
-            Loading latest articles...
-          </div>
+          <CardGridSkeleton count={3} className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch" />
         ) : posts.length === 0 ? (
           <div className="text-center py-16 text-slate-500 text-sm bg-white/70 rounded-2xl p-8 max-w-md mx-auto">
             No published articles at this time. Check back soon!
@@ -201,37 +216,43 @@ export default function BlogSection() {
               return (
                 <article
                   key={post.id}
-                  className="blog-card group flex flex-col justify-between bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
+                  className="blog-card reveal-card group flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1"
                 >
                   <div>
                     {/* Cover Image */}
                     <Link
                       href={postUrl}
-                      className="block relative overflow-hidden aspect-[16/10] bg-slate-100"
+                      className="reveal-media block relative overflow-hidden rounded-2xl bg-slate-100"
                     >
                       <img
                         src={cover}
                         alt={post.title}
                         crossOrigin="anonymous"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-[620ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]"
                         onError={(e) => {
                           const target = e.currentTarget as HTMLImageElement;
                           target.onerror = null;
                           target.src = FALLBACK_IMAGE;
                         }}
                       />
+
+                      <span className="reveal-arrow absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white text-brand shadow-md">
+                        <ArrowUpRight size={18} />
+                      </span>
                     </Link>
 
                     {/* Content & Excerpt */}
-                    <div className="p-7 space-y-3">
+                    <div className="pt-5 space-y-3">
                       <h3 className="text-lg font-bold leading-snug text-slate-900 group-hover:text-brand transition-colors line-clamp-2">
                         <Link href={postUrl}>{post.title}</Link>
                       </h3>
 
                       {/* Excerpt from the CMS Meta tab */}
-                      <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
-                        {excerpt}
-                      </p>
+                      <div className="reveal-body">
+                        <p className="reveal-body-inner text-sm text-slate-600 leading-relaxed line-clamp-3 font-normal">
+                          {excerpt}
+                        </p>
+                      </div>
 
                       {/* Author & Date Bar */}
                       {(post.authorName || postDate) && (
@@ -284,22 +305,6 @@ export default function BlogSection() {
                 </article>
               );
             })}
-          </div>
-        )}
-
-        {/* View All Articles CTA */}
-        {!loading && posts.length > 0 && (
-          <div className="text-center pt-2">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200/80 text-sm font-semibold text-slate-800 hover:text-brand hover:border-brand shadow-xs hover:shadow-md transition-all group"
-            >
-              <span>Explore All Health Articles</span>
-              <ArrowUpRight
-                size={16}
-                className="text-brand group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-              />
-            </Link>
           </div>
         )}
 

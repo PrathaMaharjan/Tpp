@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react';
-import { Star, ArrowRight, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Star, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -20,8 +20,17 @@ interface Review {
   link: string;
 }
 
-const GOOGLE_REVIEW_URL = 'https://maps.google.com/?cid=YOUR_GOOGLE_MAPS_CID';
+// Irving clinic CID, taken from the same place listing used by the map
+// embeds. The placeholder that was here made the button a dead link.
+// `writereview` opens the review composer directly.
+const GOOGLE_REVIEW_URL = 'https://maps.google.com/?cid=9990946045983830915';
 
+/**
+ * Curated fallback. Used until GOOGLE_PLACES_API_KEY and the clinic
+ * Place IDs are set, and whenever the API returns nothing. Places caps
+ * at 5 reviews per place with no rating filter, so this list is also
+ * larger than the live feed can be.
+ */
 const staticReviews: Review[] = [
   {
     id: '1',
@@ -103,6 +112,33 @@ export default function GoogleReviewsSection() {
     }
   };
 
+  const [reviews, setReviews] = useState<Review[]>(staticReviews);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLiveReviews() {
+      try {
+        const res = await fetch('/api/reviews');
+        if (!res.ok) return;
+        const json = await res.json();
+        // Only swap in live data when there is actually some: an empty
+        // list means unconfigured or filtered out, and the curated
+        // reviews are better than an empty carousel.
+        if (active && Array.isArray(json.reviews) && json.reviews.length > 0) {
+          setReviews(json.reviews);
+        }
+      } catch {
+        // Keep the curated reviews.
+      }
+    }
+
+    loadLiveReviews();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   useGSAP(
     () => {
       // Header Animation
@@ -128,146 +164,145 @@ export default function GoogleReviewsSection() {
         duration: 1,
         ease: 'power3.out',
       });
-
-      // Ambient Floating Bubbles
-      gsap.to('.review-bubble-1', {
-        y: -15,
-        x: 10,
-        duration: 4.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-
-      gsap.to('.review-bubble-2', {
-        y: 20,
-        x: -12,
-        duration: 5.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
     },
     { scope: sectionRef }
   );
 
   return (
-    <section ref={sectionRef} className="relative py-24 bg-brand-deep overflow-hidden font-sans">
+    <section ref={sectionRef} className="relative pt-24 pb-12 bg-white overflow-hidden font-sans">
 
-      {/* Fully Contained Opaque Circles Background */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="review-bubble-1 absolute top-10 left-8 md:left-16 w-64 h-64 md:w-80 md:h-80 bg-white/[0.07] rounded-full border border-white/10" />
-        <div className="review-bubble-2 absolute bottom-10 right-8 md:right-16 w-72 h-72 md:w-96 md:h-96 bg-white/[0.05] rounded-full border border-white/10" />
-        <div className="absolute top-1/3 right-24 w-16 h-16 bg-white/[0.06] rounded-full border border-white/10 hidden sm:block" />
-        <div className="absolute bottom-1/3 left-20 w-12 h-12 bg-white/[0.08] rounded-full hidden sm:block" />
-      </div>
+      <div className="relative z-10 mx-auto max-w-[1400px] px-6 md:px-10">
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-10 space-y-16">
+        {/* Header: left-aligned two-tone heading, arrows on the right */}
+        <div className="reviews-header mb-10 flex items-end justify-between gap-6 md:mb-12">
+          <div className="space-y-2">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl lg:text-[44px]">
+              Our <span className="text-brand-soft">Reviews</span>
+            </h2>
+            <p className="text-sm text-slate-500 sm:text-base">
+              Trusted by Families Across Texas
+            </p>
+            <Link
+              href={GOOGLE_REVIEW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:text-brand hover:shadow-md"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+                <path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.09 3.57-5.16 3.57-8.81z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.44 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.29v3.1A12 12 0 0 0 12 24z" />
+                <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28v-3.1H1.29a12 12 0 0 0 0 10.76l3.98-3.1z" />
+                <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.58 1.8l3.44-3.44A11.98 11.98 0 0 0 12 0 12 12 0 0 0 1.29 6.62l3.98 3.1C6.22 6.88 8.87 4.77 12 4.77z" />
+              </svg>
+              Leave us a review
+              <ArrowRight size={16} />
+            </Link>
+          </div>
 
-        {/* Header */}
-        <div className="reviews-header text-center space-y-3 w-full mx-auto">
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-brand-soft">
-            Patient Stories
-          </span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">
-            Trusted by Families Across the Community
-          </h2>
-          <div className="w-12 h-0.5 bg-brand-soft mx-auto rounded-full mt-2" />
+          <div className="hidden shrink-0 items-center gap-3 sm:flex">
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Previous reviews"
+              className="grid h-12 w-12 place-items-center rounded-full border border-brand-deep/30 bg-transparent text-brand-deep transition duration-300 hover:border-brand hover:bg-brand hover:text-white active:scale-95"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Next reviews"
+              className="grid h-12 w-12 place-items-center rounded-full border border-brand-deep/30 bg-transparent text-brand-deep transition duration-300 hover:border-brand hover:bg-brand hover:text-white active:scale-95"
+            >
+              <ArrowRight size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* Carousel Container with Side Navigation Arrows */}
-        <div className="reviews-carousel relative group/carousel">
+      </div>
 
-          {/* Left Side Arrow Button */}
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 md:-translate-x-5 z-20 w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-white hover:bg-white/25 hover:border-white/50 hover:scale-110 transition-all active:scale-95 cursor-pointer"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
-
-          {/* Right Side Arrow Button */}
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 md:translate-x-5 z-20 w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/30 shadow-lg flex items-center justify-center text-white hover:bg-white/25 hover:border-white/50 hover:scale-110 transition-all active:scale-95 cursor-pointer"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={24} />
-          </button>
-
-          {/* Horizontally Scrollable Reviews Wrapper */}
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-8 overflow-x-auto scroll-smooth py-4 no-scrollbar px-2"
+      {/* Cards: full-bleed track, edge to edge */}
+      <div className="reviews-carousel relative z-10">
+        <div
+          ref={scrollContainerRef}
+          className="no-scrollbar flex gap-6 overflow-x-auto scroll-smooth px-6 pb-2 md:px-10"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {staticReviews.map((review) => (
+            {reviews.map((review) => (
               <Link
                 key={review.id}
                 href={review.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200/80 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between items-center text-center space-y-6 shrink-0 w-[320px] md:w-[380px]"
+                className="group flex w-[300px] shrink-0 flex-col rounded-[20px] bg-surface p-7 transition duration-300 hover:-translate-y-1 hover:shadow-xl md:w-[340px]"
               >
-                <div className="flex flex-col items-center space-y-4 w-full">
-                  {/* Initials Circle */}
-                  <div className="w-14 h-14 rounded-full bg-brand-soft/15 border border-brand/20 flex items-center justify-center text-brand font-bold text-base tracking-wide group-hover:bg-brand group-hover:text-white transition-colors duration-300 shadow-sm">
+                {/* Top row: avatar left, rating pill right */}
+                <div className="mb-7 flex items-start justify-between gap-3">
+                  <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white text-sm font-bold tracking-wide text-brand shadow-sm">
                     {review.initials}
                   </div>
 
-                  {/* Reviewer Name */}
-                  <h3 className="text-lg font-bold text-slate-900 group-hover:text-brand transition-colors">
-                    {review.name}
-                  </h3>
-
-                  {/* Stars */}
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-2 shadow-sm">
                     {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
+                      <Star
+                        key={i}
+                        size={12}
+                        className="fill-amber-400 text-amber-400"
+                      />
                     ))}
                   </div>
-
-                  {/* Review Body */}
-                  <p className="text-slate-600 text-sm leading-relaxed font-normal max-w-sm">
-                    &ldquo;{review.text}&rdquo;
-                  </p>
                 </div>
 
-                {/* Card Footer Link */}
-                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-brand group-hover:text-brand-mid transition-colors pt-4 border-t border-slate-100 w-full">
-                  <span>Read review on Google</span>
-                  <ExternalLink size={13} className="transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                {/* Quote mark */}
+                <svg
+                  aria-hidden
+                  viewBox="0 0 24 24"
+                  className="mb-3 block h-7 w-7 text-brand-soft"
+                  fill="currentColor"
+                >
+                  <path d="M9.6 5C6 7 3.7 10 3.7 14.1c0 3.2 2 5.9 4.8 5.9 2.4 0 4.3-1.9 4.3-4.3 0-2.3-1.7-4.1-4-4.1-.4 0-.9.1-1 .1.3-2 2-4.3 3.9-5.5L9.6 5Zm11 0c-3.6 2-5.9 5-5.9 9.1 0 3.2 2 5.9 4.8 5.9 2.4 0 4.3-1.9 4.3-4.3 0-2.3-1.7-4.1-4-4.1-.4 0-.9.1-1 .1.3-2 2-4.3 3.9-5.5L20.6 5Z" />
+                </svg>
+
+                {/* Review body, the card's focal point */}
+                <p className="text-[17px] font-normal leading-[1.6] text-black md:text-[18px]">
+                  {review.text.length > 110
+                    ? `${review.text.slice(0, 110).trimEnd()}…`
+                    : review.text}
+                </p>
+
+                {/* Footer: name and source */}
+                <div className="mt-auto border-t border-slate-200/70 pt-5">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {review.name}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                    Verified Google review
+                    <ExternalLink
+                      size={11}
+                      className="shrink-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    />
+                  </p>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
 
-        {/* Bottom CTA Link */}
-        <div className="text-center">
-          <Link
-            href={GOOGLE_REVIEW_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2.5 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/20"
-          >
-            {/* Google mark — makes the destination obvious at a glance */}
-            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden className="shrink-0">
-              <path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.2-2.2H12v4.1h6.6c-.1 1.1-.8 2.8-2.4 3.9l-.1.1 3.5 2.7.2.1c2.3-2 3.7-5.1 3.7-8.7Z" />
-              <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.8-2.9l-3.7-2.9c-1 .7-2.3 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5l-.1.1-3.6 2.8-.1.1C3.4 21.3 7.4 24 12 24Z" />
-              <path fill="#FBBC05" d="M5.3 14.4c-.3-.7-.4-1.5-.4-2.4s.1-1.7.4-2.4V9.5L1.6 6.7l-.1.1C.6 8.4 0 10.2 0 12s.5 3.6 1.5 5.2l3.8-2.8Z" />
-              <path fill="#EA4335" d="M12 4.7c2.2 0 3.7.9 4.6 1.8l3.3-3.3C17.9 1.2 15.2 0 12 0 7.4 0 3.4 2.7 1.5 6.7l3.8 2.9C6.2 6.8 8.9 4.7 12 4.7Z" />
-            </svg>
-            <span>Leave us a review</span>
-            <ArrowRight
-              size={15}
-              className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"
-            />
-          </Link>
+          {/* Mobile arrows, below the cards where the header has no room */}
+          <div className="mt-6 flex items-center justify-center gap-3 sm:hidden">
+            <button
+              onClick={() => scroll('left')}
+              aria-label="Previous reviews"
+              className="grid h-11 w-11 place-items-center rounded-full bg-brand-deep text-white active:scale-95"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              aria-label="Next reviews"
+              className="grid h-11 w-11 place-items-center rounded-full bg-brand-deep text-white active:scale-95"
+            >
+              <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
-
-      </div>
     </section>
   );
 }
