@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2, Tag } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { CardGridSkeleton } from "../components/Skeleton";
@@ -22,13 +22,23 @@ interface ServiceItem {
   slug: string;
   category: string;
   description?: string | null;
+  excerpt?: string | null;
+  price?: string | null;
   imageUrl?: string | null;
+}
+
+interface TreatmentMeta {
+  excerpt?: string | null;
+  description?: string | null;
+  price?: string | null;
+  [key: string]: any;
 }
 
 const FALLBACK_TREATMENT_IMG =
   "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800";
 
 const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || "http://localhost:3000";
+const SITE_SLUG = process.env.NEXT_PUBLIC_SITE_SLUG || "tpp";
 
 function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_TREATMENT_IMG): string {
   if (!url || !url.trim()) return fallback;
@@ -68,6 +78,42 @@ export default function ServicesPage() {
   const hasAnimatedHeaderRef = useRef(false);
   const headerOffset = useHeaderOffset();
 
+  // ── HOVER META STATE & CACHE ──────────────────────────────────────
+  const [metaCache, setMetaCache] = useState<Record<string, TreatmentMeta>>({});
+  const [metaLoading, setMetaLoading] = useState<Record<string, boolean>>({});
+
+  // Fetches treatment meta on hover
+  const handleCardHover = useCallback(
+    async (slug: string) => {
+      if (!slug || metaCache[slug] || metaLoading[slug]) return;
+
+      setMetaLoading((prev) => ({ ...prev, [slug]: true }));
+
+      try {
+        const cleanBase = CMS_URL.replace(/\/$/, "");
+        const res = await fetch(`${cleanBase}/api/${SITE_SLUG}/treatments/${slug}`);
+
+        if (res.ok) {
+          const item = await res.json();
+          setMetaCache((prev) => ({
+            ...prev,
+            [slug]: {
+              ...item,
+              excerpt: item.excerpt?.trim() || null,
+              description: parsePreviewText(item.description),
+              price: item.price || null,
+            },
+          }));
+        }
+      } catch (err) {
+        console.error(`Failed to fetch meta on hover for treatment '${slug}':`, err);
+      } finally {
+        setMetaLoading((prev) => ({ ...prev, [slug]: false }));
+      }
+    },
+    [metaCache, metaLoading]
+  );
+
   // Fetch treatments dynamically from CMS
   useEffect(() => {
     let isMounted = true;
@@ -88,7 +134,9 @@ export default function ServicesPage() {
             name: item.title || item.name || "Specialized Procedure",
             slug: item.slug || slugify(item.title || item.name || item.id),
             category: item.category?.trim() || "Specialized Care",
-            description: parsePreviewText(item.description),
+            excerpt: item.excerpt?.trim() || null,
+            description: item.excerpt?.trim() || parsePreviewText(item.description),
+            price: item.price || null,
             imageUrl: resolveImageUrl(item.imageUrl || (item as any).image_url),
           }));
           setServices(list);
@@ -125,8 +173,6 @@ export default function ServicesPage() {
 
   useGSAP(
     () => {
-      // Runs once, on first mount only, so switching category tabs never
-      // replays the page-header entrance.
       if (hasAnimatedHeaderRef.current) return;
       hasAnimatedHeaderRef.current = true;
 
@@ -141,8 +187,6 @@ export default function ServicesPage() {
 
   useGSAP(
     () => {
-      // Re-runs on every tab switch: the new set of cards gets its own
-      // reveal, but this is scoped to just the grid, not the page header.
       if (!loading && displayedServices.length > 0) {
         gsap.fromTo(
           ".service-card-wrapper",
@@ -194,9 +238,7 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Category Tabs: sticky, tracks the live header height so it docks
-          right under the nav whether the header banner/nav is showing or
-          has slid away on scroll. */}
+      {/* Category Tabs */}
       {categories.length > 1 && (
         <div
           className="sticky z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/70 shadow-sm"
@@ -240,9 +282,24 @@ export default function ServicesPage() {
           <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayedServices.map((service) => {
               const photo = service.imageUrl || FALLBACK_TREATMENT_IMG;
+              const meta = metaCache[service.slug];
+              const isFetchingMeta = metaLoading[service.slug];
+
+              // Prioritize hover-fetched excerpt/description, otherwise use initial listing
+              const displaySummary =
+                meta?.excerpt ||
+                meta?.description ||
+                service.excerpt ||
+                service.description;
+
+              const displayPrice = meta?.price || service.price;
 
               return (
-                <div key={service.id} className="service-card-wrapper">
+                <div
+                  key={service.id}
+                  className="service-card-wrapper"
+                  onMouseEnter={() => handleCardHover(service.slug)}
+                >
                   <Link
                     href={`/services/${service.slug || service.id}`}
                     className="group flex flex-col justify-between h-full rounded-2xl bg-white border border-slate-200/90 overflow-hidden hover:border-brand-mid/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer shadow-xs"
@@ -262,13 +319,27 @@ export default function ServicesPage() {
                           }}
                         />
 
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/65 to-transparent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 flex flex-col justify-end">
-                          <span className="text-[0.6rem] font-bold uppercase tracking-wider text-brand-soft mb-1">
-                            About Treatment
-                          </span>
+                        {/* Hover Overlay with Fetched Meta */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-900/80 to-transparent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 flex flex-col justify-end">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[0.65rem] font-bold uppercase tracking-wider text-brand-soft">
+                              About Treatment
+                            </span>
+
+                            {/* Loading spinner or Price tag */}
+                            {isFetchingMeta ? (
+                              <span className="inline-flex items-center gap-1 text-[0.65rem] text-slate-300 animate-pulse">
+                                <Loader2 size={11} className="animate-spin" /> Fetching meta...
+                              </span>
+                            ) : displayPrice ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[0.7rem] font-semibold border border-emerald-400/30">
+                                <Tag size={10} /> NPR {displayPrice}
+                              </span>
+                            ) : null}
+                          </div>
+
                           <p className="text-xs text-white/95 leading-relaxed line-clamp-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 font-normal">
-                            {service.description}
+                            {displaySummary}
                           </p>
                         </div>
                       </div>
