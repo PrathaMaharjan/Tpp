@@ -104,7 +104,7 @@ export default function InsurancePage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-brand-mid">
+      <div className="relative bg-brand-mid min-h-[402px] md:min-h-[495px]">
         {/* Flanking line-art illustrations, melted into the band */}
         <div
           aria-hidden
@@ -133,7 +133,7 @@ export default function InsurancePage() {
           />
         </div>
 
-        <div className="pt-[250px] pb-[151px]">
+        <div className="pt-50 pb-[76px] md:pt-[250px] md:pb-[95px]">
           <div className="insurance-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] tracking-tight text-brand-deep">
               Insurance <span className="text-slate-200">Plans</span>

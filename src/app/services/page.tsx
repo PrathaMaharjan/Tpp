@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Loader2, Tag } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { CardGridSkeleton } from "../components/Skeleton";
 import { getPublicServices, slugify } from "../lib/api";
+import { stripHtmlAndDecode } from "../lib/htmlEntities";
 import { useHeaderOffset } from "../lib/useHeaderOffset";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -59,7 +61,7 @@ function parsePreviewText(desc?: string | null): string {
       const texts: string[] = [];
       for (const b of parsed.blocks) {
         if (typeof b.data?.text === "string" && b.data.text.trim()) {
-          texts.push(b.data.text.replace(/<[^>]*>/g, ""));
+          texts.push(stripHtmlAndDecode(b.data.text));
         }
       }
       if (texts.length > 0) return texts.join(" ");
@@ -67,7 +69,7 @@ function parsePreviewText(desc?: string | null): string {
   } catch {
     // Already plain text or HTML
   }
-  return desc.replace(/<[^>]*>/g, "");
+  return stripHtmlAndDecode(desc);
 }
 
 export default function ServicesPage() {
@@ -210,10 +212,36 @@ export default function ServicesPage() {
       <Header />
 
       {/* Header Section */}
-      <div className="relative bg-brand-mid">
-        <div className="pt-50 pb-[138px]">
+      <div className="relative bg-brand-mid min-h-[402px] md:min-h-[495px] overflow-hidden">
+        {/* Corner line-art illustrations, melted into the band */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-[107px] top-[14px] hidden w-[337px] select-none opacity-70 mix-blend-screen xl:block xl:top-[17px] xl:left-[130px] xl:w-[412px]"
+        >
+          <Image src="/images/hero-images/services/microscope.png" alt="" width={1536} height={1024} className="h-auto w-full" priority />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[131px] top-[14px] hidden w-[337px] select-none opacity-70 mix-blend-screen xl:block xl:top-[17px] xl:right-[159px] xl:w-[412px]"
+        >
+          <Image src="/images/hero-images/services/clipboard.png" alt="" width={1536} height={1024} className="h-auto w-full" priority />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-[-112px] bottom-[-26px] hidden w-[337px] select-none opacity-70 mix-blend-screen xl:block xl:left-[-137px] xl:bottom-[-33px] xl:w-[412px]"
+        >
+          <Image src="/images/hero-images/services/mother-baby.png" alt="" width={1536} height={1024} className="h-auto w-full" priority />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute right-[-105px] bottom-[-40px] hidden w-[337px] select-none opacity-70 mix-blend-screen xl:block xl:right-[-129px] xl:bottom-[-50px] xl:w-[412px]"
+        >
+          <Image src="/images/hero-images/services/stethoscope.png" alt="" width={1536} height={1024} className="h-auto w-full" priority />
+        </div>
+
+        <div className="pt-50 pb-[76px] md:pt-[250px] md:pb-[95px]">
           <div className="services-page-header max-w-3xl mx-auto px-6 space-y-3 text-center">
-            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-brand-deep">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] tracking-tight text-brand-deep">
               Our Services &amp; <span className="text-slate-200">Treatments</span>
             </h1>
             <p className="text-brand-deep text-sm sm:text-base leading-relaxed max-w-xl mx-auto">

@@ -5,10 +5,17 @@ import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { ProviderSkeleton } from "../components/Skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { getPublicDoctors, slugify } from "../lib/api";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+const INITIAL_VISIBLE_COUNT = 9;
 
 interface ProviderItem {
   id: string;
@@ -40,6 +47,7 @@ export default function ProvidersPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 
   // Fetch doctors dynamically from CMS
   useEffect(() => {
@@ -71,6 +79,9 @@ export default function ProvidersPage() {
     };
   }, []);
 
+  const visibleProviders = providers.slice(0, visibleCount);
+  const hasMore = visibleCount < providers.length;
+
   useGSAP(
     () => {
       gsap.fromTo(
@@ -78,23 +89,38 @@ export default function ProvidersPage() {
         { y: 25, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", clearProps: "all" }
       );
+    },
+    { scope: containerRef }
+  );
 
-      if (!loading && providers.length > 0) {
+  // Each card reveals individually as it scrolls into view, rather than a
+  // single stagger tied to page load — so cards revealed later via "Show
+  // more" still get their own scroll-in animation.
+  useGSAP(
+    () => {
+      if (loading || visibleProviders.length === 0) return;
+
+      const cards = gsap.utils.toArray<HTMLElement>(".provider-card-wrapper");
+      cards.forEach((card) => {
         gsap.fromTo(
-          ".provider-card-wrapper",
+          card,
           { y: 30, opacity: 0 },
           {
             y: 0,
             opacity: 1,
             duration: 0.5,
-            stagger: 0.08,
             ease: "power2.out",
             clearProps: "all",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 90%",
+              once: true,
+            },
           }
         );
-      }
+      });
     },
-    { scope: containerRef, dependencies: [loading, providers.length] }
+    { scope: containerRef, dependencies: [loading, visibleProviders.length] }
   );
 
   return (
@@ -102,8 +128,8 @@ export default function ProvidersPage() {
       <Header />
 
       {/* Styled Header Title */}
-      <div className="relative bg-brand-mid">
-        <div className="pt-50 pb-[151px]">
+      <div className="relative bg-brand-mid min-h-[402px] md:min-h-[495px]">
+        <div className="pt-50 pb-[76px] md:pt-[250px] md:pb-[95px]">
           <div className="providers-header-content max-w-3xl mx-auto px-6 space-y-3 text-center">
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] tracking-tight text-brand-deep">
               Meet Our <span className="text-slate-200">Providers</span>
@@ -146,7 +172,7 @@ export default function ProvidersPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {providers.map((provider) => {
+              {visibleProviders.map((provider) => {
                 const rawPhoto = provider.imageUrl || provider.photoUrl || (provider as any).image_url;
                 const photo = resolveImageUrl(rawPhoto, FALLBACK_DOCTOR_AVATAR);
                 const specialization =
@@ -213,6 +239,18 @@ export default function ProvidersPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {hasMore && (
+            <div className="flex justify-center pt-2">
+              <button
+                onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_COUNT)}
+                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-brand/40 hover:text-brand hover:shadow-md"
+              >
+                <span>Show More</span>
+                <ChevronDown size={16} className="transition-transform duration-300 group-hover:translate-y-0.5" />
+              </button>
             </div>
           )}
 

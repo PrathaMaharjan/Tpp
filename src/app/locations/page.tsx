@@ -97,8 +97,8 @@ export default function LocationsPage() {
         <Header />
 
         {/* Styled Header Title */}
-        <div className="relative bg-brand-mid">
-          <div className="pt-[250px] pb-[151px]">
+        <div className="relative bg-brand-mid min-h-[402px] md:min-h-[495px]">
+          <div className="pt-50 pb-[76px] md:pt-[250px] md:pb-[95px]">
             <div className="max-w-3xl mx-auto px-6 space-y-3 text-center">
               <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white">
                 Our <span className="text-brand-deep">Locations</span>

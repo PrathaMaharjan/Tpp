@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { parseEditorJs } from '../lib/editorParser';
+import { decodeHtmlEntities } from '../lib/htmlEntities';
 
 interface StatItem {
   label: string;
@@ -397,11 +398,11 @@ export default function AboutPage() {
             </h2>
 
             <p className="text-[15px] leading-relaxed text-slate-600">
-              {missionText}
+              {decodeHtmlEntities(missionText)}
             </p>
 
             <blockquote className="border-l-4 border-brand bg-surface-2 py-4 pl-5 pr-4 text-[15px] italic leading-relaxed text-slate-700">
-              {visionText}
+              {decodeHtmlEntities(visionText)}
             </blockquote>
 
             <Link

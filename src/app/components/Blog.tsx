@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { getPublicBlogPosts, type BlogPost } from '../lib/api';
+import { stripHtmlAndDecode } from '../lib/htmlEntities';
 import { CardGridSkeleton } from './Skeleton';
 
 if (typeof window !== 'undefined') {
@@ -35,12 +36,7 @@ function resolveImageUrl(url?: string | null, fallback: string = FALLBACK_IMAGE)
 function parseExcerpt(excerpt?: string | null, content?: string | null, maxLength: number = 145): string {
   // 1. If explicit excerpt is saved in CMS Meta tab, use it
   if (excerpt && typeof excerpt === 'string' && excerpt.trim()) {
-    const clean = excerpt
-      .replace(/<[^>]*>/g, '') // Strip HTML tags if any
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .trim();
+    const clean = stripHtmlAndDecode(excerpt);
     if (clean.length > maxLength) {
       return clean.slice(0, maxLength).trim() + '...';
     }
@@ -59,10 +55,7 @@ function parseExcerpt(excerpt?: string | null, content?: string | null, maxLengt
         const targetBlock = pBlock || parsed.blocks[0];
 
         if (targetBlock?.data?.text) {
-          const text = targetBlock.data.text
-            .replace(/<[^>]*>/g, '')
-            .replace(/&nbsp;/g, ' ')
-            .trim();
+          const text = stripHtmlAndDecode(targetBlock.data.text);
           if (text) {
             return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
           }
@@ -70,7 +63,7 @@ function parseExcerpt(excerpt?: string | null, content?: string | null, maxLengt
       }
     } catch {
       // Content is raw text / HTML string
-      const text = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      const text = stripHtmlAndDecode(content);
       if (text) {
         return text.length > maxLength ? text.slice(0, maxLength).trim() + '...' : text;
       }

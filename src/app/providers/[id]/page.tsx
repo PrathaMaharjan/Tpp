@@ -257,7 +257,7 @@ export default function DoctorDetailPage() {
       <Header />
 
       {/* Hero / Page Header: dual-tone diagonal split for a less flat band */}
-      <section className="relative overflow-hidden bg-brand-deep pt-40 pb-[121px]">
+      <section className="relative overflow-hidden bg-brand-deep min-h-[402px] md:min-h-[495px] pt-50 pb-[76px] md:pt-[250px] md:pb-[95px]">
         <div
           aria-hidden
           className="absolute inset-0 bg-gradient-to-br from-brand-deep via-brand-deep to-brand-dark"
