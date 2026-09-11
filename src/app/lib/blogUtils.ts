@@ -1,5 +1,7 @@
 const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3000';
 
+import { stripHtmlAndDecode } from './htmlEntities';
+
 export const FALLBACK_BLOG_IMAGE =
   'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&q=80&w=1200';
 
@@ -29,13 +31,12 @@ export function calculateReadTime(content?: string | null): string {
   try {
     const parsed = JSON.parse(content);
     if (Array.isArray(parsed?.blocks)) {
-      rawText = parsed.blocks
-        .map((b: any) => b.data?.text || '')
-        .join(' ')
-        .replace(/<[^>]*>/g, '');
+      rawText = stripHtmlAndDecode(
+        parsed.blocks.map((b: any) => b.data?.text || '').join(' ')
+      );
     }
   } catch {
-    rawText = content.replace(/<[^>]*>/g, '');
+    rawText = stripHtmlAndDecode(content);
   }
 
   const words = rawText.trim().split(/\s+/).filter(Boolean).length;
@@ -70,7 +71,7 @@ export function parseExcerpt(
   maxLength: number = 160
 ): string {
   if (excerpt && excerpt.trim()) {
-    const trimmed = excerpt.trim();
+    const trimmed = stripHtmlAndDecode(excerpt);
     if (trimmed.length <= maxLength) return trimmed;
     return `${trimmed.slice(0, maxLength).trim()}...`;
   }
@@ -83,13 +84,13 @@ export function parseExcerpt(
     if (Array.isArray(parsed?.blocks)) {
       for (const b of parsed.blocks) {
         if (typeof b.data?.text === 'string' && b.data.text.trim()) {
-          plain = b.data.text.replace(/<[^>]*>/g, '').trim();
+          plain = stripHtmlAndDecode(b.data.text);
           break;
         }
       }
     }
   } catch {
-    plain = content.replace(/<[^>]*>/g, '').trim();
+    plain = stripHtmlAndDecode(content);
   }
 
   if (!plain) {

@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { getPublicServices, slugify } from "../lib/api";
+import { stripHtmlAndDecode } from "../lib/htmlEntities";
 import { CardSkeleton } from "./Skeleton";
 
 if (typeof window !== "undefined") {
@@ -47,7 +48,7 @@ function parseServiceDescription(desc?: string | null): string {
       const texts: string[] = [];
       for (const b of parsed.blocks) {
         if (typeof b.data?.text === "string" && b.data.text.trim()) {
-          texts.push(b.data.text.replace(/<[^>]*>/g, ""));
+          texts.push(stripHtmlAndDecode(b.data.text));
         }
       }
       if (texts.length > 0) return texts.join(" ");
@@ -55,7 +56,7 @@ function parseServiceDescription(desc?: string | null): string {
   } catch {
     // Plain text or HTML
   }
-  return desc;
+  return stripHtmlAndDecode(desc);
 }
 
 export default function ServicesSection() {

@@ -10,6 +10,7 @@ import AnimatedStat from '../components/AnimatedStat';
 import HeroTitle from '../components/HeroTitle';
 import { Stethoscope, HeartPulse, ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { parseEditorJs } from '../lib/editorParser';
+import { decodeHtmlEntities } from '../lib/htmlEntities';
 
 interface StatItem {
   label: string;
@@ -316,13 +317,15 @@ export default function AboutPage() {
             </h2>
 
             <p className="text-[15px] leading-relaxed text-slate-600">
-              {aboutData?.mission ||
-                'Preventive visits, sick care, vaccinations, school and sports physicals, and ongoing management of chronic conditions, all handled by providers who know your history.'}
+              {aboutData?.mission
+                ? decodeHtmlEntities(aboutData.mission)
+                : 'Preventive visits, sick care, vaccinations, school and sports physicals, and ongoing management of chronic conditions, all handled by providers who know your history.'}
             </p>
 
             <blockquote className="border-l-4 border-brand bg-surface-2 py-4 pl-5 pr-4 text-[15px] italic leading-relaxed text-slate-700">
-              {aboutData?.vision ||
-                'We want to be the practice a family stays with for decades, not the one they visit once and forget.'}
+              {aboutData?.vision
+                ? decodeHtmlEntities(aboutData.vision)
+                : 'We want to be the practice a family stays with for decades, not the one they visit once and forget.'}
             </blockquote>
 
             <Link

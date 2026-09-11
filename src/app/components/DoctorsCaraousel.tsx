@@ -256,7 +256,7 @@ export default function DoctorsCarousel() {
           </div>
 
           <Link
-            href="/about"
+            href="/providers"
             className="group relative inline-flex shrink-0 items-center gap-4 self-start overflow-hidden rounded-full bg-white pl-6 pr-2 py-2 text-sm font-semibold text-slate-900 shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand/30 active:scale-[0.99] sm:self-auto"
           >
             <span className="absolute inset-0 h-full w-full origin-left scale-x-0 rounded-full bg-gradient-to-r from-brand via-brand-mid to-brand-soft transition-transform duration-300 ease-out group-hover:scale-x-100" />
