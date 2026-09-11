@@ -122,7 +122,7 @@ export default function Hero() {
 
           <div className="hero-btn">
             <Link
-              href="/booking"
+              href="https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"
               className="group relative inline-flex items-center gap-4 pl-6 pr-2 py-2 rounded-full bg-white text-slate-900 text-sm font-semibold shadow-lg hover:shadow-lg hover:shadow-brand/30 active:scale-[0.99] transition-all duration-300 transform hover:-translate-y-0.5 overflow-hidden"
             >
               {/* Gradient Fill Background Overlay on Hover */}

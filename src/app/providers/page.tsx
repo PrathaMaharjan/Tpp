@@ -229,7 +229,7 @@ export default function ProvidersPage() {
                       {/* Book action: always visible on touch, reveals on hover on desktop */}
                       <div className="absolute bottom-5 right-5 z-20 transition-all duration-300 lg:translate-y-2 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
                         <Link
-                          href={`/booking?dentist=${encodeURIComponent(provider.name)}`}
+                          href={"https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"}
                           className="inline-flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 transition-colors hover:bg-brand hover:text-white"
                         >
                           <span>Book Visit</span>

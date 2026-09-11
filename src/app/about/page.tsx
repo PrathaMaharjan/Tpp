@@ -8,7 +8,17 @@ import Footer from '../components/Footer';
 import CtaSection from '../components/CtaSection';
 import AnimatedStat from '../components/AnimatedStat';
 import HeroTitle from '../components/HeroTitle';
-import { Stethoscope, HeartPulse, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import {
+  Stethoscope,
+  HeartPulse,
+  ShieldCheck,
+  Award,
+  Clock,
+  Users,
+  Sparkles,
+  ArrowUpRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { parseEditorJs } from '../lib/editorParser';
 import { decodeHtmlEntities } from '../lib/htmlEntities';
 
@@ -20,37 +30,69 @@ interface StatItem {
 interface FeatureItem {
   title: string;
   description: string;
+  icon?: string;
+}
+
+interface CtaData {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  primaryText?: string;
+  primaryUrl?: string;
+  secondaryText?: string;
+  secondaryUrl?: string;
 }
 
 interface AboutData {
   badge?: string | null;
   title?: string | null;
   subtitle?: string | null;
+  storyTitle?: string | null;
   story?: string | null;
+  missionTitle?: string | null;
   mission?: string | null;
   vision?: string | null;
+  quoteText?: string | null;
+  quoteAuthor?: string | null;
+  providersButtonText?: string | null;
+  providersButtonUrl?: string | null;
   secondaryImage?: string | null;
-  stats?: StatItem[] | null;
+  stripPhotos?: string[] | null;
+  featuresTitle?: string | null;
+  featuresSubtitle?: string | null;
   features?: FeatureItem[] | null;
+  stats?: StatItem[] | null;
+  cta?: CtaData | null;
 }
 
 const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL || 'http://localhost:3002';
 const SITE_SLUG =
   process.env.NEXT_PUBLIC_SITE_SLUG || process.env.NEXT_PUBLIC_TENANT_SLUG || 'tpp';
 
-/** Photos for the hero strip. Not provided by the CMS about endpoint. */
-const STRIP_PHOTOS = [
+/** Default fallback photos for the hero strip */
+const DEFAULT_STRIP_PHOTOS = [
   '/images/about/istockphoto-1633320190-2048x2048.jpg',
   '/images/about/istockphoto-1319031310-612x612.jpg',
   '/images/about/istockphoto-1903424167-2048x2048.jpg',
   '/images/about/istockphoto-1388254153-612x612.jpg',
 ];
 
-/** Full-size local art used unless the CMS supplies something bigger. */
+/** Default secondary clinic photo */
 const LOCAL_SECONDARY = '/images/about/istockphoto-1633320190-2048x2048.jpg';
 
-/** Static because the CMS `features` array is empty. */
-const PILLARS: { icon: typeof Stethoscope; title: string; description: string }[] = [
+/** Icon map for dynamic pillars configured in the CMS */
+const ICON_MAP: Record<string, LucideIcon> = {
+  Stethoscope,
+  HeartPulse,
+  ShieldCheck,
+  Award,
+  Clock,
+  Users,
+  Sparkles,
+};
+
+/** Default pillars when CMS has no features defined */
+const DEFAULT_PILLARS = [
   {
     icon: Stethoscope,
     title: 'Experienced Providers',
@@ -80,9 +122,7 @@ function resolveImageUrl(url?: string | null, fallback: string = ''): string {
 }
 
 /**
- * True once the image at `src` is confirmed to be at least `minWidth`
- * pixels wide. Returns false while loading and for images that turn out
- * to be too small, so callers can fall back to local art.
+ * Ensures CMS image is large enough for display slots before rendering.
  */
 function useImageAtLeast(src: string, minWidth: number): boolean {
   const [ok, setOk] = useState(false);
@@ -91,7 +131,6 @@ function useImageAtLeast(src: string, minWidth: number): boolean {
     let active = true;
 
     if (!src) {
-      // Deferred so the effect never sets state synchronously.
       const id = setTimeout(() => {
         if (active) setOk(false);
       }, 0);
@@ -148,23 +187,72 @@ export default function AboutPage() {
 
   const storyHtml = useMemo(() => parseEditorJs(aboutData?.story), [aboutData?.story]);
 
-  // CMS values with copy that stands on its own when a field is blank.
+  // Dynamic values with sensible defaults
   const pageTitle = aboutData?.title || 'About Us';
   const pageSubtitle =
     aboutData?.subtitle ||
     'Personalized primary and pediatric care for families across North Texas, at both our Irving and Celina clinics.';
 
-  // CMS uploads are currently 231x200 thumbnails, which would be
-  // upscaled ~5x in these slots. Probe the real pixel size and only use
-  // a CMS image once it is big enough, so the page looks right today and
-  // starts using CMS art automatically when full-size files are uploaded.
+  // Hero strip photos: use CMS uploads if provided, else fallback to defaults
+  const stripPhotos = useMemo(() => {
+    const cmsPhotos = aboutData?.stripPhotos;
+    return DEFAULT_STRIP_PHOTOS.map((fallback, idx) => {
+      const cmsUrl = cmsPhotos?.[idx];
+      return cmsUrl ? resolveImageUrl(cmsUrl, fallback) : fallback;
+    });
+  }, [aboutData?.stripPhotos]);
+
+  // Secondary clinic photo
   const secondaryFromCms = resolveImageUrl(aboutData?.secondaryImage);
-
   const secondaryOk = useImageAtLeast(secondaryFromCms, 700);
-
   const secondaryImgUrl = secondaryOk ? secondaryFromCms : LOCAL_SECONDARY;
+
+  // Story section heading
+  const storyTitle =
+    aboutData?.storyTitle || 'Family medicine and pediatrics, delivered with care';
+
+  // Overlapping quote card
+  const quoteText = aboutData?.quoteText || 'Every family, treated like our own.';
+  const quoteAuthor = aboutData?.quoteAuthor || 'Texas Primary & Pediatric Care';
+
+  // Mission & Vision section
+  const missionTitle =
+    aboutData?.missionTitle || 'Care that follows your family through every stage';
+  const missionText =
+    aboutData?.mission ||
+    'Preventive visits, sick care, vaccinations, school and sports physicals, and ongoing management of chronic conditions, all handled by providers who know your history.';
+  const visionText =
+    aboutData?.vision ||
+    'We want to be the practice a family stays with for decades, not the one they visit once and forget.';
+  const providersButtonText = aboutData?.providersButtonText || 'Meet our providers';
+  const providersButtonUrl = aboutData?.providersButtonUrl || '/providers';
+
+  // Pillars & Features
+  const featuresTitle = aboutData?.featuresTitle || 'Why families choose our practice';
+  const featuresSubtitle =
+    aboutData?.featuresSubtitle ||
+    'Two convenient North Texas locations, providers who listen, and scheduling that works around your week.';
+
+  const resolvedFeatures = useMemo(() => {
+    if (aboutData?.features && aboutData.features.length > 0) {
+      return aboutData.features.map((f, i) => {
+        const IconComponent =
+          (f.icon && ICON_MAP[f.icon]) || DEFAULT_PILLARS[i % DEFAULT_PILLARS.length].icon;
+        return {
+          title: f.title,
+          description: f.description,
+          icon: IconComponent,
+        };
+      });
+    }
+    return DEFAULT_PILLARS;
+  }, [aboutData?.features]);
+
+  // Key stats
   const stats = aboutData?.stats?.length ? aboutData.stats : [];
-  const features = aboutData?.features?.length ? aboutData.features : [];
+
+  // CTA
+  const cta = aboutData?.cta;
 
   return (
     <main className="min-h-screen bg-white font-sans">
@@ -172,16 +260,10 @@ export default function AboutPage() {
 
       {/* ── Hero: tinted band, decorative marks, photo strip breaking out ── */}
       <section className="relative pt-28 md:pt-32">
-        {/* Tinted band. Height stops partway down the photo strip so the
-            photos straddle the tint/white boundary, as in the reference. */}
         <div
           aria-hidden
           className="absolute inset-x-0 top-0 h-[calc(100%-122px)] bg-brand-mid md:h-[calc(100%-144px)]"
         >
-          {/* Curved edge instead of a straight cut, matching the wave
-              divider used on the other page heroes. Sits at the band's
-              own bottom edge, which is mid-strip rather than the end of
-              the section. */}
           <div className="absolute bottom-0 left-0 w-full translate-y-[1px] overflow-hidden leading-none">
             <svg
               viewBox="0 0 1440 120"
@@ -197,9 +279,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Decorative marks, positioned as in the reference: a sparkle
-            just above the heading and a circle cluster to its right.
-            Nothing on the left, matching the reference. */}
+        {/* Decorative shapes */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-[calc(100%-122px)] overflow-hidden md:h-[calc(100%-144px)]"
@@ -222,7 +302,12 @@ export default function AboutPage() {
 
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <h1 className="font-display mt-3 text-4xl font-bold leading-[1.1] tracking-tight text-brand-deep sm:text-5xl lg:text-[56px]">
+            {aboutData?.badge && (
+              <span className="inline-block text-xs font-bold uppercase tracking-wider text-brand-deep/75 mb-2">
+                {aboutData.badge}
+              </span>
+            )}
+            <h1 className="font-display mt-2 text-4xl font-bold leading-[1.1] tracking-tight text-brand-deep sm:text-5xl lg:text-[56px]">
               <HeroTitle text={pageTitle} accentClassName="text-slate-200" />
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-brand-deep sm:text-base">
@@ -230,19 +315,17 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* Photo strip: sits half on the tint, half on white */}
+          {/* Photo strip: dynamic from CMS with graceful fallback */}
           <div className="mt-12 grid grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-5">
-            {STRIP_PHOTOS.map((src) => (
+            {stripPhotos.map((src, i) => (
               <div
-                key={src}
+                key={`${src}-${i}`}
                 className="relative overflow-hidden rounded-2xl bg-white shadow-xl"
               >
-                {/* Fixed height so the band's cut-off lands exactly halfway
-                    down the strip on every breakpoint (+15% hero height). */}
                 <div className="relative h-[290px] md:h-[368px]">
                   <Image
                     src={src}
-                    alt="Our team caring for patients"
+                    alt="Our clinical team and facilities"
                     fill
                     sizes="(min-width: 768px) 25vw, 50vw"
                     className="object-cover"
@@ -254,14 +337,14 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── Intro: heading left, story in two columns right ── */}
+      {/* ── Intro: heading & story ── */}
       <section className="mx-auto max-w-[1240px] px-6 py-20 md:py-28">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-semibold leading-[1.2] tracking-tight text-slate-900 md:text-4xl lg:text-[42px]">
-            Family medicine and pediatrics, delivered with care
+            {storyTitle}
           </h2>
 
-          <div className="space-y-5 text-[15px] leading-relaxed text-slate-600">
+          <div className="mt-6 space-y-5 text-[15px] leading-relaxed text-slate-600">
             {storyHtml ? (
               <div
                 className="prose-cms [&_p]:mb-4 [&_p]:text-[15px] [&_p]:leading-relaxed [&_p]:text-slate-600"
@@ -286,7 +369,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── Photo with overlapping quote card, copy on the right ── */}
+      {/* ── Photo with overlapping quote card, mission & vision copy ── */}
       <section className="mx-auto max-w-[1240px] px-6 pb-20 md:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div className="relative">
@@ -300,39 +383,33 @@ export default function AboutPage() {
               />
             </div>
 
-            {/* Quote card, overlapping the photo's lower-left corner */}
+            {/* Overlapping Quote Card */}
             <div className="relative z-10 mx-4 -mt-12 rounded-2xl bg-white p-5 shadow-xl lg:ml-8 lg:mr-16">
               <p className="text-[15px] font-semibold text-slate-900">
-                &ldquo;Every family, treated like our own.&rdquo;
+                &ldquo;{quoteText}&rdquo;
               </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Texas Primary &amp; Pediatric Care
-              </p>
+              <p className="mt-1 text-xs text-slate-500">{quoteAuthor}</p>
             </div>
           </div>
 
           <div className="space-y-6">
             <h2 className="text-3xl font-semibold leading-[1.2] tracking-tight text-slate-900 md:text-4xl lg:text-[42px]">
-              Care that follows your family through every stage
+              {missionTitle}
             </h2>
 
             <p className="text-[15px] leading-relaxed text-slate-600">
-              {aboutData?.mission
-                ? decodeHtmlEntities(aboutData.mission)
-                : 'Preventive visits, sick care, vaccinations, school and sports physicals, and ongoing management of chronic conditions, all handled by providers who know your history.'}
+              {decodeHtmlEntities(missionText)}
             </p>
 
             <blockquote className="border-l-4 border-brand bg-surface-2 py-4 pl-5 pr-4 text-[15px] italic leading-relaxed text-slate-700">
-              {aboutData?.vision
-                ? decodeHtmlEntities(aboutData.vision)
-                : 'We want to be the practice a family stays with for decades, not the one they visit once and forget.'}
+              {decodeHtmlEntities(visionText)}
             </blockquote>
 
             <Link
-              href="/providers"
+              href={providersButtonUrl}
               className="group inline-flex items-center gap-2 text-sm font-semibold text-brand transition-colors duration-300 hover:text-brand-dark"
             >
-              Meet our providers
+              {providersButtonText}
               <ArrowUpRight
                 size={16}
                 className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
@@ -342,7 +419,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── Pillars: centred heading, three icon cards ── */}
+      {/* ── Pillars: heading, subtitle, dynamic cards ── */}
       <section className="relative overflow-hidden bg-surface py-20 md:py-28">
         <div
           aria-hidden
@@ -367,24 +444,15 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1240px] px-6">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-semibold leading-[1.2] tracking-tight text-slate-900 md:text-4xl lg:text-[42px]">
-              Why families choose our practice
+              {featuresTitle}
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-[15px] leading-relaxed text-slate-600">
-              Two convenient North Texas locations, providers who listen, and
-              scheduling that works around your week.
+              {featuresSubtitle}
             </p>
           </div>
 
-          {/* CMS features when present, otherwise the static pillars */}
           <div className="mt-14 grid gap-10 sm:grid-cols-3 md:mt-16 md:gap-12">
-            {(features.length
-              ? features.map((f, i) => ({
-                  title: f.title,
-                  description: f.description,
-                  icon: PILLARS[i % PILLARS.length].icon,
-                }))
-              : PILLARS
-            ).map((item) => {
+            {resolvedFeatures.map((item) => {
               const Icon = item.icon;
               return (
                 <div key={item.title} className="text-center">
@@ -420,13 +488,25 @@ export default function AboutPage() {
         </section>
       )}
 
+      {/* ── Dynamic CTA Section ── */}
       <div className="mx-auto max-w-[1400px] px-6 pb-4">
         <CtaSection
-          eyebrow="Ready When You Are"
-          title="Accepting New Patients at Both Texas Locations"
-          description="Book online in under a minute, or send us a message and our team will help you find a time that works."
-          primary={{ label: 'Book Appointment', href: '/booking' }}
-          secondary={{ label: 'Contact Us', href: '/contact' }}
+          eyebrow={cta?.eyebrow || 'Ready When You Are'}
+          title={cta?.title || 'Accepting New Patients at Both Texas Locations'}
+          description={
+            cta?.description ||
+            'Book online in under a minute, or send us a message and our team will help you find a time that works.'
+          }
+          primary={{
+            label: cta?.primaryText || 'Book Appointment',
+            href:
+              cta?.primaryUrl ||
+              'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1',
+          }}
+          secondary={{
+            label: cta?.secondaryText || 'Contact Us',
+            href: cta?.secondaryUrl || '/contact',
+          }}
         />
       </div>
 

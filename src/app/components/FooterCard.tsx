@@ -11,12 +11,17 @@ export default function FooterCard() {
         Two Texas locations, same-day appointments, and providers who know your
         family by name.
       </p>
-      <Link href="/booking">
-        <button className="bg-brand hover:bg-brand-dark text-white rounded-sm px-[19px] py-[10px] mt-6 flex items-center gap-2 cursor-pointer transition-colors">
-          Book Appointment
-          <Calendar size={18} />
-        </button>
-      </Link>
+   <Link
+  href="https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <button className="bg-brand hover:bg-brand-dark text-white rounded-sm px-[19px] py-[10px] mt-6 flex items-center gap-2 cursor-pointer transition-colors">
+    Book Appointment
+    <Calendar size={18} />
+  </button>
+</Link>
+     
     </div>
   );
 }

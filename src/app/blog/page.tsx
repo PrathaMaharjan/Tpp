@@ -424,7 +424,7 @@ export default function BlogListingPage() {
         <CtaSection
           title="Have Questions About Your Family's Health?"
           description="Our experienced team of physicians and healthcare specialists are here to provide compassionate, personalized primary and pediatric care."
-          primary={{ label: 'Book an Appointment', href: '/booking' }}
+          primary={{ label: 'Book an Appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' }}
           secondary={{ label: 'Call 469-442-0202', href: 'tel:4694420202' }}
         />
       </div>

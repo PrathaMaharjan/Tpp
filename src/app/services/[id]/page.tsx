@@ -275,7 +275,7 @@ export default function ServiceDetailPage() {
           </p>
 
           <Link
-            href={`/booking?service=${encodeURIComponent(currentService.name)}`}
+            href={"https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1"}
             className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-brand via-brand-mid to-brand-soft text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-brand/25 active:scale-[0.99] transition-all duration-200 mt-2"
           >
             <Calendar size={16} />

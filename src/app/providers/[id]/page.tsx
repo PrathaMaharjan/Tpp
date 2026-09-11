@@ -351,7 +351,7 @@ export default function DoctorDetailPage() {
           eyebrow="Book A Visit"
           title={`Ready to schedule with ${currentDoctor.name.split(" ")[0] || "our provider"}?`}
           description="Schedule an in-person or follow-up consultation at our clinic today."
-          primary={{ label: 'Book Appointment', href: `/booking?dentist=${encodeURIComponent(currentDoctor.name)}` }}
+          primary={{ label: 'Book Appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' }}
           secondary={{ label: 'Call 469-442-0202', href: 'tel:4694420202' }}
         />
       </div>

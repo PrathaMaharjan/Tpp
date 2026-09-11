@@ -241,7 +241,7 @@ export default function InsurancePage() {
           title="Not Covered By Any Of These Plans?"
           description="Contact us and we will find the best solution to suit your healthcare needs."
           primary={{ label: 'Contact Us', href: '/contact' }}
-          secondary={{ label: 'Book Appointment', href: '/booking' }}
+          secondary={{ label: 'Book Appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' }}
         />
       </div>
 

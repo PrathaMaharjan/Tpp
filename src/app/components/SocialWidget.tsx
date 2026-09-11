@@ -7,7 +7,7 @@ import { Phone, Mail, Calendar, MapPin } from 'lucide-react';
 
 /** Rotating pill prompts. */
 const PROMPTS = [
-  { text: 'Need a same-day appointment?', href: '/booking' },
+  { text: 'Need a same-day appointment?', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' },
   { text: 'Looking for a clinic near you?', href: '/locations' },
   { text: 'Questions about your insurance?', href: '/insurance' },
   { text: 'Not sure which service you need?', href: '/services' },
@@ -15,7 +15,7 @@ const PROMPTS = [
 
 /** Quick links inside the expanded panel. */
 const CHIPS = [
-  { label: 'Book an appointment', href: '/booking' },
+  { label: 'Book an appointment', href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1' },
   { label: 'Find a location & hours', href: '/locations' },
   { label: 'Check accepted insurance', href: '/insurance' },
 ];
@@ -23,11 +23,11 @@ const CHIPS = [
 const SOCIAL_LINKS = [
   {
     icon: Calendar,
-    href: '/booking',
+    href: 'https://healow.com/apps/practice/texas-primary-pediatric-care-pllc-irving-tx-22218?v=2&t=1',
     label: 'Book appointment',
     tooltip: 'Book an appointment',
     bg: 'bg-brand hover:bg-brand-dark',
-    external: false,
+    external: true,
   },
   {
     icon: Phone,
